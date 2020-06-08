@@ -8,8 +8,7 @@ public class Navigation : MonoBehaviour
 
     public bool hasDestination;
     public bool hasReachedItsDestination;
-    public GameObject destination;
-    public Vector3 destinationPosition;
+    public Vector2 destination;
     public Vector2 direction;
 
     private void Update()
@@ -36,7 +35,7 @@ public class Navigation : MonoBehaviour
     public bool ReachedDestination()
     {
         float x = transform.position.x;
-        float desX = destinationPosition.x;
+        float desX = destination.x;
 
         if (direction.x > 0)
         {
@@ -48,7 +47,7 @@ public class Navigation : MonoBehaviour
         }
     }
 
-    public bool MoveTo(GameObject gameObject)
+    public bool MoveTo(Vector2 position)
     {
         if (hasDestination)
         {
@@ -56,12 +55,10 @@ public class Navigation : MonoBehaviour
             return false;
         }
 
-        Debug.Log("Moving towards " + gameObject);
         hasDestination = true;
         hasReachedItsDestination = false;
-        destination = gameObject;
-        destinationPosition = gameObject.transform.position;
-        direction = (destinationPosition - transform.position).normalized;
+        destination = position;
+        direction = (position - new Vector2(transform.position.x, transform.position.y)).normalized;
         direction = (direction.x >= 0) ? Vector2.right : Vector2.left;
         return true;
     }

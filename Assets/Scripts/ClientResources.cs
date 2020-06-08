@@ -33,6 +33,40 @@ public class ClientResources : MonoBehaviour
         }
     }
 
+    public bool ThereAreThingsLeftToBuy()
+    {
+        bool thingsLeft = false;
+        foreach (KeyValuePair<Product, int> entry in shoppingList)
+        {
+            Product product = entry.Key;
+            int amount = entry.Value;
+
+            if (amount != 0)
+            {
+                thingsLeft = true;
+            }
+        }
+
+        return thingsLeft;
+    }
+
+    public List<Product> GetProductsNotBoughtYet()
+    {
+        List<Product> products = new List<Product>();
+        foreach (KeyValuePair<Product, int> entry in shoppingList)
+        {
+            Product product = entry.Key;
+            int amount = entry.Value;
+
+            if (amount != 0)
+            {
+                products.Add(product);
+            }
+        }
+
+        return products;
+    }
+
     public int HowManyCanAfford(Product product, int price, int stock)
     {
         int wantsToBuy = (int)shoppingList[product];
@@ -49,6 +83,10 @@ public class ClientResources : MonoBehaviour
 
         money -= moneySpent;
         shoppingList[product] -= amount;
+
+        // TODO: Remove. Debug purposes
+        int index = wantedProducts.IndexOf(product);
+        wantedAmount[index] -= amount;
     }
 
 }
