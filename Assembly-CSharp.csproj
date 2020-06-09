@@ -53,16 +53,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\Actions\IAction.cs" />
+     <Compile Include="Assets\Scripts\Actions\MoveToStore.cs" />
+     <Compile Include="Assets\Scripts\Client.cs" />
      <Compile Include="Assets\Scripts\ClientKnowledge.cs" />
      <Compile Include="Assets\Scripts\ClientResources.cs" />
-     <Compile Include="Assets\Scripts\ClientStateMachine.cs" />
+     <Compile Include="Assets\Scripts\Human.cs" />
      <Compile Include="Assets\Scripts\IStateMachine.cs" />
      <Compile Include="Assets\Scripts\Mall.cs" />
      <Compile Include="Assets\Scripts\Navigation.cs" />
      <Compile Include="Assets\Scripts\Product.cs" />
      <Compile Include="Assets\Scripts\Stock.cs" />
      <Compile Include="Assets\Scripts\Store.cs" />
-     <Compile Include="Assets\Scripts\StoreData.cs" />
+     <Compile Include="Assets\Scripts\StoreKnowledge.cs" />
+     <Compile Include="Assets\Scripts\Vision.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>C:/Users/Jorge López Natal/Desktop/Universidad/4º Curso/1er Cuatrimestre/CP/Recuperacion/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>

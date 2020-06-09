@@ -12,8 +12,9 @@ GameObject:
   - component: {fileID: 6851291028472634168}
   - component: {fileID: 6851291028472634169}
   - component: {fileID: 6851291028472634174}
-  - component: {fileID: 6851291028472634175}
+  - component: {fileID: 2166266990921047706}
   - component: {fileID: 2974319388416761249}
+  - component: {fileID: 6851291028472634175}
   m_Layer: 0
   m_Name: BaseClient
   m_TagString: Untagged
@@ -93,7 +94,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6851291028472634175
+--- !u!114 &2166266990921047706
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,15 +103,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6851291028472634172}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a5581f33dc57254da5a6eaa78cb2803, type: 3}
+  m_Script: {fileID: 11500000, guid: 666a8678d6ffeea4e8aa7ec1546f520f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 0
-  hasDestination: 0
-  destination: {fileID: 0}
-  destinationPosition: {x: 0, y: 0, z: 0}
-  direction: {x: 0, y: 0}
-  t: {fileID: 0}
+  currentState: 0
+  resources: {fileID: 0}
+  navigation: {fileID: 0}
+  currentFloor: 0
 --- !u!114 &2974319388416761249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,3 +125,20 @@ MonoBehaviour:
   wantedProducts: []
   wantedAmount: 
   money: 0
+--- !u!114 &6851291028472634175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6851291028472634172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a5581f33dc57254da5a6eaa78cb2803, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementSpeed: 0
+  hasDestination: 0
+  hasReachedItsDestination: 0
+  destination: {x: 0, y: 0}
+  direction: {x: 0, y: 0}

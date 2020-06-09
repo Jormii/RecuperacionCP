@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class Mall
 {
+    public const float MIN_X = -12.3f;
+    public const float MAX_X = 12.3f;
+
     public static readonly Mall INSTANCE = new Mall();
-    public HashSet<Store> allStores;
+    public Dictionary<int, Store> allStores;
     public Dictionary<int, List<Store>> storesInFloors;
     public Dictionary<Product, List<Store>> storesThatSellProduct;
 
@@ -13,7 +16,7 @@ public class Mall
 
     public Mall()
     {
-        allStores = new HashSet<Store>();
+        allStores = new Dictionary<int, Store>();
         storesInFloors = new Dictionary<int, List<Store>>();
         storesThatSellProduct = new Dictionary<Product, List<Store>>();
 
@@ -22,23 +25,22 @@ public class Mall
 
     public bool AddStore(Store store)
     {
-        if (allStores.Contains(store))
+        if (allStores.ContainsKey(store.ID))
         {
             return false;
         }
 
-        StoreData data = store.storeData;
-        allStores.Add(store);
+        allStores.Add(store.ID, store);
 
-        if (storesInFloors.ContainsKey(data.floor))
+        if (storesInFloors.ContainsKey(store.floor))
         {
-            storesInFloors[data.floor].Add(store);
+            storesInFloors[store.floor].Add(store);
         }
         else
         {
             List<Store> stores = new List<Store>();
             stores.Add(store);
-            storesInFloors.Add(data.floor, stores);
+            storesInFloors.Add(store.floor, stores);
         }
 
         Stock stock = store.stock;
@@ -58,6 +60,11 @@ public class Mall
         }
 
         return true;
+    }
+
+    public Store GetStoreByID(int id)
+    {
+        return allStores[id];
     }
 
 }
