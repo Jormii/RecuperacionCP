@@ -54,6 +54,16 @@ public class Store : MonoBehaviour
         return stock.GetProductsWanted(resources);
     }
 
+    public bool NeedsReStocking()
+    {
+        return stock.NeedsReStocking();
+    }
+
+    public Dictionary<Product, int> GetStockToRefill()
+    {
+        return stock.GetStockToRefill();
+    }
+
     private static int GetStoreID()
     {
         return Interlocked.Increment(ref idCounter);

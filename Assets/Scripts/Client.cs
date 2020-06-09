@@ -19,7 +19,7 @@ public class Client : Human
     private ClientKnowledge knowledge;
     private ClientResources resources;
 
-    protected new void Start()
+    protected override void Start()
     {
         base.Start();
 
@@ -55,9 +55,9 @@ public class Client : Human
             case ClientState.WanderingAround:
                 WanderingAround();
                 break;
-            default:
-            case ClientState.Init:
             case ClientState.Error:
+            case ClientState.Init:
+            default:
                 Debug.LogErrorFormat("Something wrong happened in client {0}'s state machine. Destroying", name);
                 DeInit();
                 Destroy(gameObject);
@@ -163,8 +163,6 @@ public class Client : Human
     {
         Debug.LogFormat("Client {0} is leaving the mall", name);
 
-        // TODO: Use knowledge
-        /*
         if (!knowledge.KnowsAnyExit())
         {
             // THIS SHOULDN'T HAPPEN
@@ -172,11 +170,9 @@ public class Client : Human
             WanderAround();
             return;
         }
-        */
 
         Vector2 clientPosition = transform.position;
-        // ExitKnowledge closestExit = knowledge.GetClosestExit(clientPosition, currentFloor);
-        ExitKnowledge closestExit = new ExitKnowledge(0, 0, Mall.INSTANCE.exit.transform.position); // TODO: Use knowledge
+        ExitKnowledge closestExit = knowledge.GetClosestExit(clientPosition, currentFloor);
         if (closestExit.FLOOR != currentFloor)
         {
             Vector2 stairsPosition = new Vector2();   // TODO: Obtain stairs position

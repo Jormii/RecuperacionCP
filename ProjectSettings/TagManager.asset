@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Store
   - Exit
+  - Client
+  - Employee
   layers:
   - Default
   - TransparentFX

@@ -15,7 +15,8 @@ public class ClientKnowledge
         this.knownExits = new Dictionary<int, ExitKnowledge>();
 
         // TODO: Remove this
-        knownExits.Add(0, new ExitKnowledge(0, 0, Mall.INSTANCE.exit.transform.position));
+        GameObject exit = GameObject.FindGameObjectWithTag("Exit");
+        knownExits.Add(0, new ExitKnowledge(0, 0, exit.transform.position));
     }
 
     #region Store Knowledge

@@ -12,7 +12,7 @@ public abstract class Human : MonoBehaviour, IStateMachine
     private IAction currentAction;
     private bool executingQueue;
 
-    protected void Start()
+    protected virtual void Start()
     {
         vision = GetComponent<Vision>();
         navigation = GetComponent<Navigation>();
@@ -38,6 +38,13 @@ public abstract class Human : MonoBehaviour, IStateMachine
         currentAction.Execute();
 
         executingQueue = true;
+    }
+
+    public void StopExecutingActionQueue()
+    {
+        actions.Clear();
+        currentAction.Cancel();
+        executingQueue = false;
     }
 
     public virtual void OnActionCompleted(IAction action)

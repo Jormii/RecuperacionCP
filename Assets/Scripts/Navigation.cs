@@ -28,8 +28,8 @@ public class Navigation : MonoBehaviour
 
         if (ReachedItsDestination())
         {
-            human.UponReachingDestination();
             thisComponent.enabled = false;
+            human.UponReachingDestination();
         }
     }
 
@@ -55,6 +55,11 @@ public class Navigation : MonoBehaviour
         destination = position;
         direction = (position - new Vector2(transform.position.x, transform.position.y)).normalized;
         direction = (direction.x >= 0) ? Vector2.right : Vector2.left;
+    }
+
+    public void StopMoving()
+    {
+        thisComponent.enabled = false;
     }
 
     #region Properties

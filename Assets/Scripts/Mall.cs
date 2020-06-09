@@ -11,16 +11,16 @@ public class Mall
     public Dictionary<int, Store> allStores;
     public Dictionary<int, List<Store>> storesInFloors;
     public Dictionary<Product, List<Store>> storesThatSellProduct;
-
-    public GameObject exit; // TODO: Remove
+    public Dictionary<int, LocationData> exits;
+    public Dictionary<int, LocationData> storages;
 
     public Mall()
     {
         allStores = new Dictionary<int, Store>();
         storesInFloors = new Dictionary<int, List<Store>>();
         storesThatSellProduct = new Dictionary<Product, List<Store>>();
-
-        exit = GameObject.FindGameObjectWithTag("Exit");
+        exits = new Dictionary<int, LocationData>();
+        storages = new Dictionary<int, LocationData>();
     }
 
     public bool AddStore(Store store)
@@ -70,6 +70,36 @@ public class Mall
     public Store GetStoreByID(int id)
     {
         return allStores[id];
+    }
+
+    public bool AddExit(Exit exit)
+    {
+        if (exits.ContainsKey(exit.ID))
+        {
+            return false;
+        }
+
+        LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
+        exits.Add(exit.ID, locationData);
+        return true;
+    }
+
+    public bool AddStorage(Storage storage)
+    {
+        if (storages.ContainsKey(storage.ID))
+        {
+            return false;
+        }
+
+        LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
+        storages.Add(storage.ID, locationData);
+        return true;
+    }
+
+    public LocationData GetClosestStorage(LocationData location)
+    {
+        // TODO
+        return new List<LocationData>(storages.Values)[0];
     }
 
 }

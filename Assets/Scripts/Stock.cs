@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class Stock : MonoBehaviour
 {
+    private const int MAX_STOCK_MARGIN = 5;
+
     [SerializeField] private List<Product> productsInStock = new List<Product>();
     [SerializeField] private List<int> initialStock = new List<int>();
 
     private Dictionary<Product, int> productsPrice;
     private Dictionary<Product, int> productsStock;
+    private Dictionary<Product, int> maximumStock;
 
     private void Awake()
     {
@@ -19,6 +22,7 @@ public class Stock : MonoBehaviour
     {
         productsPrice = new Dictionary<Product, int>();
         productsStock = new Dictionary<Product, int>();
+        maximumStock = new Dictionary<Product, int>();
 
         if (productsInStock.Count != initialStock.Count)
         {
@@ -35,6 +39,7 @@ public class Stock : MonoBehaviour
 
             productsPrice.Add(p, price);
             productsStock.Add(p, stock);
+            maximumStock.Add(p, stock + MAX_STOCK_MARGIN);
         }
 
         productsInStock.Clear();
@@ -99,6 +104,42 @@ public class Stock : MonoBehaviour
     public int GetStockOfProduct(Product product)
     {
         return productsStock[product];
+    }
+
+    public bool NeedsReStocking()
+    {
+        // TODO: Ideally add a margin to not refill if only one product is sold
+        foreach (KeyValuePair<Product, int> entry in productsStock)
+        {
+            Product product = entry.Key;
+            int currentStock = entry.Value;
+            int maxStock = maximumStock[product];
+
+            if (currentStock < maxStock)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Dictionary<Product, int> GetStockToRefill()
+    {
+        Dictionary<Product, int> refill = new Dictionary<Product, int>();
+        foreach (KeyValuePair<Product, int> entry in productsStock)
+        {
+            Product product = entry.Key;
+            int currentStock = entry.Value;
+            int maxStock = maximumStock[product];
+
+            if (currentStock < maxStock)
+            {
+                refill.Add(product, maxStock - currentStock);
+            }
+        }
+
+        return refill;
     }
 
 }

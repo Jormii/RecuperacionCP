@@ -9,6 +9,7 @@ public class MoveAction : IAction
         Store,
         Stairs,
         Exit,
+        Storage,
         NoDestination
     }
 
@@ -26,6 +27,11 @@ public class MoveAction : IAction
     public void Execute()
     {
         navigation.MoveTo(position);
+    }
+
+    public void Cancel()
+    {
+        navigation.StopMoving();
     }
 
     public Destination GetDestination
