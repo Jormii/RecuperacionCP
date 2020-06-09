@@ -266,6 +266,15 @@ public class Client : Human
         if (!knowledge.KnowsStore(store))
         {
             knowledge.CreateKnowledge(store);
+
+            if (currentState == ClientState.WanderingAround)
+            {
+                List<Product> products = store.stock.GetProductsWanted(resources);
+                if (products.Count != 0)
+                {
+                    GoToStore(knowledge.GetKnowledge(store));
+                }
+            }
         }
         else
         {

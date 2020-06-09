@@ -91,7 +91,20 @@ public class ClientResources : MonoBehaviour
 
     public bool ProductIsInShoppingList(Product product)
     {
-        return shoppingList.ContainsKey(product);
+        if (!shoppingList.ContainsKey(product))
+        {
+            return false;
+        }
+
+        return GetAmountLeftToBuy(product) != 0;
+    }
+
+    public int GetAmountLeftToBuy(Product product)
+    {
+        int wanted = shoppingList[product];
+        int bought = productsBought[product];
+
+        return wanted - bought;
     }
 
 }
