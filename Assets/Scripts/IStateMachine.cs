@@ -4,8 +4,6 @@ using UnityEngine;
 
 public interface IStateMachine
 {
-
     void Init();
     void DeInit();
-
 }

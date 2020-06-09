@@ -618,6 +618,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: maxDistance
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: viewDistance
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 3880373701032609652, guid: d7014f799ffb7044bb27674f5e3b4584,
         type: 3}
       propertyPath: m_Name
@@ -692,16 +700,6 @@ PrefabInstance:
         type: 3}
       propertyPath: hasDestination
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 641115916981131770, guid: d7014f799ffb7044bb27674f5e3b4584,
-        type: 3}
-      propertyPath: maxDistance
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 641115916981131770, guid: d7014f799ffb7044bb27674f5e3b4584,
-        type: 3}
-      propertyPath: viewDistance
-      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2567995399091145310, guid: d7014f799ffb7044bb27674f5e3b4584, type: 3}
@@ -779,5 +777,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 78369030480caca408903ec462a8f03d, type: 2}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: productsInStock.Array.data[0]
+      value: 
+      objectReference: {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664,
+        type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67de43ace692c85469c03963584312df, type: 3}

@@ -5,8 +5,7 @@ using System;
 
 public class Vision : MonoBehaviour
 {
-
-    public float viewDistance;
+    [SerializeField] private float viewDistance = 2.5f;
     private Human human;
     private Navigation navigation;
 
@@ -18,9 +17,10 @@ public class Vision : MonoBehaviour
 
     void Update()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, navigation.direction, out hit, viewDistance))
+        RaycastHit[] hits = Physics.RaycastAll(transform.position, navigation.Direction, viewDistance);
+        for (int i = 0; i < hits.Length; ++i)
         {
+            RaycastHit hit = hits[i];
             GameObject gameObjectHit = hit.transform.gameObject;
             Store store = gameObjectHit.GetComponent<Store>();
             if (store)
@@ -40,8 +40,8 @@ public class Vision : MonoBehaviour
         Gizmos.color = Color.green;
         Ray ray = new Ray();
         ray.origin = transform.position;
-        ray.direction = navigation.direction;
-        Gizmos.DrawLine(transform.position, transform.position + (Vector3)(viewDistance * navigation.direction));
+        ray.direction = navigation.Direction;
+        Gizmos.DrawLine(transform.position, transform.position + (Vector3)(viewDistance * ray.direction));
     }
 
 }

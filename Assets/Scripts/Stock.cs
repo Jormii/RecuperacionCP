@@ -33,4 +33,41 @@ public class Stock : MonoBehaviour
         }
     }
 
+    public void Sell(Product product, int amount)
+    {
+        productsStock[product] -= amount;
+    }
+
+    public List<Product> GetProductsWanted(ClientResources clientResources)
+    {
+        List<Product> products = new List<Product>();
+        foreach (KeyValuePair<Product, int> entry in productsStock)
+        {
+            Product product = entry.Key;
+            int amount = entry.Value;
+
+            if (amount == 0)
+            {
+                continue;
+            }
+
+            if (clientResources.ProductIsInShoppingList(product))
+            {
+                products.Add(product);
+            }
+        }
+
+        return products;
+    }
+
+    public int GetPriceOfProduct(Product product)
+    {
+        return productsPrice[product];
+    }
+
+    public int GetStockOfProduct(Product product)
+    {
+        return productsStock[product];
+    }
+
 }

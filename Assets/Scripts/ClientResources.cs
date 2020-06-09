@@ -5,13 +5,20 @@ using System;
 
 public class ClientResources : MonoBehaviour
 {
-    [SerializeField] public List<Product> wantedProducts;
-    [SerializeField] public List<int> wantedAmount;
-    public int money;
+    [SerializeField] private List<Product> wantedProducts;
+    [SerializeField] private List<int> wantedAmount;
+    [SerializeField] private int money;
 
     private Dictionary<Product, int> shoppingList;
+    private Dictionary<Product, int> productsBought;
+    private int amountLeftToBuy = 0;
 
     private void Start()
+    {
+        CreateShoppingList();
+    }
+
+    private void CreateShoppingList()
     {
         int nProducts = wantedProducts.Count;
         int mAmount = wantedAmount.Count;
@@ -24,41 +31,38 @@ public class ClientResources : MonoBehaviour
         }
 
         shoppingList = new Dictionary<Product, int>();
+        productsBought = new Dictionary<Product, int>();
         for (int i = 0; i < nProducts; ++i)
         {
             Product p = wantedProducts[i];
             int a = wantedAmount[i];
 
             shoppingList.Add(p, a);
+            productsBought.Add(p, 0);
+            amountLeftToBuy += a;
         }
+
+        wantedProducts.Clear();
+        wantedAmount.Clear();
+        wantedProducts = null;
+        wantedAmount = null;
     }
 
     public bool ThereAreThingsLeftToBuy()
     {
-        bool thingsLeft = false;
-        foreach (KeyValuePair<Product, int> entry in shoppingList)
-        {
-            Product product = entry.Key;
-            int amount = entry.Value;
-
-            if (amount != 0)
-            {
-                thingsLeft = true;
-            }
-        }
-
-        return thingsLeft;
+        return amountLeftToBuy != 0;
     }
 
     public List<Product> GetProductsNotBoughtYet()
     {
         List<Product> products = new List<Product>();
-        foreach (KeyValuePair<Product, int> entry in shoppingList)
+        foreach (KeyValuePair<Product, int> entry in productsBought)
         {
             Product product = entry.Key;
-            int amount = entry.Value;
+            int amountBought = entry.Value;
+            int amountWanted = shoppingList[product];
 
-            if (amount != 0)
+            if ((amountWanted - amountBought) != 0)
             {
                 products.Add(product);
             }
@@ -69,24 +73,25 @@ public class ClientResources : MonoBehaviour
 
     public int HowManyCanAfford(Product product, int price, int stock)
     {
-        int wantsToBuy = (int)shoppingList[product];
+        int wantsToBuy = shoppingList[product] - productsBought[product];
         int canBuy = Math.Min((int)(money / price), stock);
 
-        int actualBuy = Math.Min(wantsToBuy, canBuy);
-        return actualBuy;
+        int canAfford = Math.Min(wantsToBuy, canBuy);
+        return canAfford;
     }
 
-    public void Buy(Product product, int price, int stock)
+    public void Buy(Product product, int amount, int price)
     {
-        int amount = HowManyCanAfford(product, price, stock);
         int moneySpent = amount * price;
 
         money -= moneySpent;
-        shoppingList[product] -= amount;
+        productsBought[product] += amount;
+        amountLeftToBuy -= amount;
+    }
 
-        // TODO: Remove. Debug purposes
-        int index = wantedProducts.IndexOf(product);
-        wantedAmount[index] -= amount;
+    public bool ProductIsInShoppingList(Product product)
+    {
+        return shoppingList.ContainsKey(product);
     }
 
 }

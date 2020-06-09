@@ -4,35 +4,36 @@ using UnityEngine;
 
 public class Navigation : MonoBehaviour
 {
-    public float movementSpeed;
+    [SerializeField] private float movementSpeed;
 
-    public bool hasDestination;
-    public bool hasReachedItsDestination;
-    public Vector2 destination;
-    public Vector2 direction;
+    private Human human;
+    private Vector2 destination;
+    private Vector2 direction;
+    private Navigation thisComponent;
+
+    private void Start()
+    {
+        human = GetComponent<Human>();
+        thisComponent = GetComponent<Navigation>();
+    }
 
     private void Update()
     {
-        if (!hasDestination)
-        {
-            return;
-        }
-
-        // Can move only in X axis
+        // Can move only in the X axis
         Vector2 pos = transform.position;
         float newX = pos.x + Time.deltaTime * movementSpeed * direction.x;
         Vector3 newPos = new Vector3(newX, pos.y, 0f);
 
         transform.position = newPos;
 
-        if (ReachedDestination())
+        if (ReachedItsDestination())
         {
-            hasDestination = false;
-            hasReachedItsDestination = true;
+            human.UponReachingDestination();
+            thisComponent.enabled = false;
         }
     }
 
-    public bool ReachedDestination()
+    public bool ReachedItsDestination()
     {
         float x = transform.position.x;
         float desX = destination.x;
@@ -47,20 +48,22 @@ public class Navigation : MonoBehaviour
         }
     }
 
-    public bool MoveTo(Vector2 position)
+    public void MoveTo(Vector2 position)
     {
-        if (hasDestination)
-        {
-            Debug.Log("Already moving somewhere else");
-            return false;
-        }
+        thisComponent.enabled = true;
 
-        hasDestination = true;
-        hasReachedItsDestination = false;
         destination = position;
         direction = (position - new Vector2(transform.position.x, transform.position.y)).normalized;
         direction = (direction.x >= 0) ? Vector2.right : Vector2.left;
-        return true;
     }
+
+    #region Properties
+
+    public Vector2 Direction
+    {
+        get => direction;
+    }
+
+    #endregion
 
 }

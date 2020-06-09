@@ -119,6 +119,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd7f96bead0b99e4598d05dd245f1869, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  productsInStock:
-  - {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664, type: 3}
-  initialStock: 0a000000
+  productsInStock: []
+  initialStock: 
