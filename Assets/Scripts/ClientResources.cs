@@ -13,12 +13,12 @@ public class ClientResources : MonoBehaviour
     private Dictionary<Product, int> productsBought;
     private int amountLeftToBuy = 0;
 
-    private void Start()
+    private void Awake()
     {
-        CreateShoppingList();
+        InitializeShoppingList();
     }
 
-    private void CreateShoppingList()
+    private void InitializeShoppingList()
     {
         int nProducts = wantedProducts.Count;
         int mAmount = wantedAmount.Count;

@@ -4,12 +4,17 @@ using UnityEngine;
 
 public class MoveToStoreAction : MoveAction
 {
-    public StoreKnowledge knowledge;
+    private StoreKnowledge knowledge;
 
     public MoveToStoreAction(Navigation navigation, StoreKnowledge knowledge) :
         base(navigation, knowledge.POSITION, Destination.Store)
     {
         this.knowledge = knowledge;
+    }
+
+    public StoreKnowledge Knowledge
+    {
+        get => knowledge;
     }
 
 }

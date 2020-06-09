@@ -8,8 +8,9 @@ public class Store : MonoBehaviour
     private static int idCounter = 0;
 
     public readonly int ID = GetStoreID();
-    public int floor;
-    public Stock stock;
+
+    [SerializeField] private int floor;
+    private Stock stock;
 
     private void Start()
     {
@@ -20,7 +21,37 @@ public class Store : MonoBehaviour
 
     public void Sell(Product product, int amount)
     {
-        // TODO
+        stock.Sell(product, amount);
+    }
+
+    public List<Product> GetProductsInStock()
+    {
+        return stock.GetProducts();
+    }
+
+    public Dictionary<Product, int> GetProductsPrices()
+    {
+        return stock.GetProductsPrices();
+    }
+
+    public Dictionary<Product, int> GetProductsStocks()
+    {
+        return stock.GetProductsStocks();
+    }
+
+    public int GetPriceOfProduct(Product product)
+    {
+        return stock.GetPriceOfProduct(product);
+    }
+
+    public int GetStockOfProduct(Product product)
+    {
+        return stock.GetStockOfProduct(product);
+    }
+
+    public List<Product> GetProductsWanted(ClientResources resources)
+    {
+        return stock.GetProductsWanted(resources);
     }
 
     private static int GetStoreID()
@@ -32,5 +63,14 @@ public class Store : MonoBehaviour
     {
         return ID;
     }
+
+    #region Properties
+
+    public int Floor
+    {
+        get => floor;
+    }
+
+    #endregion
 
 }

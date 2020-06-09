@@ -4,15 +4,18 @@ using UnityEngine;
 
 public class ClientKnowledge
 {
-    public Dictionary<int, StoreKnowledge> knownStores;
-    public Dictionary<Product, List<StoreKnowledge>> knownStoresByProduct;
-    public Dictionary<int, ExitKnowledge> knownExits;
+    private Dictionary<int, StoreKnowledge> knownStores;
+    private Dictionary<Product, List<StoreKnowledge>> knownStoresByProduct;
+    private Dictionary<int, ExitKnowledge> knownExits;
 
     public ClientKnowledge()
     {
         this.knownStores = new Dictionary<int, StoreKnowledge>();
         this.knownStoresByProduct = new Dictionary<Product, List<StoreKnowledge>>();
         this.knownExits = new Dictionary<int, ExitKnowledge>();
+
+        // TODO: Remove this
+        knownExits.Add(0, new ExitKnowledge(0, 0, Mall.INSTANCE.exit.transform.position));
     }
 
     #region Store Knowledge
@@ -29,7 +32,7 @@ public class ClientKnowledge
 
     public void CreateKnowledge(Store store)
     {
-        StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.floor, store.transform.position);
+        StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Floor, store.transform.position);
         knownStores.Add(store.ID, knowledge);
 
         UpdateKnowledge(store);
@@ -37,14 +40,14 @@ public class ClientKnowledge
 
     public void UpdateKnowledge(Store store)
     {
-        knownStores[store.ID].Update(store);
+        StoreKnowledge knowledge = knownStores[store.ID];
+        knowledge.Update(store);
 
-        foreach (Product product in store.stock.productsStock.Keys)
+        foreach (Product product in store.GetProductsInStock())
         {
             if (knownStoresByProduct.ContainsKey(product))
             {
                 List<StoreKnowledge> knowledges = knownStoresByProduct[product];
-                StoreKnowledge knowledge = GetKnowledge(store);
                 if (!knowledges.Contains(knowledge))
                 {
                     knowledges.Add(knowledge);
@@ -53,8 +56,6 @@ public class ClientKnowledge
             else
             {
                 List<StoreKnowledge> list = new List<StoreKnowledge>();
-                StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.floor, store.transform.position);
-
                 list.Add(knowledge);
                 knownStoresByProduct.Add(product, list);
             }
@@ -70,6 +71,7 @@ public class ClientKnowledge
     public StoreKnowledge GetStoreThatSellsProduct(Product product)
     {
         List<StoreKnowledge> stores = knownStoresByProduct[product];
+        // TODO: Implement some sort of filter
         return stores[0];
     }
 
@@ -84,8 +86,8 @@ public class ClientKnowledge
 
     public ExitKnowledge GetClosestExit(Vector2 position, int floor)
     {
-        // TODO
-        return new ExitKnowledge(-1, 0, position);
+        // TODO: Implement search by distance
+        return knownExits[0];
     }
 
     #endregion

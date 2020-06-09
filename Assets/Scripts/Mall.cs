@@ -32,21 +32,21 @@ public class Mall
 
         allStores.Add(store.ID, store);
 
-        if (storesInFloors.ContainsKey(store.floor))
+        if (storesInFloors.ContainsKey(store.Floor))
         {
-            storesInFloors[store.floor].Add(store);
+            storesInFloors[store.Floor].Add(store);
         }
         else
         {
             List<Store> stores = new List<Store>();
             stores.Add(store);
-            storesInFloors.Add(store.floor, stores);
+            storesInFloors.Add(store.Floor, stores);
         }
 
-        Stock stock = store.stock;
-        for (int i = 0; i < stock.productsInStock.Count; ++i)
+        List<Product> productsInStock = store.GetProductsInStock();
+        for (int i = 0; i < productsInStock.Count; ++i)
         {
-            Product p = stock.productsInStock[i];
+            Product p = productsInStock[i];
             if (storesThatSellProduct.ContainsKey(p))
             {
                 storesThatSellProduct[p].Add(store);
@@ -60,6 +60,11 @@ public class Mall
         }
 
         return true;
+    }
+
+    public bool ExistsStoreWithID(int id)
+    {
+        return allStores.ContainsKey(id);
     }
 
     public Store GetStoreByID(int id)

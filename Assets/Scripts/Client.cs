@@ -140,13 +140,12 @@ public class Client : Human
 
         currentState = ClientState.Buying;
 
-        Stock stock = store.stock;
-        List<Product> productsClientIsBuying = stock.GetProductsWanted(resources);
+        List<Product> productsClientIsBuying = store.GetProductsWanted(resources);
         for (int i = 0; i < productsClientIsBuying.Count; ++i)
         {
             Product product = productsClientIsBuying[i];
-            int price = stock.GetPriceOfProduct(product);
-            int productStock = stock.GetStockOfProduct(product);
+            int price = store.GetPriceOfProduct(product);
+            int productStock = store.GetStockOfProduct(product);
             int amount = resources.HowManyCanAfford(product, price, productStock);
             if (amount == 0)
             {
@@ -154,7 +153,7 @@ public class Client : Human
             }
 
             resources.Buy(product, amount, price);
-            stock.Sell(product, amount);
+            store.Sell(product, amount);
 
             Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, product.name);
         }
@@ -239,14 +238,14 @@ public class Client : Human
         if (lastAction is MoveToStoreAction)
         {
             MoveToStoreAction moveToStoreAction = lastAction as MoveToStoreAction;
-            Store store = Mall.INSTANCE.GetStoreByID(moveToStoreAction.knowledge.STORE_ID);
+            Store store = Mall.INSTANCE.GetStoreByID(moveToStoreAction.Knowledge.STORE_ID);
             BuyAtStore(store);
             currentState = ClientState.Evaluating;  // TODO: This should be driven by animations
         }
         else if (lastAction is MoveAction)
         {
             MoveAction moveAction = lastAction as MoveAction;
-            switch (moveAction.destination)
+            switch (moveAction.GetDestination)
             {
                 case MoveAction.Destination.Stairs:
                     // TODO
@@ -269,7 +268,7 @@ public class Client : Human
 
             if (currentState == ClientState.WanderingAround)
             {
-                List<Product> products = store.stock.GetProductsWanted(resources);
+                List<Product> products = store.GetProductsWanted(resources);
                 if (products.Count != 0)
                 {
                     GoToStore(knowledge.GetKnowledge(store));

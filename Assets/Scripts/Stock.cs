@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class Stock : MonoBehaviour
 {
-    public List<Product> productsInStock = new List<Product>();
-    public List<int> initialStock = new List<int>();
+    [SerializeField] private List<Product> productsInStock = new List<Product>();
+    [SerializeField] private List<int> initialStock = new List<int>();
 
-    public Dictionary<Product, int> productsPrice;
-    public Dictionary<Product, int> productsStock;
+    private Dictionary<Product, int> productsPrice;
+    private Dictionary<Product, int> productsStock;
 
-    void Start()
+    private void Awake()
+    {
+        InitializeStockAndPrices();
+    }
+
+    private void InitializeStockAndPrices()
     {
         productsPrice = new Dictionary<Product, int>();
         productsStock = new Dictionary<Product, int>();
@@ -25,12 +30,17 @@ public class Stock : MonoBehaviour
         for (int i = 0; i < productsInStock.Count; ++i)
         {
             Product p = productsInStock[i];
-            int price = p.defaultPrice;
+            int price = p.DefaultPrice;
             int stock = initialStock[i];
 
             productsPrice.Add(p, price);
             productsStock.Add(p, stock);
         }
+
+        productsInStock.Clear();
+        initialStock.Clear();
+        productsInStock = null;
+        initialStock = null;
     }
 
     public void Sell(Product product, int amount)
@@ -38,6 +48,7 @@ public class Stock : MonoBehaviour
         productsStock[product] -= amount;
     }
 
+    // TODO: It's weird that stock needs client's resources
     public List<Product> GetProductsWanted(ClientResources clientResources)
     {
         List<Product> products = new List<Product>();
@@ -58,6 +69,26 @@ public class Stock : MonoBehaviour
         }
 
         return products;
+    }
+
+    public List<Product> GetProducts()
+    {
+        return new List<Product>(productsStock.Keys);
+    }
+
+    public Dictionary<Product, int> GetProductsPrices()
+    {
+        return new Dictionary<Product, int>(productsPrice);
+    }
+
+    public Dictionary<Product, int> GetProductsStocks()
+    {
+        return new Dictionary<Product, int>(productsStock);
+    }
+
+    public bool SellsProduct(Product product)
+    {
+        return productsStock.ContainsKey(product);
     }
 
     public int GetPriceOfProduct(Product product)

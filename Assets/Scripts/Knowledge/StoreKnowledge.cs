@@ -7,7 +7,7 @@ public struct StoreKnowledge
     public readonly int STORE_ID;
     public readonly int FLOOR;
     public readonly Vector2 POSITION;
-    public Dictionary<Product, int> productsOnSale;
+    private Dictionary<Product, int> productsOnSale;
 
     public StoreKnowledge(int storeID, int floor, Vector2 position)
     {
@@ -22,7 +22,17 @@ public struct StoreKnowledge
         return productsOnSale.ContainsKey(product);
     }
 
-    public void UpdateProduct(Product product, int price)
+    public void Update(Store store)
+    {
+        foreach (KeyValuePair<Product, int> entry in store.GetProductsPrices())
+        {
+            Product product = entry.Key;
+            int price = entry.Value;
+            UpdateProduct(product, price);
+        }
+    }
+
+    private void UpdateProduct(Product product, int price)
     {
         if (KnowsThatSellsProduct(product))
         {
@@ -31,16 +41,6 @@ public struct StoreKnowledge
         else
         {
             productsOnSale.Add(product, price);
-        }
-    }
-
-    public void Update(Store store)
-    {
-        foreach (KeyValuePair<Product, int> entry in store.stock.productsPrice)
-        {
-            Product product = entry.Key;
-            int price = entry.Value;
-            UpdateProduct(product, price);
         }
     }
 

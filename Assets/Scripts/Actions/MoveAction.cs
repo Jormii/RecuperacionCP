@@ -12,9 +12,9 @@ public class MoveAction : IAction
         NoDestination
     }
 
-    public Navigation navigation;
-    public Vector2 position;
-    public Destination destination;
+    private Navigation navigation;
+    private Vector2 position;
+    private Destination destination;
 
     public MoveAction(Navigation navigation, Vector2 position, Destination destination)
     {
@@ -26,6 +26,11 @@ public class MoveAction : IAction
     public void Execute()
     {
         navigation.MoveTo(position);
+    }
+
+    public Destination GetDestination
+    {
+        get => destination;
     }
 
 }
