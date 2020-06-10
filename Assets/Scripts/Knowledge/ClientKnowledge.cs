@@ -5,18 +5,18 @@ using UnityEngine;
 public class ClientKnowledge
 {
     private Dictionary<int, StoreKnowledge> knownStores;
-    private Dictionary<Product, List<StoreKnowledge>> knownStoresByProduct;
+    private Dictionary<int, List<StoreKnowledge>> knownStoresByProduct;
     private Dictionary<int, ExitKnowledge> knownExits;
 
     public ClientKnowledge()
     {
         this.knownStores = new Dictionary<int, StoreKnowledge>();
-        this.knownStoresByProduct = new Dictionary<Product, List<StoreKnowledge>>();
+        this.knownStoresByProduct = new Dictionary<int, List<StoreKnowledge>>();
         this.knownExits = new Dictionary<int, ExitKnowledge>();
 
         // TODO: Remove this
         GameObject exit = GameObject.FindGameObjectWithTag("Exit");
-        knownExits.Add(0, new ExitKnowledge(0, 0, exit.transform.position));
+        knownExits.Add(0, new ExitKnowledge(0, new LocationData(exit.transform.position, 0)));
     }
 
     #region Store Knowledge
@@ -33,7 +33,7 @@ public class ClientKnowledge
 
     public void CreateKnowledge(Store store)
     {
-        StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Floor, store.transform.position);
+        StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Location);
         knownStores.Add(store.ID, knowledge);
 
         UpdateKnowledge(store);
@@ -44,11 +44,15 @@ public class ClientKnowledge
         StoreKnowledge knowledge = knownStores[store.ID];
         knowledge.Update(store);
 
-        foreach (Product product in store.GetProductsInStock())
+        Stock stock = store.StoreStock;
+        List<StockData> productsSold = stock.StockSold;
+        for (int i = 0; i < productsSold.Count; ++i)
         {
-            if (knownStoresByProduct.ContainsKey(product))
+            StockData productStock = productsSold[i];
+            int productID = productStock.Product.ID;
+            if (knownStoresByProduct.ContainsKey(productID))
             {
-                List<StoreKnowledge> knowledges = knownStoresByProduct[product];
+                List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
                 if (!knowledges.Contains(knowledge))
                 {
                     knowledges.Add(knowledge);
@@ -58,20 +62,20 @@ public class ClientKnowledge
             {
                 List<StoreKnowledge> list = new List<StoreKnowledge>();
                 list.Add(knowledge);
-                knownStoresByProduct.Add(product, list);
+                knownStoresByProduct.Add(productID, list);
             }
 
         }
     }
 
-    public bool KnowsStoreThatSellsProduct(Product product)
+    public bool KnowsStoreThatSellsProduct(int productID)
     {
-        return knownStoresByProduct.ContainsKey(product);
+        return knownStoresByProduct.ContainsKey(productID);
     }
 
-    public StoreKnowledge GetStoreThatSellsProduct(Product product)
+    public StoreKnowledge GetStoreThatSellsProduct(int productID)
     {
-        List<StoreKnowledge> stores = knownStoresByProduct[product];
+        List<StoreKnowledge> stores = knownStoresByProduct[productID];
         // TODO: Implement some sort of filter
         return stores[0];
     }

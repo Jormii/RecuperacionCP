@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+[RequireComponent(typeof(Human))]
+[RequireComponent(typeof(Navigation))]
 public class Vision : MonoBehaviour
 {
+    private const float VISION_TICK = 0.5f;
+
     [SerializeField] private float viewDistance = 2.5f;
     private Human human;
     private Navigation navigation;
@@ -13,11 +17,11 @@ public class Vision : MonoBehaviour
     {
         human = GetComponent<Human>();
         navigation = GetComponent<Navigation>();
+        InvokeRepeating("See", 0f, VISION_TICK);
     }
 
-    void Update()
+    private void See()
     {
-        // TODO: Register what's being seen to avoid unnecessary checkings
         RaycastHit[] hits = Physics.RaycastAll(transform.position, navigation.Direction, viewDistance);
         for (int i = 0; i < hits.Length; ++i)
         {

@@ -16,16 +16,14 @@ public class Employee : Human
     }
 
     [SerializeField] private EmployeeState currentState = EmployeeState.Init;
-    private Dictionary<int, Dictionary<Product, int>> productsToRefill;
-    // private Dictionary<int, Dictionary<Product, int>> productsCarrying;
+    private Dictionary<int, Dictionary<int, int>> productsToRefill;
 
     protected override void Start()
     {
         base.Start();
 
         Init();
-        productsToRefill = new Dictionary<int, Dictionary<Product, int>>();
-        // productsCarrying = new Dictionary<int, Dictionary<Product, int>>();
+        productsToRefill = new Dictionary<int, Dictionary<int, int>>();
     }
 
     private void Update()
@@ -73,7 +71,10 @@ public class Employee : Human
 
     private void WanderingAround()
     {
-        // TODO
+        if (!ExecutingActionQueue)
+        {
+            WanderAround();
+        }
     }
 
     #endregion
@@ -126,7 +127,7 @@ public class Employee : Human
         foreach (int storeID in productsToRefill.Keys)
         {
             Store store = Mall.INSTANCE.GetStoreByID(storeID);
-            StoreKnowledge storeKnowledge = new StoreKnowledge(storeID, store.Floor, store.transform.position);
+            StoreKnowledge storeKnowledge = new StoreKnowledge(storeID, store.Location);
             IAction moveToStoreAction = new MoveToStoreAction(navigation, storeKnowledge);
 
             // TODO: Consider different floors
@@ -143,7 +144,7 @@ public class Employee : Human
 
     public override void Init()
     {
-        WanderAround();
+        currentState = EmployeeState.WanderingAround;
     }
 
     public override void DeInit()
@@ -163,9 +164,9 @@ public class Employee : Human
             Store store = Mall.INSTANCE.GetStoreByID(storeKnowledge.STORE_ID);
 
             Debug.LogFormat("Employee {0} has reached store {1}. Restocking...", name, store);
-            Dictionary<Product, int> restock = productsToRefill[store.ID];
+            Dictionary<int, int> restock = productsToRefill[store.ID];
             productsToRefill.Remove(store.ID);
-            store.ReStock(restock);
+            store.StoreStock.ReStock(restock);
         }
     }
 
@@ -211,9 +212,10 @@ public class Employee : Human
                 return;
             }
 
-            if (store.NeedsReStocking())
+            Stock stock = store.StoreStock;
+            if (stock.NeedsReStocking())
             {
-                Dictionary<Product, int> reStock = store.GetStockToRefill();
+                Dictionary<int, int> reStock = stock.GetProductsToRefill();
                 productsToRefill.Add(store.ID, reStock);
 
                 if (ExecutingActionQueue)

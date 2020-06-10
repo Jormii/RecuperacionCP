@@ -4,22 +4,12 @@ using UnityEngine;
 
 public class Product : MonoBehaviour
 {
-    [SerializeField] private string productName = "Product";
-    [SerializeField] private int defaultPrice = 0;
-
-    public override int GetHashCode()
-    {
-        return productName.GetHashCode();
-    }
+    public readonly int ID = IDProvider.GetID();
+    [SerializeField] private string productName = "ProductName";
 
     public string ProductName
     {
         get => productName;
-    }
-
-    public int DefaultPrice
-    {
-        get => defaultPrice;
     }
 
 }

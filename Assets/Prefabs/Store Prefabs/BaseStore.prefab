@@ -106,7 +106,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   floor: 0
-  stock: {fileID: 0}
 --- !u!114 &4281659451631791640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,5 +118,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd7f96bead0b99e4598d05dd245f1869, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  productsInStock: []
-  initialStock: 
+  initialStock: []

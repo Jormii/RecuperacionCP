@@ -120,8 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d3b7f93c7a5b2640a0b515f0c5fb698, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wantedProducts: []
-  wantedAmount: 
+  initialShoppingList: []
   money: 0
 --- !u!114 &6851291028472634175
 MonoBehaviour:

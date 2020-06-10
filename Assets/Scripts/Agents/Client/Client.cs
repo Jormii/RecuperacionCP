@@ -73,14 +73,14 @@ public class Client : Human
             return;
         }
 
-        List<Product> products = resources.GetProductsNotBoughtYet();
+        List<int> products = resources.GetProductsNotBoughtYet();
 
         bool knowsStore = false;
         int i = 0;
         while (!knowsStore && i < products.Count)
         {
-            Product p = products[i];
-            if (knowledge.KnowsStoreThatSellsProduct(p))
+            int productID = products[i];
+            if (knowledge.KnowsStoreThatSellsProduct(productID))
             {
                 knowsStore = true;
                 continue;
@@ -91,8 +91,8 @@ public class Client : Human
 
         if (knowsStore)
         {
-            Product p = products[i];
-            StoreKnowledge storeKnowledge = knowledge.GetStoreThatSellsProduct(p);
+            int productID = products[i];
+            StoreKnowledge storeKnowledge = knowledge.GetStoreThatSellsProduct(productID);
 
             GoToStore(storeKnowledge);
         }
@@ -117,9 +117,9 @@ public class Client : Human
 
     private void GoToStore(StoreKnowledge storeKnowledge)
     {
-        Debug.LogFormat("Client {0} is going to store {1}", name, storeKnowledge.POSITION);
+        Debug.LogFormat("Client {0} is going to store {1}", name, storeKnowledge.LOCATION.POSITION);
 
-        if (storeKnowledge.FLOOR != currentFloor)
+        if (storeKnowledge.LOCATION.FLOOR != currentFloor)
         {
             // TODO: Create logic to move between floors
             Vector2 stairsPosition = new Vector2();
@@ -140,22 +140,24 @@ public class Client : Human
 
         currentState = ClientState.Buying;
 
-        List<Product> productsClientIsBuying = store.GetProductsWanted(resources);
+        Stock stock = store.StoreStock;
+        List<int> productsClientIsBuying = resources.GetProductsInterestedIn(store);
         for (int i = 0; i < productsClientIsBuying.Count; ++i)
         {
-            Product product = productsClientIsBuying[i];
-            int price = store.GetPriceOfProduct(product);
-            int productStock = store.GetStockOfProduct(product);
-            int amount = resources.HowManyCanAfford(product, price, productStock);
+            int productID = productsClientIsBuying[i];
+            StockData productStock = stock.GetStockOfProduct(productID);
+            int price = productStock.Price;
+            int amountInStock = productStock.CurrentStock;
+            int amount = resources.HowManyCanAfford(productID, price, amountInStock);
             if (amount == 0)
             {
                 continue;
             }
 
-            resources.Buy(product, amount, price);
-            store.Sell(product, amount);
+            resources.Buy(productID, amount, price);
+            store.Sell(productID, amount);
 
-            Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, product.name);
+            Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, productID);
         }
     }
 
@@ -173,14 +175,14 @@ public class Client : Human
 
         Vector2 clientPosition = transform.position;
         ExitKnowledge closestExit = knowledge.GetClosestExit(clientPosition, currentFloor);
-        if (closestExit.FLOOR != currentFloor)
+        if (closestExit.LOCATION.FLOOR != currentFloor)
         {
             Vector2 stairsPosition = new Vector2();   // TODO: Obtain stairs position
             IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
             AddActionToQueue(moveToStairs);
         }
 
-        Vector2 exitPosition = closestExit.POSITION;
+        Vector2 exitPosition = closestExit.LOCATION.POSITION;
         IAction moveToExit = new MoveAction(navigation, exitPosition, MoveAction.Destination.Exit);
         AddActionToQueue(moveToExit);
 
@@ -264,7 +266,7 @@ public class Client : Human
 
             if (currentState == ClientState.WanderingAround)
             {
-                List<Product> products = store.GetProductsWanted(resources);
+                List<int> products = resources.GetProductsInterestedIn(store);
                 if (products.Count != 0)
                 {
                     GoToStore(knowledge.GetKnowledge(store));

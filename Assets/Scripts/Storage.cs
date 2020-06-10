@@ -5,23 +5,18 @@ using System.Threading;
 
 public class Storage : MonoBehaviour
 {
-    private static int idCounter = 0;
-    [SerializeField] private int floor;
+    public readonly int ID = IDProvider.GetID();
 
-    public readonly int ID = GetStorageID();
+    [SerializeField] private int floor;
 
     private void Start()
     {
         Mall.INSTANCE.AddStorage(this);
+        Destroy(GetComponent<Storage>());
     }
 
     public int Floor
     {
         get => floor;
-    }
-
-    private static int GetStorageID()
-    {
-        return Interlocked.Increment(ref idCounter);
     }
 }

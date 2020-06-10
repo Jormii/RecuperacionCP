@@ -6,23 +6,18 @@ using System.Threading;
 public class Exit : MonoBehaviour
 {
 
-    private static int idCounter = 0;
-    [SerializeField] private int floor;
+    public readonly int ID = IDProvider.GetID();
 
-    public readonly int ID = GetExitID();
+    [SerializeField] private int floor;
 
     private void Start()
     {
         Mall.INSTANCE.AddExit(this);
+        Destroy(GetComponent<Exit>());
     }
 
     public int Floor
     {
         get => floor;
-    }
-
-    private static int GetExitID()
-    {
-        return Interlocked.Increment(ref idCounter);
     }
 }

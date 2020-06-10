@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Human))]
 public class Navigation : MonoBehaviour
 {
     public const float DISTANCE_MARGIN = 0.1f;

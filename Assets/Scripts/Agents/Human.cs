@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Vision)), RequireComponent(typeof(Navigation))]
 public abstract class Human : MonoBehaviour, IStateMachine
 {
     protected Vision vision;

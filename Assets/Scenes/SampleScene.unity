@@ -333,7 +333,7 @@ PrefabInstance:
     - target: {fileID: 8037134091720205718, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: m_Name
-      value: DummyStore (1)
+      value: Store Product B
       objectReference: {fileID: 0}
     - target: {fileID: 488310743102910829, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -401,6 +401,27 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8172908664145870548, guid: 247c8064fee1cff498b6c7c046d2b73f,
         type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].product
+      value: 
+      objectReference: {fileID: 8906023044734385014, guid: 38f25904aa071c64bbdce11b7330dca7,
+        type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].price
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].maximumStock
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].currentStock
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67de43ace692c85469c03963584312df, type: 3}
 --- !u!1 &1031801237
@@ -810,7 +831,7 @@ PrefabInstance:
     - target: {fileID: 8037134091720205718, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: m_Name
-      value: DummyStore (2)
+      value: Store Product C
       objectReference: {fileID: 0}
     - target: {fileID: 488310743102910829, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -878,6 +899,27 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8906023044734385014, guid: 38f25904aa071c64bbdce11b7330dca7,
         type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].product
+      value: 
+      objectReference: {fileID: 8172908664145870548, guid: 247c8064fee1cff498b6c7c046d2b73f,
+        type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].price
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].maximumStock
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].currentStock
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67de43ace692c85469c03963584312df, type: 3}
 --- !u!1001 &2931667974197613528
@@ -951,6 +993,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3966935730640290092, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
+        type: 3}
+      propertyPath: movementSpeed
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c7239ffc00bbdba428776fd8bdfdcc9f, type: 3}
@@ -1049,6 +1096,33 @@ PrefabInstance:
       propertyPath: hasDestination
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4867142219793744361, guid: d7014f799ffb7044bb27674f5e3b4584,
+        type: 3}
+      propertyPath: initialShoppingList.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4867142219793744361, guid: d7014f799ffb7044bb27674f5e3b4584,
+        type: 3}
+      propertyPath: initialShoppingList.Array.data[0].product
+      value: 
+      objectReference: {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664,
+        type: 3}
+    - target: {fileID: 4867142219793744361, guid: d7014f799ffb7044bb27674f5e3b4584,
+        type: 3}
+      propertyPath: initialShoppingList.Array.data[1].product
+      value: 
+      objectReference: {fileID: 8172908664145870548, guid: 247c8064fee1cff498b6c7c046d2b73f,
+        type: 3}
+    - target: {fileID: 4867142219793744361, guid: d7014f799ffb7044bb27674f5e3b4584,
+        type: 3}
+      propertyPath: initialShoppingList.Array.data[0].quantityWanted
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4867142219793744361, guid: d7014f799ffb7044bb27674f5e3b4584,
+        type: 3}
+      propertyPath: initialShoppingList.Array.data[1].quantityWanted
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2567995399091145310, guid: d7014f799ffb7044bb27674f5e3b4584, type: 3}
     - {fileID: 3410880679204292739, guid: d7014f799ffb7044bb27674f5e3b4584, type: 3}
@@ -1063,7 +1137,7 @@ PrefabInstance:
     - target: {fileID: 8037134091720205718, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: m_Name
-      value: DummyStore
+      value: Store Product A
       objectReference: {fileID: 0}
     - target: {fileID: 488310743102910829, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -1131,5 +1205,26 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664,
         type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].product
+      value: 
+      objectReference: {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664,
+        type: 3}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].price
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].maximumStock
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].currentStock
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 67de43ace692c85469c03963584312df, type: 3}

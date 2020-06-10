@@ -10,7 +10,7 @@ public class Mall
     public static readonly Mall INSTANCE = new Mall();
     public Dictionary<int, Store> allStores;
     public Dictionary<int, List<Store>> storesInFloors;
-    public Dictionary<Product, List<Store>> storesThatSellProduct;
+    public Dictionary<int, List<Store>> storesThatSellProduct;
     public Dictionary<int, LocationData> exits;
     public Dictionary<int, LocationData> storages;
 
@@ -18,7 +18,7 @@ public class Mall
     {
         allStores = new Dictionary<int, Store>();
         storesInFloors = new Dictionary<int, List<Store>>();
-        storesThatSellProduct = new Dictionary<Product, List<Store>>();
+        storesThatSellProduct = new Dictionary<int, List<Store>>();
         exits = new Dictionary<int, LocationData>();
         storages = new Dictionary<int, LocationData>();
     }
@@ -43,19 +43,21 @@ public class Mall
             storesInFloors.Add(store.Floor, stores);
         }
 
-        List<Product> productsInStock = store.GetProductsInStock();
-        for (int i = 0; i < productsInStock.Count; ++i)
+        Stock stock = store.StoreStock;
+        List<StockData> productsStock = stock.StockSold;
+        for (int i = 0; i < productsStock.Count; ++i)
         {
-            Product p = productsInStock[i];
-            if (storesThatSellProduct.ContainsKey(p))
+            StockData productStock = productsStock[i];
+            int productID = productStock.Product.ID;
+            if (storesThatSellProduct.ContainsKey(productID))
             {
-                storesThatSellProduct[p].Add(store);
+                storesThatSellProduct[productID].Add(store);
             }
             else
             {
                 List<Store> stores = new List<Store>();
                 stores.Add(store);
-                storesThatSellProduct.Add(p, stores);
+                storesThatSellProduct.Add(productID, stores);
             }
         }
 

@@ -5,42 +5,43 @@ using UnityEngine;
 public struct StoreKnowledge
 {
     public readonly int STORE_ID;
-    public readonly int FLOOR;
-    public readonly Vector2 POSITION;
-    private Dictionary<Product, int> productsOnSale;
+    public readonly LocationData LOCATION;
+    private Dictionary<int, int> productsOnSale;
 
-    public StoreKnowledge(int storeID, int floor, Vector2 position)
+    public StoreKnowledge(int storeID, LocationData location)
     {
         this.STORE_ID = storeID;
-        this.FLOOR = floor;
-        this.POSITION = position;
-        this.productsOnSale = new Dictionary<Product, int>();
+        this.LOCATION = location;
+        this.productsOnSale = new Dictionary<int, int>();
     }
 
-    public bool KnowsThatSellsProduct(Product product)
+    public bool KnowsThatSellsProduct(int productID)
     {
-        return productsOnSale.ContainsKey(product);
+        return productsOnSale.ContainsKey(productID);
     }
 
     public void Update(Store store)
     {
-        foreach (KeyValuePair<Product, int> entry in store.GetProductsPrices())
+        Stock stock = store.StoreStock;
+        List<StockData> productsStock = stock.StockSold;
+        for (int i = 0; i < productsStock.Count; ++i)
         {
-            Product product = entry.Key;
-            int price = entry.Value;
-            UpdateProduct(product, price);
+            StockData productStock = productsStock[i];
+            int productID = productStock.Product.ID;
+            int price = productStock.Price;
+            UpdateProduct(productID, price);
         }
     }
 
-    private void UpdateProduct(Product product, int price)
+    private void UpdateProduct(int productID, int price)
     {
-        if (KnowsThatSellsProduct(product))
+        if (KnowsThatSellsProduct(productID))
         {
-            productsOnSale[product] = price;
+            productsOnSale[productID] = price;
         }
         else
         {
-            productsOnSale.Add(product, price);
+            productsOnSale.Add(productID, price);
         }
     }
 
