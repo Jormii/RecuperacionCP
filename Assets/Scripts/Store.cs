@@ -64,6 +64,11 @@ public class Store : MonoBehaviour
         return stock.GetStockToRefill();
     }
 
+    public void ReStock(Dictionary<Product, int> reStock)
+    {
+        stock.ReStock(reStock);
+    }
+
     private static int GetStoreID()
     {
         return Interlocked.Increment(ref idCounter);

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Navigation : MonoBehaviour
 {
+    public const float DISTANCE_MARGIN = 0.1f;
+
     [SerializeField] private float movementSpeed;
 
     private Human human;
@@ -35,17 +37,10 @@ public class Navigation : MonoBehaviour
 
     public bool ReachedItsDestination()
     {
-        float x = transform.position.x;
-        float desX = destination.x;
-
-        if (direction.x > 0)
-        {
-            return x >= desX;
-        }
-        else
-        {
-            return x <= desX;
-        }
+        Vector2 pos = new Vector2(transform.position.x, 0f);
+        Vector2 desPos = new Vector2(destination.x, 0f);
+        float d = Vector2.Distance(pos, desPos);
+        return Mathf.Abs(d) < DISTANCE_MARGIN;
     }
 
     public void MoveTo(Vector2 position)

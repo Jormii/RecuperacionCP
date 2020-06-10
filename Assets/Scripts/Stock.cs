@@ -142,4 +142,15 @@ public class Stock : MonoBehaviour
         return refill;
     }
 
+    public void ReStock(Dictionary<Product, int> reStock)
+    {
+        foreach (KeyValuePair<Product, int> entry in reStock)
+        {
+            Product product = entry.Key;
+            int newStock = entry.Value;
+
+            productsStock[product] += newStock;
+        }
+    }
+
 }

@@ -17,7 +17,7 @@ public class Employee : Human
 
     [SerializeField] private EmployeeState currentState = EmployeeState.Init;
     private Dictionary<int, Dictionary<Product, int>> productsToRefill;
-    private Dictionary<int, Dictionary<Product, int>> productsCarrying;
+    // private Dictionary<int, Dictionary<Product, int>> productsCarrying;
 
     protected override void Start()
     {
@@ -25,7 +25,7 @@ public class Employee : Human
 
         Init();
         productsToRefill = new Dictionary<int, Dictionary<Product, int>>();
-        productsCarrying = new Dictionary<int, Dictionary<Product, int>>();
+        // productsCarrying = new Dictionary<int, Dictionary<Product, int>>();
     }
 
     private void Update()
@@ -120,6 +120,25 @@ public class Employee : Human
         ExecuteActionQueue();
     }
 
+    private void StartReStocking()
+    {
+        // TODO: Sort stores by distance
+        foreach (int storeID in productsToRefill.Keys)
+        {
+            Store store = Mall.INSTANCE.GetStoreByID(storeID);
+            StoreKnowledge storeKnowledge = new StoreKnowledge(storeID, store.Floor, store.transform.position);
+            IAction moveToStoreAction = new MoveToStoreAction(navigation, storeKnowledge);
+
+            // TODO: Consider different floors
+            AddActionToQueue(moveToStoreAction);
+
+            Debug.LogFormat("Employee {0} is going to restock store {1}", name, store);
+        }
+
+        ExecuteActionQueue();
+        currentState = EmployeeState.ReStocking;
+    }
+
     #region Human Functions
 
     public override void Init()
@@ -136,11 +155,28 @@ public class Employee : Human
     public override void OnActionCompleted(IAction action)
     {
         base.OnActionCompleted(action);
+
+        if (action is MoveToStoreAction)
+        {
+            MoveToStoreAction moveToStoreAction = action as MoveToStoreAction;
+            StoreKnowledge storeKnowledge = moveToStoreAction.Knowledge;
+            Store store = Mall.INSTANCE.GetStoreByID(storeKnowledge.STORE_ID);
+
+            Debug.LogFormat("Employee {0} has reached store {1}. Restocking...", name, store);
+            Dictionary<Product, int> restock = productsToRefill[store.ID];
+            productsToRefill.Remove(store.ID);
+            store.ReStock(restock);
+        }
     }
 
     public override void OnActionQueueCompleted(IAction lastAction)
     {
         base.OnActionQueueCompleted(lastAction);
+
+        if (currentState == EmployeeState.ReStocking)
+        {
+            WanderAround();
+        }
 
         if (lastAction is MoveAction)
         {
@@ -185,6 +221,7 @@ public class Employee : Human
                     StopExecutingActionQueue();
                 }
 
+                Debug.LogFormat("Employee {0} has seen that store {1} needs restocking", name, store);
                 GoToStorage();
             }
         }
@@ -192,10 +229,13 @@ public class Employee : Human
 
     public override void UponReachingDestination()
     {
+        base.UponReachingDestination();
+
         switch (currentState)
         {
             case EmployeeState.GoingToStorage:
                 Debug.LogFormat("Employee {0} reached the storage", name);
+                StartReStocking();
                 break;
             case EmployeeState.ReStocking:
                 break;
@@ -206,8 +246,6 @@ public class Employee : Human
                 Debug.LogWarningFormat("UponReachingDestination called in unvalid state {0}", currentState);
                 break;
         }
-
-        base.UponReachingDestination();
     }
 
     #endregion
