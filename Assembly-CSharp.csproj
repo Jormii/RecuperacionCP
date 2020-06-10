@@ -61,7 +61,6 @@
      <Compile Include="Assets\Scripts\Agents\Client\ShoppingList.cs" />
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
      <Compile Include="Assets\Scripts\Agents\Human.cs" />
-     <Compile Include="Assets\Scripts\Agents\IStateMachine.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
      <Compile Include="Assets\Scripts\Exit.cs" />

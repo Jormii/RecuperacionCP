@@ -27,9 +27,24 @@ public class StockData
         return profit;
     }
 
-    public void UpdateStock(int amount)
+    public int UpdateStock(int amount)
     {
-        currentStock += amount;
+        int stockNeccessaryToReachMaximum = maximumStock - currentStock;
+        int amountReStocked = Mathf.Min(amount, stockNeccessaryToReachMaximum);
+        currentStock += amountReStocked;
+
+        int overStock = amount - amountReStocked;
+        return overStock;
+    }
+
+    public bool NeedsReStock()
+    {
+        return (maximumStock - currentStock) > reStockMargin;
+    }
+
+    public int ReStockNeeded()
+    {
+        return maximumStock - currentStock;
     }
 
     #region Properties

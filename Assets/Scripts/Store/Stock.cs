@@ -57,14 +57,10 @@ public class Stock : MonoBehaviour
         Dictionary<int, int> productsToRefill = new Dictionary<int, int>();
         foreach (StockData stockData in stock.Values)
         {
-            int currentStock = stockData.CurrentStock;
-            int maxStock = stockData.MaximumStock;
-            int reStockMargin = stockData.ReStockMargin;
-
-            if ((maxStock - currentStock) > reStockMargin)
+            if (stockData.NeedsReStock())
             {
                 int productID = stockData.Product.ID;
-                int amount = maxStock - currentStock;
+                int amount = stockData.ReStockNeeded();
                 productsToRefill.Add(productID, amount);
             }
         }
@@ -72,15 +68,33 @@ public class Stock : MonoBehaviour
         return productsToRefill;
     }
 
-    public void ReStock(Dictionary<int, int> reStock)
+    public bool ProductNeedsReStock(int productID)
     {
+        StockData stockData = stock[productID];
+        return stockData.NeedsReStock();
+    }
+
+    public Dictionary<int, int> ReStock(Dictionary<int, int> reStock)
+    {
+        Dictionary<int, int> overStock = new Dictionary<int, int>();
         foreach (KeyValuePair<int, int> entry in reStock)
         {
             int productID = entry.Key;
             int amount = entry.Value;
 
-            stock[productID].UpdateStock(amount);
+            if (!HasProductInStock(productID))
+            {
+                continue;
+            }
+
+            int unnecessaryStock = stock[productID].UpdateStock(amount);
+            if (unnecessaryStock != 0)
+            {
+                overStock.Add(productID, unnecessaryStock);
+            }
         }
+
+        return overStock;
     }
 
     #region Properties

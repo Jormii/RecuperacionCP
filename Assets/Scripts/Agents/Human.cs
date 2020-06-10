@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Vision)), RequireComponent(typeof(Navigation))]
-public abstract class Human : MonoBehaviour, IStateMachine
+public abstract class Human : MonoBehaviour
 {
+    public bool debug = true;
+
     protected Vision vision;
     protected Navigation navigation;
     protected int currentFloor;
@@ -33,6 +35,19 @@ public abstract class Human : MonoBehaviour, IStateMachine
         actions.Enqueue(action);
     }
 
+    public void AddActionToHeadOfQueue(IAction action)
+    {
+        Queue<IAction> newQueue = new Queue<IAction>();
+        newQueue.Enqueue(action);
+
+        while (actions.Count != 0)
+        {
+            newQueue.Enqueue(actions.Dequeue());
+        }
+
+        actions = newQueue;
+    }
+
     public void ExecuteActionQueue()
     {
         currentAction = actions.Dequeue();
@@ -43,7 +58,6 @@ public abstract class Human : MonoBehaviour, IStateMachine
 
     public void StopExecutingActionQueue()
     {
-        actions.Clear();
         currentAction.Cancel();
         executingQueue = false;
     }
@@ -72,21 +86,17 @@ public abstract class Human : MonoBehaviour, IStateMachine
 
     public abstract void OnStoreSeen(Store store);
 
-    public virtual void UponReachingDestination()
+    public void UponReachingDestination()
     {
         if (currentAction is MoveAction)
         {
             OnActionCompleted(currentAction);
         }
+        else
+        {
+            Debug.LogErrorFormat("Error in human {0}", name);
+        }
     }
 
     #endregion
-
-    #region IStateMachine functions
-
-    public abstract void Init();
-    public abstract void DeInit();
-
-    #endregion
-
 }

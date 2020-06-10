@@ -6,32 +6,53 @@ public class Client : Human
 {
     public enum ClientState
     {
-        Init,
-        DeInit,
-        Error,
         Evaluating,
         Moving,
         Buying,
-        WanderingAround
+        WanderingAround,
+        Error
     };
 
-    [SerializeField] private ClientState currentState = ClientState.Init;
+    public const float IGNORE_STORE_TIME = 1f;
+
+    [SerializeField] private ClientState currentState = ClientState.Evaluating;
     private ClientKnowledge knowledge;
     private ClientResources resources;
+    private Dictionary<int, float> storesIgnored;
 
     protected override void Start()
     {
         base.Start();
 
-        Init();
-
+        currentState = ClientState.Evaluating;
         knowledge = new ClientKnowledge();
         resources = GetComponent<ClientResources>();
+        storesIgnored = new Dictionary<int, float>();
     }
 
     void Update()
     {
+        UpdateIgnoredStores();
         PerformCurrentState();
+    }
+
+    private void UpdateIgnoredStores()
+    {
+        Dictionary<int, float> newDictionary = new Dictionary<int, float>();
+        foreach (KeyValuePair<int, float> entry in storesIgnored)
+        {
+            int storeID = entry.Key;
+            float time = entry.Value;
+
+            float newTime = time - Time.deltaTime;
+            if (newTime > 0)
+            {
+                newDictionary.Add(storeID, newTime);
+            }
+        }
+
+        storesIgnored.Clear();
+        storesIgnored = newDictionary;
     }
 
     #region States functions
@@ -43,9 +64,6 @@ public class Client : Human
             case ClientState.Buying:
                 // TODO:
                 break;
-            case ClientState.DeInit:
-                DeInit();
-                break;
             case ClientState.Evaluating:
                 Evaluate();
                 break;
@@ -56,10 +74,8 @@ public class Client : Human
                 WanderingAround();
                 break;
             case ClientState.Error:
-            case ClientState.Init:
             default:
                 Debug.LogErrorFormat("Something wrong happened in client {0}'s state machine. Destroying", name);
-                DeInit();
                 Destroy(gameObject);
                 break;
         }
@@ -82,8 +98,12 @@ public class Client : Human
             int productID = products[i];
             if (knowledge.KnowsStoreThatSellsProduct(productID))
             {
-                knowsStore = true;
-                continue;
+                StoreKnowledge storeKnowledge = knowledge.GetStoreThatSellsProduct(productID);
+                if (!storesIgnored.ContainsKey(storeKnowledge.STORE_ID))
+                {
+                    knowsStore = true;
+                    continue;
+                }
             }
 
             i += 1;
@@ -159,6 +179,8 @@ public class Client : Human
 
             Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, productID);
         }
+
+        storesIgnored.Add(store.ID, IGNORE_STORE_TIME);
     }
 
     private void LeaveMall()
@@ -213,17 +235,6 @@ public class Client : Human
 
     #region Human Functions
 
-    public override void Init()
-    {
-        currentState = ClientState.Evaluating;
-    }
-
-    public override void DeInit()
-    {
-        Debug.LogWarningFormat("{0} deinits", name);
-        gameObject.SetActive(false);
-    }
-
     public override void OnActionCompleted(IAction action)
     {
         base.OnActionCompleted(action);
@@ -243,13 +254,12 @@ public class Client : Human
         else if (lastAction is MoveAction)
         {
             MoveAction moveAction = lastAction as MoveAction;
+            // TODO
             switch (moveAction.GetDestination)
             {
                 case MoveAction.Destination.Stairs:
-                    // TODO
                     break;
                 case MoveAction.Destination.Exit:
-                    currentState = ClientState.DeInit;
                     break;
                 case MoveAction.Destination.NoDestination:
                     break;
@@ -277,24 +287,6 @@ public class Client : Human
         {
             knowledge.UpdateKnowledge(store);
         }
-    }
-
-    public override void UponReachingDestination()
-    {
-        switch (currentState)
-        {
-            case ClientState.Moving:
-                // TODO
-                break;
-            case ClientState.WanderingAround:
-                currentState = ClientState.Evaluating;
-                break;
-            default:
-                Debug.LogWarningFormat("UponReachingDestination called in unvalid state {0}", currentState);
-                break;
-        }
-
-        base.UponReachingDestination();
     }
 
     #endregion
