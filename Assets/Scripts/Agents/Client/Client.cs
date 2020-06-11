@@ -7,6 +7,7 @@ public class Client : Agent
     public enum ClientState
     {
         Evaluating,
+        MovingTowardsEmployee,
         MovingToStore,
         CheckingStock,
         Buying,
@@ -93,6 +94,9 @@ public class Client : Agent
                 break;
             case ClientState.MovingToStore:
                 MovingToStore();
+                break;
+            case ClientState.MovingTowardsEmployee:
+                MovingTowardsEmployee();
                 break;
             case ClientState.Leaving:
                 Leaving();
@@ -330,6 +334,19 @@ public class Client : Agent
 
     #endregion
 
+    #region MovingTowardsEmployee related
+
+    private void MovingTowardsEmployee()
+    {
+        employeeFound.Interrupt();
+
+        IAction moveTowardsEmployee = new MoveAction(navigation, employeeFound.transform.position, MoveAction.Destination.Agent);
+        AddActionToQueue(moveTowardsEmployee);
+        ExecuteActionQueue();
+    }
+
+    #endregion
+
     #region Leaving related
 
     private void Leaving()
@@ -411,6 +428,9 @@ public class Client : Agent
             MoveAction moveAction = action as MoveAction;
             switch (moveAction.GetDestination)
             {
+                case MoveAction.Destination.Agent:
+                    OnAgentReached();
+                    break;
                 case MoveAction.Destination.Exit:
                     OnExitReached();
                     break;
@@ -431,6 +451,16 @@ public class Client : Agent
         }
 
         base.OnActionCompleted(action);
+    }
+
+    private void OnAgentReached()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is next to another agent", name);
+        }
+
+        ChangeState(ClientState.AskingForInformation);
     }
 
     private void OnExitReached()
@@ -500,8 +530,7 @@ public class Client : Agent
             if (employee.CanBeInterrupted())
             {
                 employeeFound = employee;
-                employee.Interrupt();
-                ChangeState(ClientState.AskingForInformation);
+                ChangeState(ClientState.MovingTowardsEmployee);
             }
         }
     }

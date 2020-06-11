@@ -6,6 +6,7 @@ public class MoveAction : IAction
 {
     public enum Destination
     {
+        Agent,
         Store,
         Stairs,
         Exit,
