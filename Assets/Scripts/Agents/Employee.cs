@@ -18,7 +18,6 @@ public class Employee : Human
     [SerializeField] private EmployeeState currentState = EmployeeState.WanderingAround;
     private Dictionary<int, Dictionary<int, int>> productsToRefill;
     private Dictionary<int, int> productsBeingCarried;
-    private bool consumedState;
 
     private Store lastStoreSeen;
 
@@ -29,16 +28,6 @@ public class Employee : Human
         currentState = EmployeeState.WanderingAround;
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
-        consumedState = false;
-    }
-
-    private void Update()
-    {
-        if (!consumedState)
-        {
-            consumedState = true;
-            PerformCurrentState();
-        }
     }
 
     #region States functions
@@ -46,10 +35,10 @@ public class Employee : Human
     private void ChangeState(EmployeeState state)
     {
         currentState = state;
-        consumedState = false;
+        OnStateChanged();
     }
 
-    private void PerformCurrentState()
+    protected override void PerformCurrentState()
     {
         switch (currentState)
         {

@@ -73,11 +73,9 @@ public class ClientKnowledge
         return knownStoresByProduct.ContainsKey(productID);
     }
 
-    public StoreKnowledge GetStoreThatSellsProduct(int productID)
+    public List<StoreKnowledge> GetStoreThatSellsProduct(int productID)
     {
-        List<StoreKnowledge> stores = knownStoresByProduct[productID];
-        // TODO: Implement some sort of filter
-        return stores[0];
+        return knownStoresByProduct[productID];
     }
 
     #endregion
@@ -89,10 +87,9 @@ public class ClientKnowledge
         return knownExits.Count != 0;
     }
 
-    public ExitKnowledge GetClosestExit(Vector2 position, int floor)
+    public List<ExitKnowledge> GetKnownExits()
     {
-        // TODO: Implement search by distance
-        return knownExits[0];
+        return new List<ExitKnowledge>(knownExits.Values);
     }
 
     #endregion

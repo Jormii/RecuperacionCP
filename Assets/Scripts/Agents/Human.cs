@@ -14,6 +14,7 @@ public abstract class Human : MonoBehaviour
     private Queue<IAction> actions;
     private IAction currentAction;
     private bool executingQueue;
+    private bool consumedState;
 
     protected virtual void Start()
     {
@@ -21,7 +22,28 @@ public abstract class Human : MonoBehaviour
         navigation = GetComponent<Navigation>();
 
         actions = new Queue<IAction>();
+        consumedState = false;
     }
+
+    protected virtual void Update()
+    {
+        if (!consumedState)
+        {
+            consumedState = true;
+            PerformCurrentState();
+        }
+    }
+
+    #region State machine related functions
+
+    protected abstract void PerformCurrentState();
+
+    protected void OnStateChanged()
+    {
+        consumedState = false;
+    }
+
+    #endregion
 
     #region Action Queue related functions
 
@@ -59,6 +81,7 @@ public abstract class Human : MonoBehaviour
     public void StopExecutingActionQueue()
     {
         currentAction.Cancel();
+        actions.Clear();
         executingQueue = false;
     }
 

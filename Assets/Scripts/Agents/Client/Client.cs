@@ -7,18 +7,21 @@ public class Client : Human
     public enum ClientState
     {
         Evaluating,
-        Moving,
+        MovingToStore,
+        CheckingStock,
         Buying,
         WanderingAround,
+        Leaving,
         Error
     };
 
-    public const float IGNORE_STORE_TIME = 1f;
+    public const float IGNORE_STORE_TIME = 1.5f;
 
     [SerializeField] private ClientState currentState = ClientState.Evaluating;
     private ClientKnowledge knowledge;
     private ClientResources resources;
     private Dictionary<int, float> storesIgnored;
+    private StoreKnowledge storeInterestedIn;
 
     protected override void Start()
     {
@@ -30,10 +33,16 @@ public class Client : Human
         storesIgnored = new Dictionary<int, float>();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         UpdateIgnoredStores();
-        PerformCurrentState();
+    }
+
+    private void IgnoreStoreTemporarily()
+    {
+        storesIgnored.Add(storeInterestedIn.STORE_ID, IGNORE_STORE_TIME);
     }
 
     private void UpdateIgnoredStores()
@@ -57,18 +66,30 @@ public class Client : Human
 
     #region States functions
 
-    private void PerformCurrentState()
+    private void ChangeState(ClientState state)
+    {
+        currentState = state;
+        OnStateChanged();
+    }
+
+    protected override void PerformCurrentState()
     {
         switch (currentState)
         {
             case ClientState.Buying:
-                // TODO:
+                Buying();
+                break;
+            case ClientState.CheckingStock:
+                CheckingStock();
                 break;
             case ClientState.Evaluating:
-                Evaluate();
+                Evaluating();
                 break;
-            case ClientState.Moving:
-                Moving();
+            case ClientState.MovingToStore:
+                MovingToStore();
+                break;
+            case ClientState.Leaving:
+                Leaving();
                 break;
             case ClientState.WanderingAround:
                 WanderingAround();
@@ -81,85 +102,14 @@ public class Client : Human
         }
     }
 
-    private void Evaluate()
+    private void Buying()
     {
-        if (!resources.ThereAreThingsLeftToBuy())
+        if (debug)
         {
-            LeaveMall();
-            return;
+            Debug.LogFormat("Client {0} is buying at store {1}", name, storeInterestedIn.STORE_ID);
         }
 
-        List<int> products = resources.GetProductsNotBoughtYet();
-
-        bool knowsStore = false;
-        int i = 0;
-        while (!knowsStore && i < products.Count)
-        {
-            int productID = products[i];
-            if (knowledge.KnowsStoreThatSellsProduct(productID))
-            {
-                StoreKnowledge storeKnowledge = knowledge.GetStoreThatSellsProduct(productID);
-                if (!storesIgnored.ContainsKey(storeKnowledge.STORE_ID))
-                {
-                    knowsStore = true;
-                    continue;
-                }
-            }
-
-            i += 1;
-        }
-
-        if (knowsStore)
-        {
-            int productID = products[i];
-            StoreKnowledge storeKnowledge = knowledge.GetStoreThatSellsProduct(productID);
-
-            GoToStore(storeKnowledge);
-        }
-        else
-        {
-            WanderAround();
-        }
-
-    }
-
-    private void Moving()
-    {
-        // TODO
-    }
-
-    private void WanderingAround()
-    {
-        // TODO
-    }
-
-    #endregion
-
-    private void GoToStore(StoreKnowledge storeKnowledge)
-    {
-        Debug.LogFormat("Client {0} is going to store {1}", name, storeKnowledge.LOCATION.POSITION);
-
-        if (storeKnowledge.LOCATION.FLOOR != currentFloor)
-        {
-            // TODO: Create logic to move between floors
-            Vector2 stairsPosition = new Vector2();
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToStore = new MoveToStoreAction(navigation, storeKnowledge);
-        AddActionToQueue(moveToStore);
-
-        currentState = ClientState.Moving;
-        ExecuteActionQueue();
-    }
-
-    private void BuyAtStore(Store store)
-    {
-        Debug.LogFormat("Client {0} is buying at store {1}", name, store);
-
-        currentState = ClientState.Buying;
-
+        Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
         Stock stock = store.StoreStock;
         List<int> productsClientIsBuying = resources.GetProductsInterestedIn(store);
         for (int i = 0; i < productsClientIsBuying.Count; ++i)
@@ -169,52 +119,222 @@ public class Client : Human
             int price = productStock.Price;
             int amountInStock = productStock.CurrentStock;
             int amount = resources.HowManyCanAfford(productID, price, amountInStock);
-            if (amount == 0)
-            {
-                continue;
-            }
 
             resources.Buy(productID, amount, price);
             store.Sell(productID, amount);
 
-            Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, productID);
+            if (debug)
+            {
+                Debug.LogFormat("Client {0} buys {1} of {2}", name, amount, productID);
+            }
         }
 
-        storesIgnored.Add(store.ID, IGNORE_STORE_TIME);
+        ChangeState(ClientState.Evaluating);
+        IgnoreStoreTemporarily();
     }
 
-    private void LeaveMall()
-    {
-        Debug.LogFormat("Client {0} is leaving the mall", name);
+    #region CheckingStock related
 
-        if (!knowledge.KnowsAnyExit())
+    private void CheckingStock()
+    {
+        if (debug)
         {
-            // THIS SHOULDN'T HAPPEN
-            Debug.LogWarningFormat("Client {0} knows no exists. This shouldn't happen", name);
-            WanderAround();
+            Debug.LogFormat("Client {0} is checking store {1}'s stock", name, storeInterestedIn.STORE_ID);
+        }
+
+        Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
+        knowledge.UpdateKnowledge(store);
+
+        if (StoreHasAnyOfWantedProductsInStock())
+        {
+            ChangeState(ClientState.Buying);
+        }
+        else
+        {
+            IgnoreStoreTemporarily();
+            ChangeState(ClientState.Evaluating);
+        }
+    }
+
+    private bool StoreHasAnyOfWantedProductsInStock()
+    {
+        Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
+        Stock stock = store.StoreStock;
+        List<int> productsIDs = resources.GetProductsInterestedIn(store);
+        for (int i = 0; i < productsIDs.Count; ++i)
+        {
+            int productID = productsIDs[i];
+            StockData productStock = stock.GetStockOfProduct(productID);
+            if (productStock.CurrentStock != 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    #endregion
+
+    #region Evaluating related
+
+    private void Evaluating()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is evaluating the situation", name);
+        }
+
+        if (!resources.ThereAreThingsLeftToBuy())
+        {
+            ChangeState(ClientState.Leaving);
             return;
         }
 
-        Vector2 clientPosition = transform.position;
-        ExitKnowledge closestExit = knowledge.GetClosestExit(clientPosition, currentFloor);
-        if (closestExit.LOCATION.FLOOR != currentFloor)
+        List<int> productsIDs = GetIDsOfProductsFromKnownStores();
+        if (productsIDs.Count == 0)
+        {
+            if (debug)
+            {
+                Debug.LogFormat("Client {0} knows no stores that sell the products they want", name);
+            }
+
+            ChangeState(ClientState.WanderingAround);
+        }
+        else
+        {
+            if (debug)
+            {
+                Debug.LogFormat("Client {0} knows a store that sells products they want", name);
+            }
+
+            StoreKnowledge closestStore = GetClosestStoreThatSellsWantedProducts(productsIDs);
+            if (storesIgnored.ContainsKey(closestStore.STORE_ID))
+            {
+                if (debug)
+                {
+                    Debug.LogFormat("Client{0}: Store {1} is being ignored for the moment", name, closestStore.STORE_ID);
+                }
+
+                ChangeState(ClientState.WanderingAround);
+            }
+            else
+            {
+                storeInterestedIn = closestStore;
+                ChangeState(ClientState.MovingToStore);
+            }
+        }
+    }
+
+    private List<int> GetIDsOfProductsFromKnownStores()
+    {
+        List<int> productsIDs = new List<int>();
+        List<int> productsWanted = resources.GetProductsNotBoughtYet();
+
+        for (int i = 0; i < productsWanted.Count; ++i)
+        {
+            int productID = productsWanted[i];
+            if (knowledge.KnowsStoreThatSellsProduct(productID))
+            {
+                productsIDs.Add(productID);
+            }
+        }
+
+        return productsIDs;
+    }
+
+    private StoreKnowledge GetClosestStoreThatSellsWantedProducts(List<int> productsIDs)
+    {
+        // TODO
+        for (int i = 0; i < productsIDs.Count; ++i)
+        {
+            int productID = productsIDs[i];
+        }
+
+        List<StoreKnowledge> stores = knowledge.GetStoreThatSellsProduct(productsIDs[0]);
+        return stores[0];
+    }
+
+    #endregion
+
+    #region MovingToStore related
+
+    private void MovingToStore()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is going to store {1}", name, storeInterestedIn.STORE_ID);
+        }
+
+        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        LocationData storeLocation = storeInterestedIn.LOCATION;
+        if (currentLocation.FLOOR != storeLocation.FLOOR)
+        {
+            // TODO: Create logic to move between floors
+            Vector2 stairsPosition = new Vector2();
+            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
+            AddActionToQueue(moveToStairs);
+        }
+
+        IAction moveToStore = new MoveAction(navigation, storeLocation.POSITION, MoveAction.Destination.Store);
+        AddActionToQueue(moveToStore);
+        ExecuteActionQueue();
+    }
+
+    #endregion
+
+    #region Leaving related
+
+    private void Leaving()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is leaving the mall", name);
+        }
+
+        if (!knowledge.KnowsAnyExit())
+        {
+            Debug.LogWarningFormat("Client {0} knows no exists. This shouldn't happen", name);
+            ChangeState(ClientState.WanderingAround);
+            return;
+        }
+
+        ExitKnowledge closestExit = GetClosestExit();
+
+        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        LocationData exitLocation = closestExit.LOCATION;
+        if (currentLocation.FLOOR != exitLocation.FLOOR)
         {
             Vector2 stairsPosition = new Vector2();   // TODO: Obtain stairs position
             IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
             AddActionToQueue(moveToStairs);
         }
 
-        Vector2 exitPosition = closestExit.LOCATION.POSITION;
-        IAction moveToExit = new MoveAction(navigation, exitPosition, MoveAction.Destination.Exit);
+        IAction moveToExit = new MoveAction(navigation, exitLocation.POSITION, MoveAction.Destination.Exit);
         AddActionToQueue(moveToExit);
-
-        currentState = ClientState.Moving;
         ExecuteActionQueue();
     }
 
-    private void WanderAround()
+    private ExitKnowledge GetClosestExit()
     {
-        Debug.LogFormat("Client {0} is wandering", name);
+        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        List<ExitKnowledge> knownExits = knowledge.GetKnownExits();
+
+        // TODO
+        return knownExits[0];
+    }
+
+    #endregion
+
+    #region WanderingAround related
+
+    private void WanderingAround()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is wandering", name);
+        }
+
         // TODO: Consider changing floors
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
@@ -228,67 +348,97 @@ public class Client : Human
 
         IAction wander = new MoveAction(navigation, wanderDestination, MoveAction.Destination.NoDestination);
         AddActionToQueue(wander);
-
-        currentState = ClientState.WanderingAround;
         ExecuteActionQueue();
     }
+
+    #endregion
+
+    #endregion
 
     #region Human Functions
 
     public override void OnActionCompleted(IAction action)
     {
+        if (action is MoveAction)
+        {
+            MoveAction moveAction = action as MoveAction;
+            switch (moveAction.GetDestination)
+            {
+                case MoveAction.Destination.Exit:
+                    OnExitReached();
+                    break;
+                case MoveAction.Destination.NoDestination:
+                    ChangeState(ClientState.Evaluating);
+                    break;
+                case MoveAction.Destination.Stairs:
+                    OnStairsReached();
+                    break;
+                case MoveAction.Destination.Store:
+                    OnStoreReached();
+                    break;
+                case MoveAction.Destination.Storage:
+                default:
+                    Debug.LogErrorFormat("Error on OnActionCompleted. A client cannot end their movement with destination {0}", moveAction.GetDestination);
+                    break;
+            }
+        }
+
         base.OnActionCompleted(action);
+    }
+
+    private void OnExitReached()
+    {
+        if (debug)
+        {
+            Debug.LogWarningFormat("Client {0} has left the mall", name);
+        }
+
+        gameObject.SetActive(false);
+    }
+
+    private void OnStairsReached()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has reached the stairs", name);
+        }
+    }
+
+    private void OnStoreReached()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has reached the store {1}", name, storeInterestedIn.STORE_ID);
+        }
+
+        ChangeState(ClientState.CheckingStock);
     }
 
     public override void OnActionQueueCompleted(IAction lastAction)
     {
         base.OnActionQueueCompleted(lastAction);
-
-        if (lastAction is MoveToStoreAction)
-        {
-            MoveToStoreAction moveToStoreAction = lastAction as MoveToStoreAction;
-            Store store = Mall.INSTANCE.GetStoreByID(moveToStoreAction.Knowledge.STORE_ID);
-            BuyAtStore(store);
-            currentState = ClientState.Evaluating;  // TODO: This should be driven by animations
-        }
-        else if (lastAction is MoveAction)
-        {
-            MoveAction moveAction = lastAction as MoveAction;
-            // TODO
-            switch (moveAction.GetDestination)
-            {
-                case MoveAction.Destination.Stairs:
-                    break;
-                case MoveAction.Destination.Exit:
-                    break;
-                case MoveAction.Destination.NoDestination:
-                    break;
-            }
-        }
-
     }
 
     public override void OnStoreSeen(Store store)
     {
-        if (!knowledge.KnowsStore(store))
-        {
-            knowledge.CreateKnowledge(store);
-
-            if (currentState == ClientState.WanderingAround)
-            {
-                List<int> products = resources.GetProductsInterestedIn(store);
-                if (products.Count != 0)
-                {
-                    GoToStore(knowledge.GetKnowledge(store));
-                }
-            }
-        }
-        else
+        if (knowledge.KnowsStore(store))
         {
             knowledge.UpdateKnowledge(store);
+            return;
+        }
+
+        knowledge.CreateKnowledge(store);
+        if (currentState == ClientState.WanderingAround)
+        {
+            List<int> products = resources.GetProductsInterestedIn(store);
+            if (products.Count != 0)
+            {
+                storeInterestedIn = knowledge.GetKnowledge(store);
+                StopExecutingActionQueue();
+                ChangeState(ClientState.MovingToStore);
+            }
         }
     }
 
     #endregion
-
 }
