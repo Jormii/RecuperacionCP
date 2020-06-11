@@ -78,6 +78,14 @@ public abstract class Agent : MonoBehaviour
         executingQueue = true;
     }
 
+    public void PauseActionQueue()
+    {
+        currentAction.Cancel();
+        AddActionToHeadOfQueue(currentAction);
+
+        executingQueue = false;
+    }
+
     public void StopExecutingActionQueue()
     {
         currentAction.Cancel();

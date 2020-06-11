@@ -43,6 +43,19 @@ public class Employee : Agent
         }
     }
 
+    public void Interrupt()
+    {
+        if (ExecutingActionQueue)
+        {
+            PauseActionQueue();
+        }
+    }
+
+    public void ContinueTasks()
+    {
+        ExecuteActionQueue();
+    }
+
     public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
     {
         // TODO: Employees have global knowledge

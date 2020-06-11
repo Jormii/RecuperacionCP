@@ -138,6 +138,9 @@ public class Client : Agent
                 knowledge.CreateKnowledge(givenKnowledge);
             }
         }
+
+        ChangeState(ClientState.Evaluating);
+        employeeFound.ContinueTasks();
     }
 
     #endregion
@@ -497,6 +500,7 @@ public class Client : Agent
             if (employee.CanBeInterrupted())
             {
                 employeeFound = employee;
+                employee.Interrupt();
                 ChangeState(ClientState.AskingForInformation);
             }
         }

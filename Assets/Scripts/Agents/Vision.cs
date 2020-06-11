@@ -7,9 +7,8 @@ using System;
 [RequireComponent(typeof(Navigation))]
 public class Vision : MonoBehaviour
 {
-    private const float VISION_TICK = 0.5f;
-
     [SerializeField] private float viewDistance = 2.5f;
+    [SerializeField] private float visionTick = 0.25f;
     private Agent agent;
     private Navigation navigation;
 
@@ -17,7 +16,7 @@ public class Vision : MonoBehaviour
     {
         agent = GetComponent<Agent>();
         navigation = GetComponent<Navigation>();
-        InvokeRepeating("See", 0f, VISION_TICK);
+        InvokeRepeating("See", 0f, visionTick);
     }
 
     private void See()

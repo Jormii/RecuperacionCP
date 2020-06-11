@@ -655,7 +655,7 @@ PrefabInstance:
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: initialStock.Array.data[0].currentStock
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -1184,7 +1184,7 @@ PrefabInstance:
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: initialStock.Array.data[0].currentStock
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -1205,12 +1205,12 @@ PrefabInstance:
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: initialStock.Array.data[1].currentStock
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
       propertyPath: initialStock.Array.data[1].maximumStock
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1438971876772056669, guid: 67de43ace692c85469c03963584312df,
         type: 3}
@@ -1299,7 +1299,7 @@ PrefabInstance:
     - target: {fileID: 171724852306062668, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: debug
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3816340573204119409, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -1336,7 +1336,7 @@ PrefabInstance:
     - target: {fileID: 3880373701032609651, guid: d7014f799ffb7044bb27674f5e3b4584,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.5
+      value: -3.69
       objectReference: {fileID: 0}
     - target: {fileID: 3880373701032609651, guid: d7014f799ffb7044bb27674f5e3b4584,
         type: 3}
@@ -1438,7 +1438,7 @@ PrefabInstance:
     - target: {fileID: 8420983565411369682, guid: d7014f799ffb7044bb27674f5e3b4584,
         type: 3}
       propertyPath: debug
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7735512194564161054, guid: d7014f799ffb7044bb27674f5e3b4584,
         type: 3}
