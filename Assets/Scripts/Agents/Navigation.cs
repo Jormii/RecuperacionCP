@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Human))]
+[RequireComponent(typeof(Agent))]
 public class Navigation : MonoBehaviour
 {
     public const float DISTANCE_MARGIN = 0.1f;
 
     [SerializeField] private float movementSpeed;
 
-    private Human human;
+    private Agent agent;
     private Vector2 destination;
     private Vector2 direction;
     private Navigation thisComponent;
 
     private void Start()
     {
-        human = GetComponent<Human>();
+        agent = GetComponent<Agent>();
         thisComponent = GetComponent<Navigation>();
     }
 
@@ -32,7 +32,7 @@ public class Navigation : MonoBehaviour
         if (ReachedItsDestination())
         {
             thisComponent.enabled = false;
-            human.UponReachingDestination();
+            agent.UponReachingDestination();
         }
     }
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Employee : Human
+public class Employee : Agent
 {
 
     private enum EmployeeState
@@ -28,6 +28,40 @@ public class Employee : Human
         currentState = EmployeeState.WanderingAround;
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
+    }
+
+    public bool CanBeInterrupted()
+    {
+        switch (currentState)
+        {
+            case EmployeeState.MovingToStorage:
+            case EmployeeState.MovingToStore:
+            case EmployeeState.WanderingAround:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
+    {
+        // TODO: Employees have global knowledge
+        List<StoreKnowledge> givenKnowledge = new List<StoreKnowledge>();
+        for (int i = 0; i < productsIDs.Count; ++i)
+        {
+            int productID = productsIDs[i];
+            List<Store> stores = Mall.INSTANCE.GetStoresThatSellProduct(productID);
+            for (int j = 0; j < stores.Count; ++j)
+            {
+                Store store = stores[j];
+                StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Location);
+                knowledge.Update(store);
+
+                givenKnowledge.Add(knowledge);
+            }
+        }
+
+        return givenKnowledge;
     }
 
     #region States functions
@@ -272,7 +306,7 @@ public class Employee : Human
 
     #endregion
 
-    #region Human Functions
+    #region Agent Functions
 
     public override void OnActionCompleted(IAction action)
     {
@@ -326,6 +360,14 @@ public class Employee : Human
 
         ChangeState(EmployeeState.ObservingStock);
         lastStoreSeen = store;
+    }
+
+    public override void OnOtherAgentSeen(Agent agent)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} has seen the agent {1}", name, agent.name);
+        }
     }
 
     #endregion

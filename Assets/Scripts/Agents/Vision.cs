@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-[RequireComponent(typeof(Human))]
+[RequireComponent(typeof(Agent))]
 [RequireComponent(typeof(Navigation))]
 public class Vision : MonoBehaviour
 {
     private const float VISION_TICK = 0.5f;
 
     [SerializeField] private float viewDistance = 2.5f;
-    private Human human;
+    private Agent agent;
     private Navigation navigation;
 
     void Start()
     {
-        human = GetComponent<Human>();
+        agent = GetComponent<Agent>();
         navigation = GetComponent<Navigation>();
         InvokeRepeating("See", 0f, VISION_TICK);
     }
@@ -27,10 +27,17 @@ public class Vision : MonoBehaviour
         {
             RaycastHit hit = hits[i];
             GameObject gameObjectHit = hit.transform.gameObject;
-            Store store = gameObjectHit.GetComponent<Store>();
-            if (store)
+
+            Agent agentSeen = gameObjectHit.GetComponent<Agent>();
+            if (agentSeen)
             {
-                human.OnStoreSeen(store);
+                agent.OnOtherAgentSeen(agentSeen);
+            }
+
+            Store storeSeen = gameObjectHit.GetComponent<Store>();
+            if (storeSeen)
+            {
+                agent.OnStoreSeen(storeSeen);
             }
         }
     }

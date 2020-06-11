@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Client : Human
+public class Client : Agent
 {
     public enum ClientState
     {
@@ -11,6 +11,7 @@ public class Client : Human
         CheckingStock,
         Buying,
         WanderingAround,
+        AskingForInformation,
         Leaving,
         Error
     };
@@ -21,7 +22,9 @@ public class Client : Human
     private ClientKnowledge knowledge;
     private ClientResources resources;
     private Dictionary<int, float> storesIgnored;
+
     private StoreKnowledge storeInterestedIn;
+    private Employee employeeFound;
 
     protected override void Start()
     {
@@ -76,6 +79,9 @@ public class Client : Human
     {
         switch (currentState)
         {
+            case ClientState.AskingForInformation:
+                AskingForInformation();
+                break;
             case ClientState.Buying:
                 Buying();
                 break;
@@ -101,6 +107,42 @@ public class Client : Human
                 break;
         }
     }
+
+    #region AskingForInformationRelated
+
+    private void AskingForInformation()
+    {
+        AskForInformation(employeeFound);
+        StopExecutingActionQueue();
+        ChangeState(ClientState.Evaluating);
+    }
+
+    private void AskForInformation(Employee employee)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} asks employee {1} for information on products they want", name, employee.name);
+        }
+
+        List<int> productsIDsNotBoughtYet = resources.GetProductsNotBoughtYet();
+        List<StoreKnowledge> employeesKnowledge = employee.ShareKnowledge(productsIDsNotBoughtYet);
+        for (int i = 0; i < employeesKnowledge.Count; ++i)
+        {
+            StoreKnowledge givenKnowledge = employeesKnowledge[i];
+            if (knowledge.KnowsStore(givenKnowledge.STORE_ID))
+            {
+                knowledge.UpdateKnowledge(givenKnowledge);
+            }
+            else
+            {
+                knowledge.CreateKnowledge(givenKnowledge);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Buying related
 
     private void Buying()
     {
@@ -132,6 +174,8 @@ public class Client : Human
         ChangeState(ClientState.Evaluating);
         IgnoreStoreTemporarily();
     }
+
+    #endregion
 
     #region CheckingStock related
 
@@ -355,7 +399,7 @@ public class Client : Human
 
     #endregion
 
-    #region Human Functions
+    #region Agent Functions
 
     public override void OnActionCompleted(IAction action)
     {
@@ -421,7 +465,7 @@ public class Client : Human
 
     public override void OnStoreSeen(Store store)
     {
-        if (knowledge.KnowsStore(store))
+        if (knowledge.KnowsStore(store.ID))
         {
             knowledge.UpdateKnowledge(store);
             return;
@@ -433,9 +477,27 @@ public class Client : Human
             List<int> products = resources.GetProductsInterestedIn(store);
             if (products.Count != 0)
             {
-                storeInterestedIn = knowledge.GetKnowledge(store);
+                storeInterestedIn = knowledge.GetKnowledge(store.ID);
                 StopExecutingActionQueue();
                 ChangeState(ClientState.MovingToStore);
+            }
+        }
+    }
+
+    public override void OnOtherAgentSeen(Agent agent)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has seen the agent {1}", name, agent.name);
+        }
+
+        if (currentState == ClientState.WanderingAround && agent is Employee)
+        {
+            Employee employee = agent as Employee;
+            if (employee.CanBeInterrupted())
+            {
+                employeeFound = employee;
+                ChangeState(ClientState.AskingForInformation);
             }
         }
     }

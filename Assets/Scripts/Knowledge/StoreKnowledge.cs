@@ -33,6 +33,25 @@ public struct StoreKnowledge
         }
     }
 
+    public void Update(StoreKnowledge knowledge)
+    {
+        Dictionary<int, int> productsToUpdate = new Dictionary<int, int>();
+        Dictionary<int, int> knownStock = knowledge.productsOnSale;
+        foreach (KeyValuePair<int, int> entry in knownStock)
+        {
+            int productID = entry.Key;
+            int price = entry.Value;
+            productsToUpdate.Add(productID, price);
+        }
+
+        foreach (KeyValuePair<int, int> entry in productsToUpdate)
+        {
+            int productID = entry.Key;
+            int price = entry.Value;
+            UpdateProduct(productID, price);
+        }
+    }
+
     private void UpdateProduct(int productID, int price)
     {
         if (KnowsThatSellsProduct(productID))
@@ -48,6 +67,11 @@ public struct StoreKnowledge
     public override int GetHashCode()
     {
         return STORE_ID;
+    }
+
+    public Dictionary<int, int> KnownStock
+    {
+        get => new Dictionary<int, int>(productsOnSale);
     }
 
 }

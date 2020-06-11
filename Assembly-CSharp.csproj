@@ -56,11 +56,11 @@
      <Compile Include="Assets\Scripts\Actions\IAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveToStoreAction.cs" />
+     <Compile Include="Assets\Scripts\Agents\Agent.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\Client.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ClientResources.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ShoppingList.cs" />
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
-     <Compile Include="Assets\Scripts\Agents\Human.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
      <Compile Include="Assets\Scripts\Exit.cs" />

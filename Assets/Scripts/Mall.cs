@@ -8,11 +8,12 @@ public class Mall
     public const float MAX_X = 12.3f;
 
     public static readonly Mall INSTANCE = new Mall();
-    public Dictionary<int, Store> allStores;
-    public Dictionary<int, List<Store>> storesInFloors;
-    public Dictionary<int, List<Store>> storesThatSellProduct;
-    public Dictionary<int, LocationData> exits;
-    public Dictionary<int, LocationData> storages;
+
+    private Dictionary<int, Store> allStores;
+    private Dictionary<int, List<Store>> storesInFloors;
+    private Dictionary<int, List<Store>> storesThatSellProduct;
+    private Dictionary<int, LocationData> exits;
+    private Dictionary<int, LocationData> storages;
 
     public Mall()
     {
@@ -72,6 +73,11 @@ public class Mall
     public Store GetStoreByID(int id)
     {
         return allStores[id];
+    }
+
+    public List<Store> GetStoresThatSellProduct(int productID)
+    {
+        return new List<Store>(storesThatSellProduct[productID]);
     }
 
     public bool AddExit(Exit exit)
