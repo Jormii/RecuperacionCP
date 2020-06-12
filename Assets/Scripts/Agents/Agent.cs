@@ -119,6 +119,24 @@ public abstract class Agent : MonoBehaviour
 
     public abstract void OnOtherAgentSeen(Agent agent);
 
+    protected void MoveTo(LocationData location, MoveAction.Destination destination)
+    {
+        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        if (currentLocation.FLOOR != location.FLOOR)
+        {
+            // TODO: Use knowledge to get stairs position
+            LocationData stairsLocation = Mall.INSTANCE.GetClosestStairs(currentLocation);
+            LocationData spawnLocation = Mall.INSTANCE.GetStairsOnFloor(location.FLOOR);
+
+            IAction moveToStairs = new MoveToStairsAction(navigation, stairsLocation, spawnLocation);
+            AddActionToQueue(moveToStairs);
+        }
+
+        IAction moveTo = new MoveAction(navigation, location, destination);
+        AddActionToQueue(moveTo);
+        ExecuteActionQueue();
+    }
+
     public void UponReachingDestination()
     {
         if (currentAction is MoveAction)

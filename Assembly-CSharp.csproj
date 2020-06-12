@@ -55,6 +55,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Actions\IAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveAction.cs" />
+     <Compile Include="Assets\Scripts\Actions\MoveToStairsAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveToStoreAction.cs" />
      <Compile Include="Assets\Scripts\Agents\Agent.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\Client.cs" />
@@ -63,18 +64,19 @@
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
-     <Compile Include="Assets\Scripts\Exit.cs" />
      <Compile Include="Assets\Scripts\IDProvider.cs" />
      <Compile Include="Assets\Scripts\Knowledge\ClientKnowledge.cs" />
      <Compile Include="Assets\Scripts\Knowledge\ExitKnowledge.cs" />
      <Compile Include="Assets\Scripts\Knowledge\StoreKnowledge.cs" />
      <Compile Include="Assets\Scripts\LocationData.cs" />
-     <Compile Include="Assets\Scripts\Mall.cs" />
+     <Compile Include="Assets\Scripts\Mall\Exit.cs" />
+     <Compile Include="Assets\Scripts\Mall\Mall.cs" />
+     <Compile Include="Assets\Scripts\Mall\Stairs.cs" />
+     <Compile Include="Assets\Scripts\Mall\Storage.cs" />
+     <Compile Include="Assets\Scripts\Mall\Store\Stock.cs" />
+     <Compile Include="Assets\Scripts\Mall\Store\StockData.cs" />
+     <Compile Include="Assets\Scripts\Mall\Store\Store.cs" />
      <Compile Include="Assets\Scripts\Product.cs" />
-     <Compile Include="Assets\Scripts\Storage.cs" />
-     <Compile Include="Assets\Scripts\Store\Stock.cs" />
-     <Compile Include="Assets\Scripts\Store\StockData.cs" />
-     <Compile Include="Assets\Scripts\Store\Store.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>C:/Users/Jorge López Natal/Desktop/Universidad/4º Curso/1er Cuatrimestre/CP/Recuperacion/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>

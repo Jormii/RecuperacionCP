@@ -15,24 +15,29 @@ public class MoveAction : IAction
     }
 
     private Navigation navigation;
-    private Vector2 position;
+    private LocationData location;
     private Destination destination;
 
-    public MoveAction(Navigation navigation, Vector2 position, Destination destination)
+    public MoveAction(Navigation navigation, LocationData location, Destination destination)
     {
         this.navigation = navigation;
-        this.position = position;
+        this.location = location;
         this.destination = destination;
     }
 
     public void Execute()
     {
-        navigation.MoveTo(position);
+        navigation.MoveTo(location.POSITION);
     }
 
     public void Cancel()
     {
         navigation.StopMoving();
+    }
+
+    public LocationData Location
+    {
+        get => location;
     }
 
     public Destination GetDestination

@@ -7,7 +7,7 @@ public class MoveToStoreAction : MoveAction
     private StoreKnowledge knowledge;
 
     public MoveToStoreAction(Navigation navigation, StoreKnowledge knowledge) :
-        base(navigation, knowledge.LOCATION.POSITION, Destination.Store)
+        base(navigation, knowledge.LOCATION, Destination.Store)
     {
         this.knowledge = knowledge;
     }

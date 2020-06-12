@@ -317,19 +317,8 @@ public class Client : Agent
             Debug.LogFormat("Client {0} is going to store {1}", name, storeInterestedIn.STORE_ID);
         }
 
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storeLocation = storeInterestedIn.LOCATION;
-        if (currentLocation.FLOOR != storeLocation.FLOOR)
-        {
-            // TODO: Create logic to move between floors
-            Vector2 stairsPosition = new Vector2();
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToStore = new MoveAction(navigation, storeLocation.POSITION, MoveAction.Destination.Store);
-        AddActionToQueue(moveToStore);
-        ExecuteActionQueue();
+        MoveTo(storeLocation, MoveAction.Destination.Store);
     }
 
     #endregion
@@ -340,9 +329,13 @@ public class Client : Agent
     {
         employeeFound.Interrupt();
 
-        IAction moveTowardsEmployee = new MoveAction(navigation, employeeFound.transform.position, MoveAction.Destination.Agent);
-        AddActionToQueue(moveTowardsEmployee);
-        ExecuteActionQueue();
+        // TODO: Tweaking to not end on top of the employee when asking
+        Vector2 employeePosition = employeeFound.transform.position;
+        Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
+        Vector2 destinationPosition = employeePosition - 1f * vector;
+        LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
+
+        MoveTo(destinationLocation, MoveAction.Destination.Agent);
     }
 
     #endregion
@@ -364,19 +357,8 @@ public class Client : Agent
         }
 
         ExitKnowledge closestExit = GetClosestExit();
-
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData exitLocation = closestExit.LOCATION;
-        if (currentLocation.FLOOR != exitLocation.FLOOR)
-        {
-            Vector2 stairsPosition = new Vector2();   // TODO: Obtain stairs position
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToExit = new MoveAction(navigation, exitLocation.POSITION, MoveAction.Destination.Exit);
-        AddActionToQueue(moveToExit);
-        ExecuteActionQueue();
+        MoveTo(exitLocation, MoveAction.Destination.Exit);
     }
 
     private ExitKnowledge GetClosestExit()
@@ -409,10 +391,9 @@ public class Client : Agent
             (wanderDirection.x < 0) ? Mall.MIN_X : Mall.MAX_X,
             transform.position.y
         );
+        LocationData wanderLocation = new LocationData(wanderDestination, currentFloor);
 
-        IAction wander = new MoveAction(navigation, wanderDestination, MoveAction.Destination.NoDestination);
-        AddActionToQueue(wander);
-        ExecuteActionQueue();
+        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
     }
 
     #endregion
@@ -429,19 +410,19 @@ public class Client : Agent
             switch (moveAction.GetDestination)
             {
                 case MoveAction.Destination.Agent:
-                    OnAgentReached();
+                    OnAgentReached(moveAction);
                     break;
                 case MoveAction.Destination.Exit:
-                    OnExitReached();
+                    OnExitReached(moveAction);
                     break;
                 case MoveAction.Destination.NoDestination:
-                    ChangeState(ClientState.Evaluating);
+                    OnNoDestinationReached(moveAction);
                     break;
                 case MoveAction.Destination.Stairs:
-                    OnStairsReached();
+                    OnStairsReached(moveAction);
                     break;
                 case MoveAction.Destination.Store:
-                    OnStoreReached();
+                    OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Storage:
                 default:
@@ -453,7 +434,7 @@ public class Client : Agent
         base.OnActionCompleted(action);
     }
 
-    private void OnAgentReached()
+    private void OnAgentReached(MoveAction moveAction)
     {
         if (debug)
         {
@@ -463,7 +444,7 @@ public class Client : Agent
         ChangeState(ClientState.AskingForInformation);
     }
 
-    private void OnExitReached()
+    private void OnExitReached(MoveAction moveAction)
     {
         if (debug)
         {
@@ -473,15 +454,31 @@ public class Client : Agent
         gameObject.SetActive(false);
     }
 
-    private void OnStairsReached()
+    private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        ChangeState(ClientState.Evaluating);
+    }
+
+    private void OnStairsReached(MoveAction moveAction)
     {
         if (debug)
         {
             Debug.LogFormat("Client {0} has reached the stairs", name);
         }
+
+        MoveToStairsAction moveToStairsAction = moveAction as MoveToStairsAction;
+
+        Vector2 newPosition = new Vector2(
+            transform.position.x,
+            moveToStairsAction.SpawnLocation.POSITION.y
+        );
+        int newFloor = moveToStairsAction.SpawnLocation.FLOOR;
+
+        transform.position = newPosition;
+        currentFloor = newFloor;
     }
 
-    private void OnStoreReached()
+    private void OnStoreReached(MoveAction moveAction)
     {
         if (debug)
         {

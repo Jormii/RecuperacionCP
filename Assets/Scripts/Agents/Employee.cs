@@ -20,6 +20,7 @@ public class Employee : Agent
     private Dictionary<int, int> productsBeingCarried;
 
     private Store lastStoreSeen;
+    private bool interrupted;
 
     protected override void Start()
     {
@@ -37,7 +38,7 @@ public class Employee : Agent
             case EmployeeState.MovingToStorage:
             case EmployeeState.MovingToStore:
             case EmployeeState.WanderingAround:
-                return true;
+                return !interrupted;
             default:
                 return false;
         }
@@ -45,6 +46,7 @@ public class Employee : Agent
 
     public void Interrupt()
     {
+        interrupted = true;
         if (ExecutingActionQueue)
         {
             PauseActionQueue();
@@ -53,6 +55,7 @@ public class Employee : Agent
 
     public void ContinueTasks()
     {
+        interrupted = false;
         ExecuteActionQueue();
     }
 
@@ -123,17 +126,7 @@ public class Employee : Agent
 
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storageLocation = Mall.INSTANCE.GetClosestStorage(currentLocation);
-        if (currentLocation.FLOOR != storageLocation.FLOOR)
-        {
-            // TODO: Consider different floors
-            Vector2 stairsPosition = new Vector2();
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToStorageAction = new MoveAction(navigation, storageLocation.POSITION, MoveAction.Destination.Storage);
-        AddActionToQueue(moveToStorageAction);
-        ExecuteActionQueue();
+        MoveTo(storageLocation, MoveAction.Destination.Storage);
     }
 
     #endregion
@@ -147,18 +140,8 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is heading to store {1}", name, lastStoreSeen.name);
         }
 
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storeLocation = lastStoreSeen.Location;
-        if (currentLocation.FLOOR != storeLocation.FLOOR)
-        {
-            Vector2 stairsPosition = new Vector2();  // TODO: Use Mall
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToStore = new MoveAction(navigation, storeLocation.POSITION, MoveAction.Destination.Store);
-        AddActionToQueue(moveToStore);
-        ExecuteActionQueue();
+        MoveTo(storeLocation, MoveAction.Destination.Store);
     }
 
     #endregion
@@ -310,9 +293,9 @@ public class Employee : Agent
             transform.position.y
         );
 
-        IAction wander = new MoveAction(navigation, wanderDestination, MoveAction.Destination.NoDestination);
-        AddActionToQueue(wander);
-        ExecuteActionQueue();
+        int floorToGo = (Random.Range(0f, 1f) > 0.5f) ? 0 : 1;
+        LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
+        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
     }
 
     #endregion
@@ -329,15 +312,16 @@ public class Employee : Agent
             switch (moveAction.GetDestination)
             {
                 case MoveAction.Destination.NoDestination:
-                    ChangeState(EmployeeState.WanderingAround);
+                    OnNoDestinationReached(moveAction);
                     break;
                 case MoveAction.Destination.Stairs:
+                    OnStairsReached(moveAction);
                     break;
                 case MoveAction.Destination.Storage:
-                    OnStorageReached();
+                    OnStorageReached(moveAction);
                     break;
                 case MoveAction.Destination.Store:
-                    OnStoreReached();
+                    OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Exit:
                 default:
@@ -349,12 +333,31 @@ public class Employee : Agent
         base.OnActionCompleted(action);
     }
 
-    private void OnStorageReached()
+    private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        ChangeState(EmployeeState.WanderingAround);
+    }
+
+    private void OnStairsReached(MoveAction moveAction)
+    {
+        MoveToStairsAction moveToStairsAction = moveAction as MoveToStairsAction;
+
+        Vector2 newPosition = new Vector2(
+            transform.position.x,
+            moveToStairsAction.SpawnLocation.POSITION.y
+        );
+        int newFloor = moveToStairsAction.SpawnLocation.FLOOR;
+
+        transform.position = newPosition;
+        currentFloor = newFloor;
+    }
+
+    private void OnStorageReached(MoveAction moveAction)
     {
         ChangeState(EmployeeState.MovingToStore);
     }
 
-    private void OnStoreReached()
+    private void OnStoreReached(MoveAction moveAction)
     {
         ChangeState(EmployeeState.ReStocking);
     }
@@ -384,5 +387,4 @@ public class Employee : Agent
     }
 
     #endregion
-
 }
