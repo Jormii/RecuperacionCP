@@ -58,6 +58,7 @@
      <Compile Include="Assets\Scripts\Actions\MoveToStairsAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveToStoreAction.cs" />
      <Compile Include="Assets\Scripts\Agents\Agent.cs" />
+     <Compile Include="Assets\Scripts\Agents\Boss.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\Client.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ClientResources.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ShoppingList.cs" />

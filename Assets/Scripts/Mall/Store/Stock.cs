@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Store))]
 public class Stock : MonoBehaviour
 {
     public List<StockData> initialStock;
     public float stockTimeout = 5f;
 
+    private Store store;
     private Dictionary<int, StockData> stock;
     private bool reStockingCountdownRunning = false;
     private float reStockingCountdown;
@@ -24,6 +26,7 @@ public class Stock : MonoBehaviour
 
     private void Start()
     {
+        store = GetComponent<Store>();
         if (NeedsReStocking())
         {
             StartReStockingCountdown();
@@ -160,8 +163,10 @@ public class Stock : MonoBehaviour
 
     private void OnCountdownFinished()
     {
-        // TODO: Notice boss when implemented
         Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+
+        Dictionary<int, int> reStock = GetProductsToRefill();
+        Boss.INSTANCE.RequestReStock(store, reStock);
 
         reStockingCountdown = 1.5f * stockTimeout;
 

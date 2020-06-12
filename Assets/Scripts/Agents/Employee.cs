@@ -29,6 +29,8 @@ public class Employee : Agent
         currentState = EmployeeState.WanderingAround;
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
+
+        Boss.INSTANCE.AddEmployee(this);
     }
 
     public bool CanBeInterrupted()
@@ -57,6 +59,107 @@ public class Employee : Agent
     {
         interrupted = false;
         ExecuteActionQueue();
+    }
+
+    public void SendToReStock(Store store, Dictionary<int, int> reStock)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0}: Boss has asked them to restock store {1}", name, store.name);
+        }
+
+        lastStoreSeen = store;
+        StopExecutingActionQueue();
+        MoveProductsFromCarriedToRefill(store.ID, reStock);
+        if (AlreadyHasProductsWanted(store.ID, reStock))
+        {
+            ChangeState(EmployeeState.MovingToStore);
+        }
+        else
+        {
+            AddRestOfProducts(store.ID, reStock);
+            ChangeState(EmployeeState.MovingToStorage);
+        }
+    }
+
+    private void MoveProductsFromCarriedToRefill(int storeID, Dictionary<int, int> reStock)
+    {
+        // Store what products to move
+        Dictionary<int, int> productsToMove = new Dictionary<int, int>();
+        foreach (KeyValuePair<int, int> entry in productsBeingCarried)
+        {
+            int productID = entry.Key;
+            int amount = entry.Value;
+
+            if (reStock.ContainsKey(productID))
+            {
+                productsToMove.Add(productID, amount);
+            }
+        }
+
+        // Delete them from carried
+        foreach (int productID in productsToMove.Keys)
+        {
+            productsBeingCarried.Remove(productID);
+        }
+
+        // Add them to store's refill
+        if (!productsToRefill.ContainsKey(storeID))
+        {
+            productsToRefill.Add(storeID, new Dictionary<int, int>());
+        }
+
+        Dictionary<int, int> refill = productsToRefill[storeID];
+        foreach (KeyValuePair<int, int> entry in productsToMove)
+        {
+            int productID = entry.Key;
+            int amount = entry.Value;
+
+            if (refill.ContainsKey(productID))
+            {
+                refill[productID] += amount;
+            }
+            else
+            {
+                refill.Add(productID, amount);
+            }
+        }
+    }
+
+    private bool AlreadyHasProductsWanted(int storeID, Dictionary<int, int> reStock)
+    {
+        if (productsToRefill.ContainsKey(storeID))
+        {
+            Dictionary<int, int> reStockAlreadyNoted = productsToRefill[storeID];
+            foreach (int productID in reStock.Keys)
+            {
+                if (!reStockAlreadyNoted.ContainsKey(productID))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void AddRestOfProducts(int storeID, Dictionary<int, int> reStock)
+    {
+        Dictionary<int, int> refill = productsToRefill[storeID];
+        foreach (KeyValuePair<int, int> entry in reStock)
+        {
+            int productID = entry.Key;
+            int desiredAmount = entry.Value;
+
+            if (refill.ContainsKey(productID))
+            {
+                refill[productID] = Mathf.Max(refill[productID], desiredAmount);
+            }
+            else
+            {
+                refill.Add(productID, desiredAmount);
+            }
+        }
     }
 
     public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
