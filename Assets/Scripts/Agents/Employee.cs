@@ -293,7 +293,7 @@ public class Employee : Agent
             transform.position.y
         );
 
-        int floorToGo = (Random.Range(0f, 1f) > 0.5f) ? 0 : 1;
+        int floorToGo = (Random.Range(0f, 1f) > -2f) ? 0 : 1;
         LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
         MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
     }

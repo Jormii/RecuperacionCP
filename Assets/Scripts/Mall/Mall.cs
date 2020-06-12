@@ -136,7 +136,7 @@ public class Mall
             }
         }
 
-        Debug.LogError("This can't happen");
+        Debug.LogError("Couldn't find  stairs. This can't happen");
         return new LocationData(location.POSITION, location.FLOOR);
     }
 
@@ -150,7 +150,7 @@ public class Mall
             }
         }
 
-        Debug.LogError("This can't happen");
+        Debug.LogError("Couldn't find  stairs. This can't happen");
         return new LocationData(new Vector2(), floor);
     }
 

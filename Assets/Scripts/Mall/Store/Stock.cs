@@ -5,8 +5,11 @@ using UnityEngine;
 public class Stock : MonoBehaviour
 {
     public List<StockData> initialStock;
+    public float stockTimeout = 5f;
 
     private Dictionary<int, StockData> stock;
+    private bool reStockingCountdownRunning = false;
+    private float reStockingCountdown;
 
     private void Awake()
     {
@@ -16,6 +19,22 @@ public class Stock : MonoBehaviour
         {
             StockData stockData = initialStock[i];
             stock.Add(stockData.Product.ID, stockData);
+        }
+    }
+
+    private void Start()
+    {
+        if (NeedsReStocking())
+        {
+            StartReStockingCountdown();
+        }
+    }
+
+    private void Update()
+    {
+        if (reStockingCountdownRunning)
+        {
+            UpdateReStockingCountdown();
         }
     }
 
@@ -31,7 +50,15 @@ public class Stock : MonoBehaviour
 
     public int Sell(int productID, int amount)
     {
-        return stock[productID].Sell(amount);
+        StockData stockData = stock[productID];
+        int profit = stockData.Sell(amount);
+
+        if (stockData.NeedsReStock())
+        {
+            StartReStockingCountdown();
+        }
+
+        return profit;
     }
 
     public bool NeedsReStocking()
@@ -39,11 +66,7 @@ public class Stock : MonoBehaviour
         // TODO: Use a set to indicate products that need restocking
         foreach (StockData stockData in stock.Values)
         {
-            int currentStock = stockData.CurrentStock;
-            int maxStock = stockData.MaximumStock;
-            int reStockMargin = stockData.ReStockMargin;
-
-            if ((maxStock - currentStock) > reStockMargin)
+            if (stockData.NeedsReStock())
             {
                 return true;
             }
@@ -87,15 +110,66 @@ public class Stock : MonoBehaviour
                 continue;
             }
 
-            int unnecessaryStock = stock[productID].UpdateStock(amount);
+            StockData stockData = stock[productID];
+            int unnecessaryStock = stockData.UpdateStock(amount);
             if (unnecessaryStock != 0)
             {
                 overStock.Add(productID, unnecessaryStock);
             }
         }
 
+        if (!NeedsReStocking())
+        {
+            StopReStockingCountdown();
+        }
+
         return overStock;
     }
+
+
+    #region ReStocking countdown
+
+    private void StartReStockingCountdown()
+    {
+        if (reStockingCountdownRunning)
+        {
+            return;
+        }
+
+        reStockingCountdownRunning = true;
+        reStockingCountdown = stockTimeout;
+    }
+
+    private void UpdateReStockingCountdown()
+    {
+        float newTime = reStockingCountdown - Time.deltaTime;
+        if (newTime < 0f)
+        {
+            OnCountdownFinished();
+        }
+        else
+        {
+            reStockingCountdown = newTime;
+        }
+    }
+
+    private void StopReStockingCountdown()
+    {
+        reStockingCountdownRunning = false;
+    }
+
+    private void OnCountdownFinished()
+    {
+        // TODO: Notice boss when implemented
+        Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+
+        reStockingCountdown = 1.5f * stockTimeout;
+
+        Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+    }
+
+    #endregion
+
 
     #region Properties
 
