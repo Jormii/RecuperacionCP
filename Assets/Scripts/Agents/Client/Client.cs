@@ -318,7 +318,7 @@ public class Client : Agent
         }
 
         LocationData storeLocation = storeInterestedIn.LOCATION;
-        MoveTo(storeLocation, MoveAction.Destination.Store);
+        MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
     }
 
     #endregion

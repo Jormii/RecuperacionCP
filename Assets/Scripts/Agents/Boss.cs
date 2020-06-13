@@ -2,22 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Boss : MonoBehaviour
+public class Boss
 {
-    public static Boss INSTANCE;
+    public static readonly Boss INSTANCE = new Boss();
 
     private Dictionary<int, Employee> employees;
 
-    private void Start()
+    private Boss()
     {
-        if (INSTANCE)
-        {
-            Debug.LogError("Multiple bosses. This can't happen. Destroying");
-            Destroy(gameObject);
-            return;
-        }
-
-        INSTANCE = this;
         employees = new Dictionary<int, Employee>();
     }
 

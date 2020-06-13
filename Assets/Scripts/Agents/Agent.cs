@@ -52,6 +52,11 @@ public abstract class Agent : MonoBehaviour
         get => executingQueue;
     }
 
+    public bool ThereAreActionsLeft()
+    {
+        return actions.Count != 0;
+    }
+
     public void AddActionToQueue(IAction action)
     {
         actions.Enqueue(action);
@@ -80,6 +85,11 @@ public abstract class Agent : MonoBehaviour
 
     public void PauseActionQueue()
     {
+        if (!executingQueue)
+        {
+            return;
+        }
+
         currentAction.Cancel();
         AddActionToHeadOfQueue(currentAction);
 
@@ -88,6 +98,11 @@ public abstract class Agent : MonoBehaviour
 
     public void StopExecutingActionQueue()
     {
+        if (!executingQueue)
+        {
+            return;
+        }
+
         currentAction.Cancel();
         actions.Clear();
         executingQueue = false;
@@ -134,6 +149,25 @@ public abstract class Agent : MonoBehaviour
 
         IAction moveTo = new MoveAction(navigation, location, destination);
         AddActionToQueue(moveTo);
+        ExecuteActionQueue();
+    }
+
+    // TODO
+    public void MoveToStore(LocationData location, int storeID)
+    {
+        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        if (currentLocation.FLOOR != location.FLOOR)
+        {
+            // TODO: Use knowledge to get stairs position
+            LocationData stairsLocation = Mall.INSTANCE.GetClosestStairs(currentLocation);
+            LocationData spawnLocation = Mall.INSTANCE.GetStairsOnFloor(location.FLOOR);
+
+            IAction moveToStairs = new MoveToStairsAction(navigation, stairsLocation, spawnLocation);
+            AddActionToQueue(moveToStairs);
+        }
+
+        IAction moveToStore = new MoveToStoreAction(navigation, location, storeID);
+        AddActionToQueue(moveToStore);
         ExecuteActionQueue();
     }
 

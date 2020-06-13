@@ -16,7 +16,7 @@ public class Mall
     private Dictionary<int, LocationData> storages;
     private Dictionary<int, LocationData> allStairs;    // TODO: Index by floor
 
-    public Mall()
+    private Mall()
     {
         this.allStores = new Dictionary<int, Store>();
         this.storesInFloors = new Dictionary<int, List<Store>>();

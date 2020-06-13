@@ -20,6 +20,7 @@ public class Employee : Agent
     private Dictionary<int, int> productsBeingCarried;
 
     private Store lastStoreSeen;
+    private bool hasVisitedStorage;
     private bool interrupted;
 
     protected override void Start()
@@ -58,7 +59,10 @@ public class Employee : Agent
     public void ContinueTasks()
     {
         interrupted = false;
-        ExecuteActionQueue();
+        if (ThereAreActionsLeft())
+        {
+            ExecuteActionQueue();
+        }
     }
 
     public void SendToReStock(Store store, Dictionary<int, int> reStock)
@@ -196,7 +200,7 @@ public class Employee : Agent
         switch (currentState)
         {
             case EmployeeState.MovingToStorage:
-                GoingToStorage();
+                MovingToStorage();
                 break;
             case EmployeeState.MovingToStore:
                 MovingToStore();
@@ -218,9 +222,9 @@ public class Employee : Agent
         }
     }
 
-    #region GoingToStorage related
+    #region MovingToStorage related
 
-    private void GoingToStorage()
+    private void MovingToStorage()
     {
         if (debug)
         {
@@ -238,13 +242,36 @@ public class Employee : Agent
 
     private void MovingToStore()
     {
+        Store store = ChooseClosestStore();
+        lastStoreSeen = store;
+
         if (debug)
         {
             Debug.LogFormat("Employee {0} is heading to store {1}", name, lastStoreSeen.name);
         }
 
         LocationData storeLocation = lastStoreSeen.Location;
-        MoveTo(storeLocation, MoveAction.Destination.Store);
+        MoveToStore(storeLocation, lastStoreSeen.ID);
+    }
+
+    private Store ChooseClosestStore()
+    {
+        if (productsToRefill.Count == 0)
+        {
+            return lastStoreSeen;
+        }
+        else
+        {
+            // TODO
+            foreach (int storeID in productsToRefill.Keys)
+            {
+                Store store = Mall.INSTANCE.GetStoreByID(storeID);
+                return store;
+            }
+        }
+
+        Debug.LogError("This point can't be reached");
+        return null;
     }
 
     #endregion
@@ -348,7 +375,22 @@ public class Employee : Agent
         Dictionary<int, int> overStock = stock.ReStock(restock);
         HandleUnnecessaryStock(overStock);
 
-        ChangeState(EmployeeState.WanderingAround);
+        // Still has products to restock
+        if (productsToRefill.Count != 0)
+        {
+            if (hasVisitedStorage)
+            {
+                ChangeState(EmployeeState.MovingToStore);
+            }
+            else
+            {
+                ChangeState(EmployeeState.MovingToStorage);
+            }
+        }
+        else
+        {
+            ChangeState(EmployeeState.WanderingAround);
+        }
     }
 
     private void HandleUnnecessaryStock(Dictionary<int, int> stock)
@@ -384,6 +426,8 @@ public class Employee : Agent
         {
             Debug.LogFormat("Employee {0} is wandering around", name);
         }
+
+        hasVisitedStorage = false;
 
         // TODO: Consider changing floors
         Vector2 wanderDirection = new Vector2(
@@ -457,11 +501,15 @@ public class Employee : Agent
 
     private void OnStorageReached(MoveAction moveAction)
     {
+        hasVisitedStorage = true;
         ChangeState(EmployeeState.MovingToStore);
     }
 
     private void OnStoreReached(MoveAction moveAction)
     {
+        MoveToStoreAction moveToStoreAction = moveAction as MoveToStoreAction;
+
+        lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
     }
 
@@ -472,13 +520,22 @@ public class Employee : Agent
 
     public override void OnStoreSeen(Store store)
     {
-        if (currentState != EmployeeState.WanderingAround)
+        // Employee already has noted that this store needs restocking
+        if (productsToRefill.ContainsKey(store.ID))
         {
             return;
         }
 
-        ChangeState(EmployeeState.ObservingStock);
-        lastStoreSeen = store;
+        switch (currentState)
+        {
+            case EmployeeState.MovingToStorage:
+            case EmployeeState.WanderingAround:
+                ChangeState(EmployeeState.ObservingStock);
+                lastStoreSeen = store;
+                break;
+            default:
+                break;
+        }
     }
 
     public override void OnOtherAgentSeen(Agent agent)
