@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 
-public class Storage : MonoBehaviour
+public class Exit : MonoBehaviour
 {
     public readonly int ID = IDProvider.GetID();
 
@@ -11,8 +11,8 @@ public class Storage : MonoBehaviour
 
     private void Start()
     {
-        Mall.INSTANCE.AddStorage(this);
-        Destroy(GetComponent<Storage>());
+        Mall.INSTANCE.AddExit(this);
+        GetComponent<Exit>().enabled = false;
     }
 
     public int Floor

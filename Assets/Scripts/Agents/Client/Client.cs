@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Client : Human
+public class Client : Agent
 {
     public enum ClientState
     {
         Evaluating,
+        MovingTowardsEmployee,
         MovingToStore,
         CheckingStock,
         Buying,
         WanderingAround,
+        AskingForInformation,
         Leaving,
         Error
     };
@@ -21,7 +23,9 @@ public class Client : Human
     private ClientKnowledge knowledge;
     private ClientResources resources;
     private Dictionary<int, float> storesIgnored;
+
     private StoreKnowledge storeInterestedIn;
+    private Employee employeeFound;
 
     protected override void Start()
     {
@@ -76,6 +80,9 @@ public class Client : Human
     {
         switch (currentState)
         {
+            case ClientState.AskingForInformation:
+                AskingForInformation();
+                break;
             case ClientState.Buying:
                 Buying();
                 break;
@@ -87,6 +94,9 @@ public class Client : Human
                 break;
             case ClientState.MovingToStore:
                 MovingToStore();
+                break;
+            case ClientState.MovingTowardsEmployee:
+                MovingTowardsEmployee();
                 break;
             case ClientState.Leaving:
                 Leaving();
@@ -101,6 +111,45 @@ public class Client : Human
                 break;
         }
     }
+
+    #region AskingForInformationRelated
+
+    private void AskingForInformation()
+    {
+        AskForInformation(employeeFound);
+        StopExecutingActionQueue();
+        ChangeState(ClientState.Evaluating);
+    }
+
+    private void AskForInformation(Employee employee)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} asks employee {1} for information on products they want", name, employee.name);
+        }
+
+        List<int> productsIDsNotBoughtYet = resources.GetProductsNotBoughtYet();
+        List<StoreKnowledge> employeesKnowledge = employee.ShareKnowledge(productsIDsNotBoughtYet);
+        for (int i = 0; i < employeesKnowledge.Count; ++i)
+        {
+            StoreKnowledge givenKnowledge = employeesKnowledge[i];
+            if (knowledge.KnowsStore(givenKnowledge.STORE_ID))
+            {
+                knowledge.UpdateKnowledge(givenKnowledge);
+            }
+            else
+            {
+                knowledge.CreateKnowledge(givenKnowledge);
+            }
+        }
+
+        ChangeState(ClientState.Evaluating);
+        employeeFound.ContinueTasks();
+    }
+
+    #endregion
+
+    #region Buying related
 
     private void Buying()
     {
@@ -132,6 +181,8 @@ public class Client : Human
         ChangeState(ClientState.Evaluating);
         IgnoreStoreTemporarily();
     }
+
+    #endregion
 
     #region CheckingStock related
 
@@ -209,11 +260,11 @@ public class Client : Human
             }
 
             StoreKnowledge closestStore = GetClosestStoreThatSellsWantedProducts(productsIDs);
-            if (storesIgnored.ContainsKey(closestStore.STORE_ID))
+            if (closestStore.STORE_ID == -1)
             {
                 if (debug)
                 {
-                    Debug.LogFormat("Client{0}: Store {1} is being ignored for the moment", name, closestStore.STORE_ID);
+                    Debug.LogFormat("Client {0} is ignoring all stores they know", name);
                 }
 
                 ChangeState(ClientState.WanderingAround);
@@ -245,14 +296,33 @@ public class Client : Human
 
     private StoreKnowledge GetClosestStoreThatSellsWantedProducts(List<int> productsIDs)
     {
-        // TODO
+        Vector2 currentPosition = transform.position;
+        StoreKnowledge closestStore = new StoreKnowledge(-1, new LocationData());
+        float distanceToClosestStore = Mathf.Infinity;
         for (int i = 0; i < productsIDs.Count; ++i)
         {
             int productID = productsIDs[i];
+            List<StoreKnowledge> storesThatSellProduct = knowledge.GetStoresThatSellProduct(productID);
+            for (int j = 0; j < storesThatSellProduct.Count; ++j)
+            {
+                StoreKnowledge storeKnown = storesThatSellProduct[j];
+                if (storesIgnored.ContainsKey(storeKnown.STORE_ID))
+                {
+                    continue;
+                }
+
+                Vector2 storePosition = storeKnown.LOCATION.POSITION;
+                float manhattanDistance = Utils.ManhattanDistance(currentPosition, storePosition);
+
+                if (manhattanDistance < distanceToClosestStore)
+                {
+                    closestStore = storeKnown;
+                    distanceToClosestStore = manhattanDistance;
+                }
+            }
         }
 
-        List<StoreKnowledge> stores = knowledge.GetStoreThatSellsProduct(productsIDs[0]);
-        return stores[0];
+        return closestStore;
     }
 
     #endregion
@@ -266,19 +336,25 @@ public class Client : Human
             Debug.LogFormat("Client {0} is going to store {1}", name, storeInterestedIn.STORE_ID);
         }
 
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storeLocation = storeInterestedIn.LOCATION;
-        if (currentLocation.FLOOR != storeLocation.FLOOR)
-        {
-            // TODO: Create logic to move between floors
-            Vector2 stairsPosition = new Vector2();
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
+        MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
+    }
 
-        IAction moveToStore = new MoveAction(navigation, storeLocation.POSITION, MoveAction.Destination.Store);
-        AddActionToQueue(moveToStore);
-        ExecuteActionQueue();
+    #endregion
+
+    #region MovingTowardsEmployee related
+
+    private void MovingTowardsEmployee()
+    {
+        employeeFound.Interrupt();
+
+        // TODO once sprites are done: Tweaking to not end on top of the employee when asking
+        Vector2 employeePosition = employeeFound.transform.position;
+        Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
+        Vector2 destinationPosition = employeePosition - 1f * vector;
+        LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
+
+        MoveTo(destinationLocation, MoveAction.Destination.Agent);
     }
 
     #endregion
@@ -300,28 +376,31 @@ public class Client : Human
         }
 
         ExitKnowledge closestExit = GetClosestExit();
-
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData exitLocation = closestExit.LOCATION;
-        if (currentLocation.FLOOR != exitLocation.FLOOR)
-        {
-            Vector2 stairsPosition = new Vector2();   // TODO: Obtain stairs position
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToExit = new MoveAction(navigation, exitLocation.POSITION, MoveAction.Destination.Exit);
-        AddActionToQueue(moveToExit);
-        ExecuteActionQueue();
+        MoveTo(exitLocation, MoveAction.Destination.Exit);
     }
 
     private ExitKnowledge GetClosestExit()
     {
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         List<ExitKnowledge> knownExits = knowledge.GetKnownExits();
 
-        // TODO
-        return knownExits[0];
+        Vector2 currentPosition = transform.position;
+        ExitKnowledge closestExit = new ExitKnowledge();
+        float distanceToClosestExit = Mathf.Infinity;
+        for (int i = 0; i < knownExits.Count; ++i)
+        {
+            ExitKnowledge exitKnown = knownExits[i];
+            Vector2 exitPosition = exitKnown.LOCATION.POSITION;
+            float manhattanDistance = Utils.ManhattanDistance(currentPosition, exitPosition);
+
+            if (manhattanDistance < distanceToClosestExit)
+            {
+                closestExit = exitKnown;
+                distanceToClosestExit = manhattanDistance;
+            }
+        }
+
+        return closestExit;
     }
 
     #endregion
@@ -335,7 +414,20 @@ public class Client : Human
             Debug.LogFormat("Client {0} is wandering", name);
         }
 
-        // TODO: Consider changing floors
+        Vector2 wanderDestination = CalculateWanderDestination();
+        int newFloor = currentFloor;
+
+        if (ShouldChangeFloors())
+        {
+            newFloor = CalculateNewFloor();
+        }
+
+        LocationData wanderLocation = new LocationData(wanderDestination, newFloor);
+        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
+    }
+
+    private Vector2 CalculateWanderDestination()
+    {
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
             0f
@@ -346,16 +438,23 @@ public class Client : Human
             transform.position.y
         );
 
-        IAction wander = new MoveAction(navigation, wanderDestination, MoveAction.Destination.NoDestination);
-        AddActionToQueue(wander);
-        ExecuteActionQueue();
+        return wanderDestination;
+    }
+
+    private int CalculateNewFloor()
+    {
+        int upperFloor = (Mall.INSTANCE.FloorExists(currentFloor + 1)) ? currentFloor + 1 : currentFloor;
+        int lowerFloor = (Mall.INSTANCE.FloorExists(currentFloor - 1)) ? currentFloor - 1 : currentFloor;
+
+        float random = Random.Range(0f, 1f);
+        return (random > 0.5f) ? upperFloor : lowerFloor;
     }
 
     #endregion
 
     #endregion
 
-    #region Human Functions
+    #region Agent Functions
 
     public override void OnActionCompleted(IAction action)
     {
@@ -364,17 +463,23 @@ public class Client : Human
             MoveAction moveAction = action as MoveAction;
             switch (moveAction.GetDestination)
             {
+                case MoveAction.Destination.Agent:
+                    OnAgentReached(moveAction);
+                    break;
                 case MoveAction.Destination.Exit:
-                    OnExitReached();
+                    OnExitReached(moveAction);
                     break;
                 case MoveAction.Destination.NoDestination:
-                    ChangeState(ClientState.Evaluating);
+                    OnNoDestinationReached(moveAction);
                     break;
                 case MoveAction.Destination.Stairs:
-                    OnStairsReached();
+                    OnStairsReached(moveAction);
+                    break;
+                case MoveAction.Destination.StairsEnd:
+                    OnStairsEndReached(moveAction);
                     break;
                 case MoveAction.Destination.Store:
-                    OnStoreReached();
+                    OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Storage:
                 default:
@@ -386,7 +491,17 @@ public class Client : Human
         base.OnActionCompleted(action);
     }
 
-    private void OnExitReached()
+    private void OnAgentReached(MoveAction moveAction)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is next to another agent", name);
+        }
+
+        ChangeState(ClientState.AskingForInformation);
+    }
+
+    private void OnExitReached(MoveAction moveAction)
     {
         if (debug)
         {
@@ -396,7 +511,12 @@ public class Client : Human
         gameObject.SetActive(false);
     }
 
-    private void OnStairsReached()
+    private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        ChangeState(ClientState.Evaluating);
+    }
+
+    private void OnStairsReached(MoveAction moveAction)
     {
         if (debug)
         {
@@ -404,7 +524,13 @@ public class Client : Human
         }
     }
 
-    private void OnStoreReached()
+    private void OnStairsEndReached(MoveAction moveAction)
+    {
+        int newFloor = moveAction.Location.FLOOR;
+        currentFloor = newFloor;
+    }
+
+    private void OnStoreReached(MoveAction moveAction)
     {
         if (debug)
         {
@@ -421,7 +547,7 @@ public class Client : Human
 
     public override void OnStoreSeen(Store store)
     {
-        if (knowledge.KnowsStore(store))
+        if (knowledge.KnowsStore(store.ID))
         {
             knowledge.UpdateKnowledge(store);
             return;
@@ -433,11 +559,49 @@ public class Client : Human
             List<int> products = resources.GetProductsInterestedIn(store);
             if (products.Count != 0)
             {
-                storeInterestedIn = knowledge.GetKnowledge(store);
+                storeInterestedIn = knowledge.GetKnowledge(store.ID);
                 StopExecutingActionQueue();
                 ChangeState(ClientState.MovingToStore);
             }
         }
+    }
+
+    public override void OnOtherAgentSeen(Agent agent)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has seen the agent {1}", name, agent.name);
+        }
+
+        if (currentState == ClientState.WanderingAround && agent is Employee)
+        {
+            Employee employee = agent as Employee;
+            if (employee.CanBeInterrupted())
+            {
+                employeeFound = employee;
+                ChangeState(ClientState.MovingTowardsEmployee);
+            }
+        }
+    }
+
+    public override void OnExitSeen(Exit exit)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has seen an exit", name);
+        }
+
+        if (knowledge.KnowsExit(exit.ID))
+        {
+            return;
+        }
+
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} knows a new exit", name);
+        }
+
+        knowledge.CreateKnowledge(exit);
     }
 
     #endregion

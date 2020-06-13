@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Employee : Human
+public class Employee : Agent
 {
 
     private enum EmployeeState
@@ -16,10 +16,13 @@ public class Employee : Human
     }
 
     [SerializeField] private EmployeeState currentState = EmployeeState.WanderingAround;
+    [SerializeField] private List<int> floorsInCharge;
     private Dictionary<int, Dictionary<int, int>> productsToRefill;
     private Dictionary<int, int> productsBeingCarried;
 
     private Store lastStoreSeen;
+    private bool hasVisitedStorage;
+    private bool interrupted;
 
     protected override void Start()
     {
@@ -28,6 +31,171 @@ public class Employee : Human
         currentState = EmployeeState.WanderingAround;
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
+
+        Boss.INSTANCE.AddEmployee(this);
+    }
+
+    public bool CanBeInterrupted()
+    {
+        switch (currentState)
+        {
+            case EmployeeState.MovingToStorage:
+            case EmployeeState.MovingToStore:
+            case EmployeeState.WanderingAround:
+                return !interrupted;
+            default:
+                return false;
+        }
+    }
+
+    public void Interrupt()
+    {
+        interrupted = true;
+        if (ExecutingActionQueue)
+        {
+            PauseActionQueue();
+        }
+    }
+
+    public void ContinueTasks()
+    {
+        interrupted = false;
+        if (ThereAreActionsLeft())
+        {
+            ExecuteActionQueue();
+        }
+    }
+
+    public void SendToReStock(Store store, Dictionary<int, int> reStock)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0}: Boss has asked them to restock store {1}", name, store.name);
+        }
+
+        if (productsToRefill.ContainsKey(store.ID))
+        {
+            return;
+        }
+
+        lastStoreSeen = store;
+        StopExecutingActionQueue();
+        MoveProductsFromCarriedToRefill(store.ID, reStock);
+        if (AlreadyHasProductsWanted(store.ID, reStock))
+        {
+            ChangeState(EmployeeState.MovingToStore);
+        }
+        else
+        {
+            AddRestOfProducts(store.ID, reStock);
+            ChangeState(EmployeeState.MovingToStorage);
+        }
+    }
+
+    private void MoveProductsFromCarriedToRefill(int storeID, Dictionary<int, int> reStock)
+    {
+        // Store what products to move
+        Dictionary<int, int> productsToMove = new Dictionary<int, int>();
+        foreach (KeyValuePair<int, int> entry in productsBeingCarried)
+        {
+            int productID = entry.Key;
+            int amount = entry.Value;
+
+            if (reStock.ContainsKey(productID))
+            {
+                productsToMove.Add(productID, amount);
+            }
+        }
+
+        // Delete them from carried
+        foreach (int productID in productsToMove.Keys)
+        {
+            productsBeingCarried.Remove(productID);
+        }
+
+        // Add them to store's refill
+        if (!productsToRefill.ContainsKey(storeID))
+        {
+            productsToRefill.Add(storeID, new Dictionary<int, int>());
+        }
+
+        Dictionary<int, int> refill = productsToRefill[storeID];
+        foreach (KeyValuePair<int, int> entry in productsToMove)
+        {
+            int productID = entry.Key;
+            int amount = entry.Value;
+
+            if (refill.ContainsKey(productID))
+            {
+                refill[productID] += amount;
+            }
+            else
+            {
+                refill.Add(productID, amount);
+            }
+        }
+    }
+
+    private bool AlreadyHasProductsWanted(int storeID, Dictionary<int, int> reStock)
+    {
+        if (productsToRefill.ContainsKey(storeID))
+        {
+            Dictionary<int, int> reStockAlreadyNoted = productsToRefill[storeID];
+            foreach (int productID in reStock.Keys)
+            {
+                if (!reStockAlreadyNoted.ContainsKey(productID))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void AddRestOfProducts(int storeID, Dictionary<int, int> reStock)
+    {
+        Dictionary<int, int> refill = productsToRefill[storeID];
+        foreach (KeyValuePair<int, int> entry in reStock)
+        {
+            int productID = entry.Key;
+            int desiredAmount = entry.Value;
+
+            if (refill.ContainsKey(productID))
+            {
+                refill[productID] = Mathf.Max(refill[productID], desiredAmount);
+            }
+            else
+            {
+                refill.Add(productID, desiredAmount);
+            }
+        }
+    }
+
+    public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
+    {
+        List<StoreKnowledge> givenKnowledge = new List<StoreKnowledge>();
+        for (int i = 0; i < productsIDs.Count; ++i)
+        {
+            int productID = productsIDs[i];
+            List<Store> stores = Mall.INSTANCE.GetStoresThatSellProduct(productID);
+            for (int j = 0; j < stores.Count; ++j)
+            {
+                Store store = stores[j];
+                int storeFloor = store.Floor;
+                if (!floorsInCharge.Contains(storeFloor))
+                {
+                    continue;
+                }
+
+                StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Location);
+                knowledge.Update(store);
+
+                givenKnowledge.Add(knowledge);
+            }
+        }
+
+        return givenKnowledge;
     }
 
     #region States functions
@@ -43,7 +211,7 @@ public class Employee : Human
         switch (currentState)
         {
             case EmployeeState.MovingToStorage:
-                GoingToStorage();
+                MovingToStorage();
                 break;
             case EmployeeState.MovingToStore:
                 MovingToStore();
@@ -65,9 +233,9 @@ public class Employee : Human
         }
     }
 
-    #region GoingToStorage related
+    #region MovingToStorage related
 
-    private void GoingToStorage()
+    private void MovingToStorage()
     {
         if (debug)
         {
@@ -76,17 +244,7 @@ public class Employee : Human
 
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storageLocation = Mall.INSTANCE.GetClosestStorage(currentLocation);
-        if (currentLocation.FLOOR != storageLocation.FLOOR)
-        {
-            // TODO: Consider different floors
-            Vector2 stairsPosition = new Vector2();
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveToStorageAction = new MoveAction(navigation, storageLocation.POSITION, MoveAction.Destination.Storage);
-        AddActionToQueue(moveToStorageAction);
-        ExecuteActionQueue();
+        MoveTo(storageLocation, MoveAction.Destination.Storage);
     }
 
     #endregion
@@ -95,23 +253,42 @@ public class Employee : Human
 
     private void MovingToStore()
     {
+        Store store = ChooseClosestStore();
+        lastStoreSeen = store;
+
         if (debug)
         {
             Debug.LogFormat("Employee {0} is heading to store {1}", name, lastStoreSeen.name);
         }
 
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storeLocation = lastStoreSeen.Location;
-        if (currentLocation.FLOOR != storeLocation.FLOOR)
+        MoveToStore(storeLocation, lastStoreSeen.ID);
+    }
+
+    private Store ChooseClosestStore()
+    {
+        if (productsToRefill.Count == 0)
         {
-            Vector2 stairsPosition = new Vector2();  // TODO: Use Mall
-            IAction moveToStairs = new MoveAction(navigation, stairsPosition, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
+            return lastStoreSeen;
         }
 
-        IAction moveToStore = new MoveAction(navigation, storeLocation.POSITION, MoveAction.Destination.Store);
-        AddActionToQueue(moveToStore);
-        ExecuteActionQueue();
+        Vector2 currentPosition = transform.position;
+        Store closestStore = null;
+        float distanceToClosest = Mathf.Infinity;
+        foreach (int storeID in productsToRefill.Keys)
+        {
+            Store store = Mall.INSTANCE.GetStoreByID(storeID);
+            Vector2 storePosition = store.Location.POSITION;
+            float manhattanDistance = Utils.ManhattanDistance(currentPosition, storePosition);
+
+            if (manhattanDistance < distanceToClosest)
+            {
+                closestStore = store;
+                distanceToClosest = manhattanDistance;
+            }
+        }
+
+        return closestStore;
     }
 
     #endregion
@@ -215,7 +392,22 @@ public class Employee : Human
         Dictionary<int, int> overStock = stock.ReStock(restock);
         HandleUnnecessaryStock(overStock);
 
-        ChangeState(EmployeeState.WanderingAround);
+        // Still has products to restock
+        if (productsToRefill.Count != 0)
+        {
+            if (hasVisitedStorage)
+            {
+                ChangeState(EmployeeState.MovingToStore);
+            }
+            else
+            {
+                ChangeState(EmployeeState.MovingToStorage);
+            }
+        }
+        else
+        {
+            ChangeState(EmployeeState.WanderingAround);
+        }
     }
 
     private void HandleUnnecessaryStock(Dictionary<int, int> stock)
@@ -252,7 +444,22 @@ public class Employee : Human
             Debug.LogFormat("Employee {0} is wandering around", name);
         }
 
-        // TODO: Consider changing floors
+        hasVisitedStorage = false;
+
+        Vector2 wanderDestination = CalculateWanderDestination();
+        int floorToGo = currentFloor;
+        if (ShouldChangeFloors())
+        {
+            floorToGo = CalculateFloorToVisit();
+        }
+
+        LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
+        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
+    }
+
+    private Vector2 CalculateWanderDestination()
+    {
+        // TODO
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
             0f
@@ -263,16 +470,28 @@ public class Employee : Human
             transform.position.y
         );
 
-        IAction wander = new MoveAction(navigation, wanderDestination, MoveAction.Destination.NoDestination);
-        AddActionToQueue(wander);
-        ExecuteActionQueue();
+        return wanderDestination;
+    }
+
+    private int CalculateFloorToVisit()
+    {
+        if (floorsInCharge.Count == 1)
+        {
+            return currentFloor;
+        }
+
+        List<int> floors = new List<int>(floorsInCharge);
+        floors.Remove(currentFloor);
+
+        int randomIndex = Random.Range(0, floors.Count - 1);
+        return floors[randomIndex];
     }
 
     #endregion
 
     #endregion
 
-    #region Human Functions
+    #region Agent Functions
 
     public override void OnActionCompleted(IAction action)
     {
@@ -282,15 +501,19 @@ public class Employee : Human
             switch (moveAction.GetDestination)
             {
                 case MoveAction.Destination.NoDestination:
-                    ChangeState(EmployeeState.WanderingAround);
+                    OnNoDestinationReached(moveAction);
                     break;
                 case MoveAction.Destination.Stairs:
+                    OnStairsReached(moveAction);
+                    break;
+                case MoveAction.Destination.StairsEnd:
+                    OnStairsEndReached(moveAction);
                     break;
                 case MoveAction.Destination.Storage:
-                    OnStorageReached();
+                    OnStorageReached(moveAction);
                     break;
                 case MoveAction.Destination.Store:
-                    OnStoreReached();
+                    OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Exit:
                 default:
@@ -302,13 +525,30 @@ public class Employee : Human
         base.OnActionCompleted(action);
     }
 
-    private void OnStorageReached()
+    private void OnNoDestinationReached(MoveAction moveAction)
     {
+        ChangeState(EmployeeState.WanderingAround);
+    }
+
+    private void OnStairsReached(MoveAction moveAction) { }
+
+    private void OnStairsEndReached(MoveAction moveAction)
+    {
+        int newFloor = moveAction.Location.FLOOR;
+        currentFloor = newFloor;
+    }
+
+    private void OnStorageReached(MoveAction moveAction)
+    {
+        hasVisitedStorage = true;
         ChangeState(EmployeeState.MovingToStore);
     }
 
-    private void OnStoreReached()
+    private void OnStoreReached(MoveAction moveAction)
     {
+        MoveToStoreAction moveToStoreAction = moveAction as MoveToStoreAction;
+
+        lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
     }
 
@@ -319,15 +559,33 @@ public class Employee : Human
 
     public override void OnStoreSeen(Store store)
     {
-        if (currentState != EmployeeState.WanderingAround)
+        // Employee already has noted that this store needs restocking
+        if (productsToRefill.ContainsKey(store.ID))
         {
             return;
         }
 
-        ChangeState(EmployeeState.ObservingStock);
-        lastStoreSeen = store;
+        switch (currentState)
+        {
+            case EmployeeState.MovingToStorage:
+            case EmployeeState.WanderingAround:
+                ChangeState(EmployeeState.ObservingStock);
+                lastStoreSeen = store;
+                break;
+            default:
+                break;
+        }
     }
 
-    #endregion
+    public override void OnOtherAgentSeen(Agent agent)
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} has seen the agent {1}", name, agent.name);
+        }
+    }
 
+    public override void OnExitSeen(Exit exit) { }
+
+    #endregion
 }
