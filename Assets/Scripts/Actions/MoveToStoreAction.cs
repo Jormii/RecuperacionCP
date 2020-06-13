@@ -7,5 +7,4 @@
     {
         this.STORE_ID = storeID;
     }
-
 }

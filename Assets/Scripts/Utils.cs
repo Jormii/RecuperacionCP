@@ -6,5 +6,4 @@ public class Utils
     {
         return Mathf.Abs(A.x - B.x) + Mathf.Abs(A.y - B.y);
     }
-
 }
