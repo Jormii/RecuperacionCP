@@ -2,8 +2,4 @@
 {
     void Execute();
     void Cancel();
-    bool CanBeCancelled
-    {
-        get;
-    }
 }

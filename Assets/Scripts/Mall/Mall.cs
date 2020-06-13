@@ -1,33 +1,46 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Mall
 {
-    public const float MIN_X = -12.3f;
-    public const float MAX_X = 12.3f;
+    // TODO: Tweak these variables when graphics are in
+    public const float MALL_LEFT_LIMIT = -12.3f;
+    public const float MALL_RIGHT_LIMIT = 12.3f;
 
     public static readonly Mall INSTANCE = new Mall();
 
     private int lowestFloor = int.MaxValue;
     private int highestFloor = int.MinValue;
+
+    // Stores variables
     private Dictionary<int, Store> allStores;
     private Dictionary<int, List<Store>> storesInFloors;
     private Dictionary<int, List<Store>> storesThatSellProduct;
-    private Dictionary<int, LocationData> exits;
-    private Dictionary<int, LocationData> storages;
+
+    // Stairs variables
     private Dictionary<int, Stairs> allStairs;
     private Dictionary<int, List<Stairs>> stairsByFloor;
+
+    // Exits and storages
+    private Dictionary<int, LocationData> exits;
+    private Dictionary<int, LocationData> storages;
 
     private Mall()
     {
         this.allStores = new Dictionary<int, Store>();
         this.storesInFloors = new Dictionary<int, List<Store>>();
         this.storesThatSellProduct = new Dictionary<int, List<Store>>();
-        this.exits = new Dictionary<int, LocationData>();
-        this.storages = new Dictionary<int, LocationData>();
+
         this.allStairs = new Dictionary<int, Stairs>();
         this.stairsByFloor = new Dictionary<int, List<Stairs>>();
+
+        this.exits = new Dictionary<int, LocationData>();
+        this.storages = new Dictionary<int, LocationData>();
+    }
+
+    public bool FloorExists(int floor)
+    {
+        return floor >= lowestFloor && floor <= highestFloor;
     }
 
     private void UpdateFloors(int floor)
@@ -36,11 +49,13 @@ public class Mall
         highestFloor = Mathf.Max(highestFloor, floor);
     }
 
-    public bool AddStore(Store store)
+    #region Store Related
+
+    public void AddStore(Store store)
     {
         if (allStores.ContainsKey(store.ID))
         {
-            return false;
+            return;
         }
 
         allStores.Add(store.ID, store);
@@ -52,9 +67,9 @@ public class Mall
         }
         else
         {
-            List<Store> stores = new List<Store>();
-            stores.Add(store);
-            storesInFloors.Add(store.Floor, stores);
+            List<Store> list = new List<Store>();
+            list.Add(store);
+            storesInFloors.Add(store.Floor, list);
         }
 
         Stock stock = store.StoreStock;
@@ -69,18 +84,11 @@ public class Mall
             }
             else
             {
-                List<Store> stores = new List<Store>();
-                stores.Add(store);
-                storesThatSellProduct.Add(productID, stores);
+                List<Store> list = new List<Store>();
+                list.Add(store);
+                storesThatSellProduct.Add(productID, list);
             }
         }
-
-        return true;
-    }
-
-    public bool ExistsStoreWithID(int id)
-    {
-        return allStores.ContainsKey(id);
     }
 
     public Store GetStoreByID(int id)
@@ -93,51 +101,23 @@ public class Mall
         return new List<Store>(storesThatSellProduct[productID]);
     }
 
-    public bool AddExit(Exit exit)
-    {
-        if (exits.ContainsKey(exit.ID))
-        {
-            return false;
-        }
+    #endregion
 
-        LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
-        exits.Add(exit.ID, locationData);
-        UpdateFloors(exit.Floor);
+    #region Stairs Related
 
-        return true;
-    }
-
-    public bool AddStorage(Storage storage)
-    {
-        if (storages.ContainsKey(storage.ID))
-        {
-            return false;
-        }
-
-        LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
-        storages.Add(storage.ID, locationData);
-        UpdateFloors(storage.Floor);
-
-        return true;
-    }
-
-    public LocationData GetClosestStorage(LocationData location)
-    {
-        // TODO
-        return new List<LocationData>(storages.Values)[0];
-    }
-
-    public bool AddStairs(Stairs stairs)
+    public void AddStairs(Stairs stairs)
     {
         if (allStairs.ContainsKey(stairs.ID))
         {
-            return false;
+            return;
         }
 
         LocationData startLocation = stairs.StartingLocation;
         LocationData endLocation = stairs.EndingLocation;
 
         allStairs.Add(stairs.ID, stairs);
+        UpdateFloors(startLocation.FLOOR);
+        UpdateFloors(endLocation.FLOOR);
 
         if (stairsByFloor.ContainsKey(startLocation.FLOOR))
         {
@@ -149,11 +129,6 @@ public class Mall
             list.Add(stairs);
             stairsByFloor.Add(startLocation.FLOOR, list);
         }
-
-        UpdateFloors(startLocation.FLOOR);
-        UpdateFloors(endLocation.FLOOR);
-
-        return true;
     }
 
     public Stairs GetClosestStairs(LocationData location, Stairs.Direction direction)
@@ -182,9 +157,57 @@ public class Mall
         return closestStairs;
     }
 
-    public bool FloorExists(int floor)
+    #endregion
+
+    #region Exit Related
+
+    public void AddExit(Exit exit)
     {
-        return floor >= lowestFloor && floor <= highestFloor;
+        if (exits.ContainsKey(exit.ID))
+        {
+            return;
+        }
+
+        LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
+        exits.Add(exit.ID, locationData);
+        UpdateFloors(exit.Floor);
     }
 
+    // TODO: GetClosestExit?
+
+    #endregion
+
+    #region Storage Related
+
+    public void AddStorage(Storage storage)
+    {
+        if (storages.ContainsKey(storage.ID))
+        {
+            return;
+        }
+
+        LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
+        storages.Add(storage.ID, locationData);
+        UpdateFloors(storage.Floor);
+    }
+
+    public LocationData GetClosestStorage(LocationData location)
+    {
+        LocationData closestStorage = new LocationData();
+        float distanceToClosestStorage = Mathf.Infinity;
+
+        foreach (LocationData storage in storages.Values)
+        {
+            float manhattanDistance = Utils.ManhattanDistance(location.POSITION, storage.POSITION);
+            if (manhattanDistance < distanceToClosestStorage)
+            {
+                closestStorage = storage;
+                distanceToClosestStorage = manhattanDistance;
+            }
+        }
+
+        return closestStorage;
+    }
+
+    #endregion
 }

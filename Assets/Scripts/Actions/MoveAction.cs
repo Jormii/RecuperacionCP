@@ -34,11 +34,6 @@
 
     #region Properties
 
-    public bool CanBeCancelled
-    {
-        get => true;
-    }
-
     public LocationData Location
     {
         get => location;

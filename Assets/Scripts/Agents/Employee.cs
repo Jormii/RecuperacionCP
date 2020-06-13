@@ -466,7 +466,7 @@ public class Employee : Agent
         );
 
         Vector2 wanderDestination = new Vector2(
-            (wanderDirection.x < 0) ? Mall.MIN_X : Mall.MAX_X,
+            (wanderDirection.x < 0) ? Mall.MALL_LEFT_LIMIT : Mall.MALL_RIGHT_LIMIT,
             transform.position.y
         );
 
