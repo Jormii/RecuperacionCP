@@ -585,15 +585,7 @@ public class Employee : Agent
         }
     }
 
-    public override void OnStairsSeen(Stairs stairs)
-    {
-
-    }
-
-    public override void OnExitSeen(Exit exit)
-    {
-
-    }
+    public override void OnExitSeen(Exit exit) { }
 
     #endregion
 }

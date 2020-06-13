@@ -584,14 +584,6 @@ public class Client : Agent
         }
     }
 
-    public override void OnStairsSeen(Stairs stairs)
-    {
-        if (debug)
-        {
-            Debug.LogFormat("Client {0} has seen stairs", name);
-        }
-    }
-
     public override void OnExitSeen(Exit exit)
     {
         if (debug)

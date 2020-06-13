@@ -141,8 +141,6 @@ public abstract class Agent : MonoBehaviour
 
     public abstract void OnOtherAgentSeen(Agent agent);
 
-    public abstract void OnStairsSeen(Stairs stairs);
-
     public abstract void OnExitSeen(Exit exit);
 
     protected void MoveTo(LocationData location, MoveAction.Destination destination)
@@ -162,9 +160,8 @@ public abstract class Agent : MonoBehaviour
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         if (currentLocation.FLOOR != location.FLOOR)
         {
-            // TODO: Use knowledge to get stairs position
-            // TODO: Consider moving between multiple floors
-            Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(currentLocation);
+            Stairs.Direction direction = (currentLocation.FLOOR < location.FLOOR) ? Stairs.Direction.Up : Stairs.Direction.Down;
+            Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(currentLocation, direction);
             LocationData stairsLocation = closestStairs.StartingLocation;
             LocationData stairsEndLocation = closestStairs.EndingLocation;
 

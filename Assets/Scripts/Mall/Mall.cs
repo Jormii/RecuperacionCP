@@ -156,32 +156,30 @@ public class Mall
         return true;
     }
 
-    public Stairs GetClosestStairs(LocationData location)
+    public Stairs GetClosestStairs(LocationData location, Stairs.Direction direction)
     {
-        // TODO: Find closests
         List<Stairs> stairsInFloor = stairsByFloor[location.FLOOR];
-        foreach (Stairs stairs in stairsInFloor)
+
+        Stairs closestStairs = null;
+        float distanceToClosest = Mathf.Infinity;
+        for (int i = 0; i < stairsInFloor.Count; ++i)
         {
-            LocationData startLocation = stairs.StartingLocation;
-            if (startLocation.FLOOR == location.FLOOR)
+            Stairs stairs = stairsInFloor[i];
+
+            if (stairs.StairsDirection != direction)
             {
-                return stairs;
+                continue;
+            }
+
+            float manhattanDistance = Utils.ManhattanDistance(location.POSITION, stairs.StartingLocation.POSITION);
+            if (manhattanDistance < distanceToClosest)
+            {
+                closestStairs = stairs;
+                distanceToClosest = manhattanDistance;
             }
         }
 
-        Debug.LogError("Couldn't find  stairs. This can't happen");
-        return null;
-    }
-
-    public List<LocationData> GetStairsOnFloor(int floor)
-    {
-        List<LocationData> locations = new List<LocationData>();
-        foreach (Stairs stairs in stairsByFloor[floor])
-        {
-            locations.Add(stairs.StartingLocation);
-        }
-
-        return locations;
+        return closestStairs;
     }
 
     public bool FloorExists(int floor)
