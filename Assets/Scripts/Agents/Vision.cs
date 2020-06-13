@@ -38,6 +38,18 @@ public class Vision : MonoBehaviour
             {
                 agent.OnStoreSeen(storeSeen);
             }
+
+            Stairs stairsSeen = gameObjectHit.GetComponent<Stairs>();
+            if (stairsSeen)
+            {
+                agent.OnStairsSeen(stairsSeen);
+            }
+
+            Exit exitSeen = gameObjectHit.GetComponent<Exit>();
+            if (exitSeen)
+            {
+                agent.OnExitSeen(exitSeen);
+            }
         }
     }
 

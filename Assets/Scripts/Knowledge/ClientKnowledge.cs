@@ -13,10 +13,6 @@ public class ClientKnowledge
         this.knownStores = new Dictionary<int, StoreKnowledge>();
         this.knownStoresByProduct = new Dictionary<int, List<StoreKnowledge>>();
         this.knownExits = new Dictionary<int, ExitKnowledge>();
-
-        // TODO: Remove this
-        GameObject exit = GameObject.FindGameObjectWithTag("Exit");
-        knownExits.Add(0, new ExitKnowledge(0, new LocationData(exit.transform.position, 0)));
     }
 
     #region Store Knowledge
@@ -106,7 +102,7 @@ public class ClientKnowledge
         return knownStoresByProduct.ContainsKey(productID);
     }
 
-    public List<StoreKnowledge> GetStoreThatSellsProduct(int productID)
+    public List<StoreKnowledge> GetStoresThatSellProduct(int productID)
     {
         return knownStoresByProduct[productID];
     }
@@ -118,6 +114,19 @@ public class ClientKnowledge
     public bool KnowsAnyExit()
     {
         return knownExits.Count != 0;
+    }
+
+    public bool KnowsExit(int exitID)
+    {
+        return knownExits.ContainsKey(exitID);
+    }
+
+    public void CreateKnowledge(Exit exit)
+    {
+        LocationData exitLocation = new LocationData(exit.transform.position, exit.Floor);
+        ExitKnowledge newKnowledge = new ExitKnowledge(exit.ID, exitLocation);
+
+        knownExits.Add(exit.ID, newKnowledge);
     }
 
     public List<ExitKnowledge> GetKnownExits()

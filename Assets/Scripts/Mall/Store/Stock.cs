@@ -66,7 +66,6 @@ public class Stock : MonoBehaviour
 
     public bool NeedsReStocking()
     {
-        // TODO: Use a set to indicate products that need restocking
         foreach (StockData stockData in stock.Values)
         {
             if (stockData.NeedsReStock())

@@ -9,12 +9,15 @@ public class Mall
 
     public static readonly Mall INSTANCE = new Mall();
 
+    private int lowestFloor = int.MaxValue;
+    private int highestFloor = int.MinValue;
     private Dictionary<int, Store> allStores;
     private Dictionary<int, List<Store>> storesInFloors;
     private Dictionary<int, List<Store>> storesThatSellProduct;
     private Dictionary<int, LocationData> exits;
     private Dictionary<int, LocationData> storages;
-    private Dictionary<int, LocationData> allStairs;    // TODO: Index by floor
+    private Dictionary<int, Stairs> allStairs;
+    private Dictionary<int, List<Stairs>> stairsByFloor;
 
     private Mall()
     {
@@ -23,7 +26,14 @@ public class Mall
         this.storesThatSellProduct = new Dictionary<int, List<Store>>();
         this.exits = new Dictionary<int, LocationData>();
         this.storages = new Dictionary<int, LocationData>();
-        this.allStairs = new Dictionary<int, LocationData>();
+        this.allStairs = new Dictionary<int, Stairs>();
+        this.stairsByFloor = new Dictionary<int, List<Stairs>>();
+    }
+
+    private void UpdateFloors(int floor)
+    {
+        lowestFloor = Mathf.Min(lowestFloor, floor);
+        highestFloor = Mathf.Max(highestFloor, floor);
     }
 
     public bool AddStore(Store store)
@@ -34,6 +44,7 @@ public class Mall
         }
 
         allStores.Add(store.ID, store);
+        UpdateFloors(store.Location.FLOOR);
 
         if (storesInFloors.ContainsKey(store.Floor))
         {
@@ -91,6 +102,8 @@ public class Mall
 
         LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
         exits.Add(exit.ID, locationData);
+        UpdateFloors(exit.Floor);
+
         return true;
     }
 
@@ -103,6 +116,8 @@ public class Mall
 
         LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
         storages.Add(storage.ID, locationData);
+        UpdateFloors(storage.Floor);
+
         return true;
     }
 
@@ -119,39 +134,59 @@ public class Mall
             return false;
         }
 
-        Vector2 position = stairs.transform.position;
-        int floor = stairs.Floor;
-        LocationData location = new LocationData(position, floor);
-        allStairs.Add(stairs.ID, location);
+        LocationData startLocation = stairs.StartingLocation;
+        LocationData endLocation = stairs.EndingLocation;
+
+        allStairs.Add(stairs.ID, stairs);
+
+        if (stairsByFloor.ContainsKey(startLocation.FLOOR))
+        {
+            stairsByFloor[startLocation.FLOOR].Add(stairs);
+        }
+        else
+        {
+            List<Stairs> list = new List<Stairs>();
+            list.Add(stairs);
+            stairsByFloor.Add(startLocation.FLOOR, list);
+        }
+
+        UpdateFloors(startLocation.FLOOR);
+        UpdateFloors(endLocation.FLOOR);
+
         return true;
     }
 
-    public LocationData GetClosestStairs(LocationData location)
+    public Stairs GetClosestStairs(LocationData location)
     {
-        foreach (LocationData stairLocation in allStairs.Values)
+        // TODO: Find closests
+        List<Stairs> stairsInFloor = stairsByFloor[location.FLOOR];
+        foreach (Stairs stairs in stairsInFloor)
         {
-            if (stairLocation.FLOOR == location.FLOOR)
+            LocationData startLocation = stairs.StartingLocation;
+            if (startLocation.FLOOR == location.FLOOR)
             {
-                return stairLocation;
+                return stairs;
             }
         }
 
         Debug.LogError("Couldn't find  stairs. This can't happen");
-        return new LocationData(location.POSITION, location.FLOOR);
+        return null;
     }
 
-    public LocationData GetStairsOnFloor(int floor)
+    public List<LocationData> GetStairsOnFloor(int floor)
     {
-        foreach (LocationData stairsLocation in allStairs.Values)
+        List<LocationData> locations = new List<LocationData>();
+        foreach (Stairs stairs in stairsByFloor[floor])
         {
-            if (stairsLocation.FLOOR == floor)
-            {
-                return stairsLocation;
-            }
+            locations.Add(stairs.StartingLocation);
         }
 
-        Debug.LogError("Couldn't find  stairs. This can't happen");
-        return new LocationData(new Vector2(), floor);
+        return locations;
+    }
+
+    public bool FloorExists(int floor)
+    {
+        return floor >= lowestFloor && floor <= highestFloor;
     }
 
 }

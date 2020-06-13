@@ -12,7 +12,7 @@ public class Exit : MonoBehaviour
     private void Start()
     {
         Mall.INSTANCE.AddExit(this);
-        Destroy(GetComponent<Exit>());
+        GetComponent<Exit>().enabled = false;
     }
 
     public int Floor

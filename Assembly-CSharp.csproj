@@ -55,7 +55,6 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Actions\IAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveAction.cs" />
-     <Compile Include="Assets\Scripts\Actions\MoveToStairsAction.cs" />
      <Compile Include="Assets\Scripts\Actions\MoveToStoreAction.cs" />
      <Compile Include="Assets\Scripts\Agents\Agent.cs" />
      <Compile Include="Assets\Scripts\Agents\Boss.cs" />
@@ -78,6 +77,7 @@
      <Compile Include="Assets\Scripts\Mall\Store\StockData.cs" />
      <Compile Include="Assets\Scripts\Mall\Store\Store.cs" />
      <Compile Include="Assets\Scripts\Product.cs" />
+     <Compile Include="Assets\Scripts\Utils.cs" />
  <Reference Include="Unity.TextMeshPro.Editor">
  <HintPath>C:/Users/Jorge López Natal/Desktop/Universidad/4º Curso/1er Cuatrimestre/CP/Recuperacion/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
  </Reference>

@@ -6,6 +6,8 @@ using UnityEngine;
 public abstract class Agent : MonoBehaviour
 {
     public bool debug = true;
+    public int initialFloor;
+    public float maxTimeSpentPerFloor = 10f;
 
     protected Vision vision;
     protected Navigation navigation;
@@ -15,14 +17,17 @@ public abstract class Agent : MonoBehaviour
     private IAction currentAction;
     private bool executingQueue;
     private bool consumedState;
+    private float timeSpentOnThisFloor;
 
     protected virtual void Start()
     {
         vision = GetComponent<Vision>();
         navigation = GetComponent<Navigation>();
 
+        currentFloor = initialFloor;
         actions = new Queue<IAction>();
         consumedState = false;
+        timeSpentOnThisFloor = 0f;
     }
 
     protected virtual void Update()
@@ -32,6 +37,8 @@ public abstract class Agent : MonoBehaviour
             consumedState = true;
             PerformCurrentState();
         }
+
+        timeSpentOnThisFloor += Time.deltaTime;
     }
 
     #region State machine related functions
@@ -134,40 +141,43 @@ public abstract class Agent : MonoBehaviour
 
     public abstract void OnOtherAgentSeen(Agent agent);
 
+    public abstract void OnStairsSeen(Stairs stairs);
+
+    public abstract void OnExitSeen(Exit exit);
+
     protected void MoveTo(LocationData location, MoveAction.Destination destination)
     {
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
-        if (currentLocation.FLOOR != location.FLOOR)
-        {
-            // TODO: Use knowledge to get stairs position
-            LocationData stairsLocation = Mall.INSTANCE.GetClosestStairs(currentLocation);
-            LocationData spawnLocation = Mall.INSTANCE.GetStairsOnFloor(location.FLOOR);
-
-            IAction moveToStairs = new MoveToStairsAction(navigation, stairsLocation, spawnLocation);
-            AddActionToQueue(moveToStairs);
-        }
-
-        IAction moveTo = new MoveAction(navigation, location, destination);
-        AddActionToQueue(moveTo);
-        ExecuteActionQueue();
+        MoveAction moveTo = new MoveAction(navigation, location, destination);
+        MoveTo(location, moveTo);
     }
 
-    // TODO
     public void MoveToStore(LocationData location, int storeID)
+    {
+        MoveToStoreAction moveToStore = new MoveToStoreAction(navigation, location, storeID);
+        MoveTo(location, moveToStore);
+    }
+
+    private void MoveTo(LocationData location, MoveAction moveAction)
     {
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         if (currentLocation.FLOOR != location.FLOOR)
         {
             // TODO: Use knowledge to get stairs position
-            LocationData stairsLocation = Mall.INSTANCE.GetClosestStairs(currentLocation);
-            LocationData spawnLocation = Mall.INSTANCE.GetStairsOnFloor(location.FLOOR);
+            // TODO: Consider moving between multiple floors
+            Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(currentLocation);
+            LocationData stairsLocation = closestStairs.StartingLocation;
+            LocationData stairsEndLocation = closestStairs.EndingLocation;
 
-            IAction moveToStairs = new MoveToStairsAction(navigation, stairsLocation, spawnLocation);
+            IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
             AddActionToQueue(moveToStairs);
+
+            IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
+            AddActionToQueue(goUpStairs);
+
+            timeSpentOnThisFloor = 0f;
         }
 
-        IAction moveToStore = new MoveToStoreAction(navigation, location, storeID);
-        AddActionToQueue(moveToStore);
+        AddActionToQueue(moveAction);
         ExecuteActionQueue();
     }
 
@@ -181,6 +191,15 @@ public abstract class Agent : MonoBehaviour
         {
             Debug.LogErrorFormat("Error in agent {0}", name);
         }
+    }
+
+    protected bool ShouldChangeFloors()
+    {
+        float ratioTimeSpent = timeSpentOnThisFloor / maxTimeSpentPerFloor;
+        float chance = 1f - 1f / (0.15f * ratioTimeSpent + 1f);
+        float random = Random.Range(0f, 1f);
+
+        return random <= chance;
     }
 
     #endregion

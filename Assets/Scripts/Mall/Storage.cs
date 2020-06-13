@@ -12,7 +12,7 @@ public class Storage : MonoBehaviour
     private void Start()
     {
         Mall.INSTANCE.AddStorage(this);
-        Destroy(GetComponent<Storage>());
+        GetComponent<Storage>().enabled = false;
     }
 
     public int Floor

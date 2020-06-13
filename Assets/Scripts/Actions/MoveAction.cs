@@ -9,6 +9,7 @@ public class MoveAction : IAction
         Agent,
         Store,
         Stairs,
+        StairsEnd,
         Exit,
         Storage,
         NoDestination
@@ -35,6 +36,13 @@ public class MoveAction : IAction
         navigation.StopMoving();
     }
 
+    #region Properties
+
+    public bool CanBeCancelled
+    {
+        get => true;
+    }
+
     public LocationData Location
     {
         get => location;
@@ -44,5 +52,7 @@ public class MoveAction : IAction
     {
         get => destination;
     }
+
+    #endregion
 
 }

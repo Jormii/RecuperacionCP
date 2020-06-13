@@ -16,6 +16,7 @@ public class Employee : Agent
     }
 
     [SerializeField] private EmployeeState currentState = EmployeeState.WanderingAround;
+    [SerializeField] private List<int> floorsInCharge;
     private Dictionary<int, Dictionary<int, int>> productsToRefill;
     private Dictionary<int, int> productsBeingCarried;
 
@@ -70,6 +71,11 @@ public class Employee : Agent
         if (debug)
         {
             Debug.LogFormat("Employee {0}: Boss has asked them to restock store {1}", name, store.name);
+        }
+
+        if (productsToRefill.ContainsKey(store.ID))
+        {
+            return;
         }
 
         lastStoreSeen = store;
@@ -168,7 +174,6 @@ public class Employee : Agent
 
     public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
     {
-        // TODO: Employees have global knowledge
         List<StoreKnowledge> givenKnowledge = new List<StoreKnowledge>();
         for (int i = 0; i < productsIDs.Count; ++i)
         {
@@ -177,6 +182,12 @@ public class Employee : Agent
             for (int j = 0; j < stores.Count; ++j)
             {
                 Store store = stores[j];
+                int storeFloor = store.Floor;
+                if (!floorsInCharge.Contains(storeFloor))
+                {
+                    continue;
+                }
+
                 StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Location);
                 knowledge.Update(store);
 
@@ -260,18 +271,24 @@ public class Employee : Agent
         {
             return lastStoreSeen;
         }
-        else
+
+        Vector2 currentPosition = transform.position;
+        Store closestStore = null;
+        float distanceToClosest = Mathf.Infinity;
+        foreach (int storeID in productsToRefill.Keys)
         {
-            // TODO
-            foreach (int storeID in productsToRefill.Keys)
+            Store store = Mall.INSTANCE.GetStoreByID(storeID);
+            Vector2 storePosition = store.Location.POSITION;
+            float manhattanDistance = Utils.ManhattanDistance(currentPosition, storePosition);
+
+            if (manhattanDistance < distanceToClosest)
             {
-                Store store = Mall.INSTANCE.GetStoreByID(storeID);
-                return store;
+                closestStore = store;
+                distanceToClosest = manhattanDistance;
             }
         }
 
-        Debug.LogError("This point can't be reached");
-        return null;
+        return closestStore;
     }
 
     #endregion
@@ -429,7 +446,20 @@ public class Employee : Agent
 
         hasVisitedStorage = false;
 
-        // TODO: Consider changing floors
+        Vector2 wanderDestination = CalculateWanderDestination();
+        int floorToGo = currentFloor;
+        if (ShouldChangeFloors())
+        {
+            floorToGo = CalculateFloorToVisit();
+        }
+
+        LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
+        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
+    }
+
+    private Vector2 CalculateWanderDestination()
+    {
+        // TODO
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
             0f
@@ -440,9 +470,21 @@ public class Employee : Agent
             transform.position.y
         );
 
-        int floorToGo = (Random.Range(0f, 1f) > -2f) ? 0 : 1;
-        LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
-        MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
+        return wanderDestination;
+    }
+
+    private int CalculateFloorToVisit()
+    {
+        if (floorsInCharge.Count == 1)
+        {
+            return currentFloor;
+        }
+
+        List<int> floors = new List<int>(floorsInCharge);
+        floors.Remove(currentFloor);
+
+        int randomIndex = Random.Range(0, floors.Count - 1);
+        return floors[randomIndex];
     }
 
     #endregion
@@ -463,6 +505,9 @@ public class Employee : Agent
                     break;
                 case MoveAction.Destination.Stairs:
                     OnStairsReached(moveAction);
+                    break;
+                case MoveAction.Destination.StairsEnd:
+                    OnStairsEndReached(moveAction);
                     break;
                 case MoveAction.Destination.Storage:
                     OnStorageReached(moveAction);
@@ -485,17 +530,11 @@ public class Employee : Agent
         ChangeState(EmployeeState.WanderingAround);
     }
 
-    private void OnStairsReached(MoveAction moveAction)
+    private void OnStairsReached(MoveAction moveAction) { }
+
+    private void OnStairsEndReached(MoveAction moveAction)
     {
-        MoveToStairsAction moveToStairsAction = moveAction as MoveToStairsAction;
-
-        Vector2 newPosition = new Vector2(
-            transform.position.x,
-            moveToStairsAction.SpawnLocation.POSITION.y
-        );
-        int newFloor = moveToStairsAction.SpawnLocation.FLOOR;
-
-        transform.position = newPosition;
+        int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
     }
 
@@ -544,6 +583,16 @@ public class Employee : Agent
         {
             Debug.LogFormat("Employee {0} has seen the agent {1}", name, agent.name);
         }
+    }
+
+    public override void OnStairsSeen(Stairs stairs)
+    {
+
+    }
+
+    public override void OnExitSeen(Exit exit)
+    {
+
     }
 
     #endregion
