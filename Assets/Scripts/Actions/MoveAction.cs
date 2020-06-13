@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class MoveAction : IAction
+﻿public class MoveAction : IAction
 {
     public enum Destination
     {
