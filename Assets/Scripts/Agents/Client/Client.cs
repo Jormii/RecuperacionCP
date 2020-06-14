@@ -6,18 +6,18 @@ public class Client : Agent
 {
     public enum ClientState
     {
-        Evaluating,
-        MovingTowardsEmployee,
-        MovingToStore,
-        CheckingStock,
-        Buying,
-        WanderingAround,
         AskingForInformation,
+        Buying,
+        CheckingStock,
+        Evaluating,
         Leaving,
+        MovingToStore,
+        MovingTowardsEmployee,
+        WanderingAround,
         Error
     };
 
-    public const float IGNORE_STORE_TIME = 1.5f;
+    public const float IGNORE_STORE_TIME = 5f;
 
     [SerializeField] private ClientState currentState = ClientState.Evaluating;
     private ClientKnowledge knowledge;
@@ -46,8 +46,15 @@ public class Client : Agent
         UpdateIgnoredStores();
     }
 
+    #region Ignored Stores Related
+
     private void IgnoreStoreTemporarily()
     {
+        if (storesIgnored.ContainsKey(storeInterestedIn.STORE_ID))
+        {
+            return;
+        }
+
         storesIgnored.Add(storeInterestedIn.STORE_ID, IGNORE_STORE_TIME);
     }
 
@@ -69,6 +76,8 @@ public class Client : Agent
         storesIgnored.Clear();
         storesIgnored = newDictionary;
     }
+
+    #endregion
 
     #region States functions
 
@@ -114,7 +123,7 @@ public class Client : Agent
         }
     }
 
-    #region AskingForInformationRelated
+    #region AskingForInformation Related
 
     private void AskingForInformation()
     {
@@ -151,7 +160,7 @@ public class Client : Agent
 
     #endregion
 
-    #region Buying related
+    #region Buying Related
 
     private void Buying()
     {
@@ -186,7 +195,7 @@ public class Client : Agent
 
     #endregion
 
-    #region CheckingStock related
+    #region CheckingStock Related
 
     private void CheckingStock()
     {
@@ -229,7 +238,7 @@ public class Client : Agent
 
     #endregion
 
-    #region Evaluating related
+    #region Evaluating Related
 
     private void Evaluating()
     {
@@ -258,7 +267,7 @@ public class Client : Agent
         {
             if (debug)
             {
-                Debug.LogFormat("Client {0} knows a store that sells products they want", name);
+                Debug.LogFormat("Client {0} knows stores that sell products they want", name);
             }
 
             StoreKnowledge closestStore = GetClosestStoreThatSellsWantedProducts(productsIDs);
@@ -329,39 +338,7 @@ public class Client : Agent
 
     #endregion
 
-    #region MovingToStore related
-
-    private void MovingToStore()
-    {
-        if (debug)
-        {
-            Debug.LogFormat("Client {0} is going to store {1}", name, storeInterestedIn.STORE_ID);
-        }
-
-        LocationData storeLocation = storeInterestedIn.LOCATION;
-        MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
-    }
-
-    #endregion
-
-    #region MovingTowardsEmployee related
-
-    private void MovingTowardsEmployee()
-    {
-        employeeFound.Interrupt();
-
-        // TODO once sprites are done: Tweaking to not end on top of the employee when asking
-        Vector2 employeePosition = employeeFound.transform.position;
-        Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
-        Vector2 destinationPosition = employeePosition - 1f * vector;
-        LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
-
-        MoveTo(destinationLocation, MoveAction.Destination.Agent);
-    }
-
-    #endregion
-
-    #region Leaving related
+    #region Leaving Related
 
     private void Leaving()
     {
@@ -373,7 +350,7 @@ public class Client : Agent
         if (!knowledge.KnowsAnyExit())
         {
             Debug.LogWarningFormat("Client {0} knows no exists. This shouldn't happen", name);
-            ChangeState(ClientState.WanderingAround);
+            ChangeState(ClientState.Error);
             return;
         }
 
@@ -407,7 +384,47 @@ public class Client : Agent
 
     #endregion
 
-    #region WanderingAround related
+    #region MovingToStore Related
+
+    private void MovingToStore()
+    {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} is going to store {1}", name, storeInterestedIn.STORE_ID);
+        }
+
+        LocationData storeLocation = storeInterestedIn.LOCATION;
+        MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
+    }
+
+    #endregion
+
+    #region MovingTowardsEmployee Related
+
+    private void MovingTowardsEmployee()
+    {
+        // In case something interrupted them
+        if (!employeeFound.CanBeInterrupted())
+        {
+            StopExecutingActionQueue();
+            ChangeState(ClientState.WanderingAround);
+            return;
+        }
+
+        employeeFound.Interrupt();
+
+        // TODO once sprites are done: Tweak to not end on top of the employee when asking
+        Vector2 employeePosition = employeeFound.transform.position;
+        Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
+        Vector2 destinationPosition = employeePosition - 1f * vector;
+        LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
+
+        MoveTo(destinationLocation, MoveAction.Destination.Agent);
+    }
+
+    #endregion
+
+    #region WanderingAround Related
 
     private void WanderingAround()
     {
@@ -430,6 +447,7 @@ public class Client : Agent
 
     private Vector2 CalculateWanderDestination()
     {
+        // TODO: Improve
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
             0f
@@ -457,6 +475,8 @@ public class Client : Agent
     #endregion
 
     #region Agent Functions
+
+    #region OnActionCompleted Related
 
     public override void OnActionCompleted(IAction action)
     {
@@ -528,6 +548,11 @@ public class Client : Agent
 
     private void OnStairsEndReached(MoveAction moveAction)
     {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has arrived to a need floor", name);
+        }
+
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
@@ -543,13 +568,17 @@ public class Client : Agent
         ChangeState(ClientState.CheckingStock);
     }
 
-    public override void OnActionQueueCompleted(IAction lastAction)
-    {
-        base.OnActionQueueCompleted(lastAction);
-    }
+    #endregion
+
+    #region Vision Related
 
     public override void OnStoreSeen(Store store)
     {
+        if (debug)
+        {
+            Debug.LogFormat("Client {0} has seen store {1}", name, store.name);
+        }
+
         if (knowledge.KnowsStore(store.ID))
         {
             knowledge.UpdateKnowledge(store);
@@ -607,6 +636,8 @@ public class Client : Agent
 
         knowledge.CreateExitKnowledge(exit);
     }
+
+    #endregion
 
     #endregion
 }

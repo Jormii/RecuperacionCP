@@ -5,13 +5,13 @@ public class MoveAction : IAction
     public enum Destination
     {
         Agent,
-        Store,
+        Exit,
+        NoDestination,
         Stairs,
         StairsEnd,
-        Exit,
         Storage,
-        NoDestination
-    }
+        Store
+    };
 
     private Navigation navigation;
     private LocationData location;
