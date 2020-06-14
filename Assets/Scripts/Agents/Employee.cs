@@ -1,19 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Employee : Agent
 {
-
     private enum EmployeeState
     {
-        WanderingAround,
-        ObservingStock,
         MovingToStorage,
         MovingToStore,
+        ObservingStock,
         ReStocking,
+        WanderingAround,
         Error
-    }
+    };
 
     [SerializeField] private EmployeeState currentState = EmployeeState.WanderingAround;
     [SerializeField] private List<int> floorsInCharge;
@@ -34,6 +32,13 @@ public class Employee : Agent
 
         Boss.INSTANCE.AddEmployee(this);
     }
+
+    public bool InChargeOfFloor(int floor)
+    {
+        return floorsInCharge.Contains(floor);
+    }
+
+    #region Interruption Related
 
     public bool CanBeInterrupted()
     {
@@ -65,6 +70,10 @@ public class Employee : Agent
             ExecuteActionQueue();
         }
     }
+
+    #endregion
+
+    #region ReStocking Order Related
 
     public void SendToReStock(Store store, Dictionary<int, int> reStock)
     {
@@ -172,6 +181,10 @@ public class Employee : Agent
         }
     }
 
+    #endregion
+
+    #region Knowledge Sharing
+
     public List<StoreKnowledge> ShareKnowledge(List<int> productsIDs)
     {
         List<StoreKnowledge> givenKnowledge = new List<StoreKnowledge>();
@@ -183,7 +196,7 @@ public class Employee : Agent
             {
                 Store store = stores[j];
                 int storeFloor = store.Floor;
-                if (!floorsInCharge.Contains(storeFloor))
+                if (InChargeOfFloor(storeFloor))
                 {
                     continue;
                 }
@@ -198,7 +211,9 @@ public class Employee : Agent
         return givenKnowledge;
     }
 
-    #region States functions
+    #endregion
+
+    #region States Functions
 
     private void ChangeState(EmployeeState state)
     {
@@ -373,8 +388,7 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is restocking store {1}", name, lastStoreSeen.name);
         }
 
-        Dictionary<int, int> restock = new Dictionary<int, int>();
-
+        Dictionary<int, int> restock = null;
         // Comes from the storage
         if (productsToRefill.ContainsKey(lastStoreSeen.ID))
         {
@@ -459,7 +473,7 @@ public class Employee : Agent
 
     private Vector2 CalculateWanderDestination()
     {
-        // TODO
+        // TODO: Improve
         Vector2 wanderDirection = new Vector2(
             (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
             0f
@@ -493,6 +507,8 @@ public class Employee : Agent
 
     #region Agent Functions
 
+    #region OnActionCompleted Related
+
     public override void OnActionCompleted(IAction action)
     {
         if (action is MoveAction)
@@ -515,6 +531,7 @@ public class Employee : Agent
                 case MoveAction.Destination.Store:
                     OnStoreReached(moveAction);
                     break;
+                case MoveAction.Destination.Agent:
                 case MoveAction.Destination.Exit:
                 default:
                     Debug.LogErrorFormat("Error in employee {0}. An employee's moving action can't have {1} as destination", name, moveAction.GetDestination);
@@ -553,13 +570,16 @@ public class Employee : Agent
         ChangeState(EmployeeState.ReStocking);
     }
 
-    public override void OnActionQueueCompleted(IAction lastAction)
-    {
-        base.OnActionQueueCompleted(lastAction);
-    }
+    #endregion
 
     public override void OnStoreSeen(Store store)
     {
+        // Employees don't restock stores in floors they're not in charge of
+        if (!InChargeOfFloor(store.Location.FLOOR))
+        {
+            return;
+        }
+
         // Employee already has noted that this store needs restocking
         if (productsToRefill.ContainsKey(store.ID))
         {
@@ -578,13 +598,7 @@ public class Employee : Agent
         }
     }
 
-    public override void OnOtherAgentSeen(Agent agent)
-    {
-        if (debug)
-        {
-            Debug.LogFormat("Employee {0} has seen the agent {1}", name, agent.name);
-        }
-    }
+    public override void OnOtherAgentSeen(Agent agent) { }
 
     public override void OnExitSeen(Exit exit) { }
 

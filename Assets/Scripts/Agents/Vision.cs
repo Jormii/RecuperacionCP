@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Agent))]
 [RequireComponent(typeof(Navigation))]
@@ -60,5 +57,4 @@ public class Vision : MonoBehaviour
         ray.direction = navigation.Direction;
         Gizmos.DrawLine(transform.position, transform.position + (Vector3)(viewDistance * ray.direction));
     }
-
 }

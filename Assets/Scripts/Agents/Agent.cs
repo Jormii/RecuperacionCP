@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Vision)), RequireComponent(typeof(Navigation))]
+[RequireComponent(typeof(Vision))]
+[RequireComponent(typeof(Navigation))]
 public abstract class Agent : MonoBehaviour
 {
     public bool debug = true;
@@ -41,7 +41,7 @@ public abstract class Agent : MonoBehaviour
         timeSpentOnThisFloor += Time.deltaTime;
     }
 
-    #region State machine related functions
+    #region State Machine Related
 
     protected abstract void PerformCurrentState();
 
@@ -52,12 +52,7 @@ public abstract class Agent : MonoBehaviour
 
     #endregion
 
-    #region Action Queue related functions
-
-    public bool ExecutingActionQueue
-    {
-        get => executingQueue;
-    }
+    #region Action Queue Related
 
     public bool ThereAreActionsLeft()
     {
@@ -133,9 +128,14 @@ public abstract class Agent : MonoBehaviour
         executingQueue = false;
     }
 
+    public bool ExecutingActionQueue
+    {
+        get => executingQueue;
+    }
+
     #endregion
 
-    #region Stimulus related functions
+    #region Stimulus Related
 
     public abstract void OnStoreSeen(Store store);
 
@@ -194,7 +194,16 @@ public abstract class Agent : MonoBehaviour
         float chance = 1f - 1f / (0.15f * ratioTimeSpent + 1f);
         float random = Random.Range(0f, 1f);
 
-        return random <= chance;
+        return random < chance;
+    }
+
+    #endregion
+
+    #region Properties
+
+    public LocationData Location
+    {
+        get => new LocationData(transform.position, currentFloor);
     }
 
     #endregion

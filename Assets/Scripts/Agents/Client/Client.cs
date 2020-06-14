@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Client : Agent
@@ -79,7 +78,7 @@ public class Client : Agent
 
     #endregion
 
-    #region States functions
+    #region States Functions
 
     private void ChangeState(ClientState state)
     {
@@ -350,7 +349,7 @@ public class Client : Agent
         if (!knowledge.KnowsAnyExit())
         {
             Debug.LogWarningFormat("Client {0} knows no exists. This shouldn't happen", name);
-            ChangeState(ClientState.Error);
+            ChangeState(ClientState.WanderingAround);
             return;
         }
 
