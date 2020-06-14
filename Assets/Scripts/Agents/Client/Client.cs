@@ -26,6 +26,7 @@ public class Client : Agent
 
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
+    private Dictionary<int, float> timeSpentPerFloor;
 
     protected override void Start()
     {
@@ -36,6 +37,7 @@ public class Client : Agent
         resources = GetComponent<ClientResources>();
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
+        timeSpentPerFloor = new Dictionary<int, float>();
     }
 
     protected override void Update()
@@ -462,11 +464,33 @@ public class Client : Agent
 
     private int CalculateNewFloor()
     {
-        int upperFloor = (Mall.INSTANCE.FloorExists(currentFloor + 1)) ? currentFloor + 1 : currentFloor;
-        int lowerFloor = (Mall.INSTANCE.FloorExists(currentFloor - 1)) ? currentFloor - 1 : currentFloor;
+        List<int> allFloors = new List<int>();
+        int minFloor = Mall.INSTANCE.LowestFloor;
+        int maxFloor = Mall.INSTANCE.HighestFloor;
+        for (int i = minFloor; i <= maxFloor; ++i)
+        {
+            if (i != currentFloor)
+            {
+                allFloors.Add(i);
+            }
+        }
 
-        float random = Random.Range(0f, 1f);
-        return (random > 0.5f) ? upperFloor : lowerFloor;
+        List<float> inverseTimeSpent = new List<float>();
+        for (int i = 0; i < allFloors.Count; ++i)
+        {
+            int floor = allFloors[i];
+            if (timeSpentPerFloor.ContainsKey(floor))
+            {
+                inverseTimeSpent.Add(totalTime - timeSpentPerFloor[floor]);
+            }
+            else
+            {
+                inverseTimeSpent.Add(totalTime);
+            }
+        }
+
+        int randomIndex = Utils.RandomFromWeights(inverseTimeSpent);
+        return allFloors[randomIndex];
     }
 
     #endregion
@@ -550,6 +574,15 @@ public class Client : Agent
         if (debug)
         {
             Debug.LogFormat("Client {0} has arrived to a need floor", name);
+        }
+
+        if (timeSpentPerFloor.ContainsKey(currentFloor))
+        {
+            timeSpentPerFloor[currentFloor] += timeSpentOnThisFloor;
+        }
+        else
+        {
+            timeSpentPerFloor.Add(currentFloor, timeSpentOnThisFloor);
         }
 
         int newFloor = moveAction.Location.FLOOR;

@@ -17,6 +17,7 @@ public class Employee : Agent
     [SerializeField] private List<int> floorsInCharge;
     private Dictionary<int, Dictionary<int, int>> productsToRefill;
     private Dictionary<int, int> productsBeingCarried;
+    private Dictionary<int, float> timeSpentPerFloor;
 
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
@@ -29,6 +30,7 @@ public class Employee : Agent
         currentState = EmployeeState.WanderingAround;
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
+        timeSpentPerFloor = new Dictionary<int, float>();
 
         Boss.INSTANCE.AddEmployee(this);
     }
@@ -497,7 +499,21 @@ public class Employee : Agent
         List<int> floors = new List<int>(floorsInCharge);
         floors.Remove(currentFloor);
 
-        int randomIndex = Random.Range(0, floors.Count - 1);
+        List<float> inverseTimeSpent = new List<float>();
+        for (int i = 0; i < floors.Count; ++i)
+        {
+            int floor = floors[i];
+            if (timeSpentPerFloor.ContainsKey(floor))
+            {
+                inverseTimeSpent.Add(totalTime - timeSpentPerFloor[floor]);
+            }
+            else
+            {
+                inverseTimeSpent.Add(totalTime);
+            }
+        }
+
+        int randomIndex = Utils.RandomFromWeights(inverseTimeSpent);
         return floors[randomIndex];
     }
 
@@ -551,6 +567,15 @@ public class Employee : Agent
 
     private void OnStairsEndReached(MoveAction moveAction)
     {
+        if (timeSpentPerFloor.ContainsKey(currentFloor))
+        {
+            timeSpentPerFloor[currentFloor] += timeSpentOnThisFloor;
+        }
+        else
+        {
+            timeSpentPerFloor.Add(currentFloor, timeSpentOnThisFloor);
+        }
+
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;

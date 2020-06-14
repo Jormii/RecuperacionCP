@@ -13,6 +13,7 @@ public abstract class Agent : MonoBehaviour
     protected Navigation navigation;
     protected int currentFloor;
     protected float timeSpentOnThisFloor;
+    protected float totalTime;
 
     private Queue<IAction> actions;
     private IAction currentAction;
@@ -28,6 +29,7 @@ public abstract class Agent : MonoBehaviour
         actions = new Queue<IAction>();
         consumedState = false;
         timeSpentOnThisFloor = 0f;
+        totalTime = 0f;
     }
 
     protected virtual void Update()
@@ -39,6 +41,7 @@ public abstract class Agent : MonoBehaviour
         }
 
         timeSpentOnThisFloor += Time.deltaTime;
+        totalTime += Time.deltaTime;
     }
 
     #region State Machine Related
@@ -161,15 +164,23 @@ public abstract class Agent : MonoBehaviour
         if (currentLocation.FLOOR != location.FLOOR)
         {
             Stairs.Direction direction = (currentLocation.FLOOR < location.FLOOR) ? Stairs.Direction.Up : Stairs.Direction.Down;
-            Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(currentLocation, direction);
-            LocationData stairsLocation = closestStairs.StartingLocation;
-            LocationData stairsEndLocation = closestStairs.EndingLocation;
+            int floorDifference = Mathf.Abs(currentLocation.FLOOR - location.FLOOR);
 
-            IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
+            LocationData auxLocation = new LocationData(currentLocation.POSITION, currentLocation.FLOOR);
+            for (int i = 0; i < floorDifference; ++i)
+            {
+                Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(auxLocation, direction);
+                LocationData stairsLocation = closestStairs.StartingLocation;
+                LocationData stairsEndLocation = closestStairs.EndingLocation;
 
-            IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
-            AddActionToQueue(goUpStairs);
+                IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
+                AddActionToQueue(moveToStairs);
+
+                IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
+                AddActionToQueue(goUpStairs);
+
+                auxLocation = stairsEndLocation;
+            }
         }
 
         AddActionToQueue(moveAction);

@@ -210,4 +210,18 @@ public class Mall
     }
 
     #endregion
+
+    #region Properties
+
+    public int LowestFloor
+    {
+        get => lowestFloor;
+    }
+
+    public int HighestFloor
+    {
+        get => highestFloor;
+    }
+
+    #endregion
 }
