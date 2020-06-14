@@ -1,19 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MoveAction : IAction
 {
     public enum Destination
     {
         Agent,
-        Store,
+        Exit,
+        NoDestination,
         Stairs,
         StairsEnd,
-        Exit,
         Storage,
-        NoDestination
-    }
+        Store
+    };
 
     private Navigation navigation;
     private LocationData location;
@@ -26,9 +24,22 @@ public class MoveAction : IAction
         this.destination = destination;
     }
 
-    public void Execute()
+    public virtual void Execute()
     {
-        navigation.MoveTo(location.POSITION);
+        if (destination != Destination.StairsEnd)
+        {
+            Vector2 currentPosition = navigation.transform.position;
+            Vector2 destinationPosition = new Vector2(
+                location.POSITION.x,
+                currentPosition.y
+            );
+
+            navigation.MoveTo(destinationPosition);
+        }
+        else
+        {
+            navigation.MoveTo(location.POSITION);
+        }
     }
 
     public void Cancel()
@@ -37,11 +48,6 @@ public class MoveAction : IAction
     }
 
     #region Properties
-
-    public bool CanBeCancelled
-    {
-        get => true;
-    }
 
     public LocationData Location
     {
@@ -54,5 +60,4 @@ public class MoveAction : IAction
     }
 
     #endregion
-
 }

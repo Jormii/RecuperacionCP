@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Threading;
+﻿using UnityEngine;
 
 public class Exit : MonoBehaviour
 {
@@ -12,6 +9,7 @@ public class Exit : MonoBehaviour
     private void Start()
     {
         Mall.INSTANCE.AddExit(this);
+
         GetComponent<Exit>().enabled = false;
     }
 

@@ -59,15 +59,14 @@
      <Compile Include="Assets\Scripts\Agents\Agent.cs" />
      <Compile Include="Assets\Scripts\Agents\Boss.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\Client.cs" />
+     <Compile Include="Assets\Scripts\Agents\Client\ClientKnowledge.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ClientResources.cs" />
      <Compile Include="Assets\Scripts\Agents\Client\ShoppingList.cs" />
+     <Compile Include="Assets\Scripts\Agents\Client\StoreKnowledge.cs" />
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
      <Compile Include="Assets\Scripts\IDProvider.cs" />
-     <Compile Include="Assets\Scripts\Knowledge\ClientKnowledge.cs" />
-     <Compile Include="Assets\Scripts\Knowledge\ExitKnowledge.cs" />
-     <Compile Include="Assets\Scripts\Knowledge\StoreKnowledge.cs" />
      <Compile Include="Assets\Scripts\LocationData.cs" />
      <Compile Include="Assets\Scripts\Mall\Exit.cs" />
      <Compile Include="Assets\Scripts\Mall\Mall.cs" />

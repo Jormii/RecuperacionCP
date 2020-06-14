@@ -1,14 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Threading;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Stock))]
 public class Store : MonoBehaviour
 {
     public readonly int ID = IDProvider.GetID();
 
-    public int floor;
+    public int floor = 0;
 
     private Stock stock;
     private LocationData location;
@@ -46,5 +43,4 @@ public class Store : MonoBehaviour
     }
 
     #endregion
-
 }

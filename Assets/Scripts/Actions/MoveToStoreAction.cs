@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class MoveToStoreAction : MoveAction
+﻿public class MoveToStoreAction : MoveAction
 {
     public readonly int STORE_ID;
 
@@ -11,5 +7,4 @@ public class MoveToStoreAction : MoveAction
     {
         this.STORE_ID = storeID;
     }
-
 }

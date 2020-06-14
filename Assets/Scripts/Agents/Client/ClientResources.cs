@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class ClientResources : MonoBehaviour
 {
@@ -51,11 +49,11 @@ public class ClientResources : MonoBehaviour
 
     public int HowManyCanAfford(int productID, int price, int stock)
     {
-        int wantsToBuy = shoppingList[productID].LeftToBuy();
-        int canBuy = Math.Min((int)(money / price), stock);
+        int wantsToBuy = shoppingList[productID].AmountLeftToBuy();
+        int canAfford = Mathf.Min((int)(money / price), stock);
 
-        int canAfford = Math.Min(wantsToBuy, canBuy);
-        return canAfford;
+        int canBuy = Mathf.Min(wantsToBuy, canAfford);
+        return canBuy;
     }
 
     public void Buy(int productID, int amount, int price)

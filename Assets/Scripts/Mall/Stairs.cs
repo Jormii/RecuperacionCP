@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Stairs : MonoBehaviour
 {
@@ -12,9 +10,9 @@ public class Stairs : MonoBehaviour
 
     public readonly int ID = IDProvider.GetID();
 
-    public int startingFloor;
+    public int startingFloor = 0;
     public Transform start;
-    public int endingFloor;
+    public int endingFloor = 1;
     public Transform end;
 
     private LocationData startLocation;
@@ -28,6 +26,7 @@ public class Stairs : MonoBehaviour
         direction = (startingFloor < endingFloor) ? Direction.Up : Direction.Down;
 
         Mall.INSTANCE.AddStairs(this);
+
         GetComponent<Stairs>().enabled = false;
     }
 
@@ -45,5 +44,4 @@ public class Stairs : MonoBehaviour
     {
         get => direction;
     }
-
 }

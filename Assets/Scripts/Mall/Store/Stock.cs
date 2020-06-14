@@ -1,16 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Store))]
 public class Stock : MonoBehaviour
 {
-    public List<StockData> initialStock;
+    public List<StockData> initialStock = new List<StockData>();
     public float stockTimeout = 5f;
 
     private Store store;
     private Dictionary<int, StockData> stock;
-    private bool reStockingCountdownRunning = false;
+    private bool reStockingCountdownRunning;
     private float reStockingCountdown;
 
     private void Awake()
@@ -27,6 +26,8 @@ public class Stock : MonoBehaviour
     private void Start()
     {
         store = GetComponent<Store>();
+        reStockingCountdownRunning = false;
+
         if (NeedsReStocking())
         {
             StartReStockingCountdown();
@@ -40,6 +41,8 @@ public class Stock : MonoBehaviour
             UpdateReStockingCountdown();
         }
     }
+
+    #region Product Related
 
     public bool HasProductInStock(int productID)
     {
@@ -64,6 +67,10 @@ public class Stock : MonoBehaviour
         return profit;
     }
 
+    #endregion
+
+    #region ReStocking Related
+
     public bool NeedsReStocking()
     {
         foreach (StockData stockData in stock.Values)
@@ -75,6 +82,12 @@ public class Stock : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool ProductNeedsReStock(int productID)
+    {
+        StockData stockData = stock[productID];
+        return stockData.NeedsReStock();
     }
 
     public Dictionary<int, int> GetProductsToRefill()
@@ -91,12 +104,6 @@ public class Stock : MonoBehaviour
         }
 
         return productsToRefill;
-    }
-
-    public bool ProductNeedsReStock(int productID)
-    {
-        StockData stockData = stock[productID];
-        return stockData.NeedsReStock();
     }
 
     public Dictionary<int, int> ReStock(Dictionary<int, int> reStock)
@@ -128,8 +135,9 @@ public class Stock : MonoBehaviour
         return overStock;
     }
 
+    #endregion
 
-    #region ReStocking countdown
+    #region ReStocking Countdown
 
     private void StartReStockingCountdown()
     {
@@ -140,6 +148,11 @@ public class Stock : MonoBehaviour
 
         reStockingCountdownRunning = true;
         reStockingCountdown = stockTimeout;
+    }
+
+    private void StopReStockingCountdown()
+    {
+        reStockingCountdownRunning = false;
     }
 
     private void UpdateReStockingCountdown()
@@ -155,11 +168,6 @@ public class Stock : MonoBehaviour
         }
     }
 
-    private void StopReStockingCountdown()
-    {
-        reStockingCountdownRunning = false;
-    }
-
     private void OnCountdownFinished()
     {
         Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
@@ -173,7 +181,6 @@ public class Stock : MonoBehaviour
     }
 
     #endregion
-
 
     #region Properties
 

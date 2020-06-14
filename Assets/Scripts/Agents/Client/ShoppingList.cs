@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class ShoppingList
@@ -21,7 +19,7 @@ public class ShoppingList
         return quantityWanted == quantityBought;
     }
 
-    public int LeftToBuy()
+    public int AmountLeftToBuy()
     {
         return quantityWanted - quantityBought;
     }
@@ -49,5 +47,4 @@ public class ShoppingList
     }
 
     #endregion
-
 }

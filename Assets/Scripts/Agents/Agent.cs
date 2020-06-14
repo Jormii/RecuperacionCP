@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Vision)), RequireComponent(typeof(Navigation))]
+[RequireComponent(typeof(Vision))]
+[RequireComponent(typeof(Navigation))]
 public abstract class Agent : MonoBehaviour
 {
     public bool debug = true;
@@ -12,12 +12,13 @@ public abstract class Agent : MonoBehaviour
     protected Vision vision;
     protected Navigation navigation;
     protected int currentFloor;
+    protected float timeSpentOnThisFloor;
+    protected float totalTime;
 
     private Queue<IAction> actions;
     private IAction currentAction;
     private bool executingQueue;
     private bool consumedState;
-    private float timeSpentOnThisFloor;
 
     protected virtual void Start()
     {
@@ -28,6 +29,7 @@ public abstract class Agent : MonoBehaviour
         actions = new Queue<IAction>();
         consumedState = false;
         timeSpentOnThisFloor = 0f;
+        totalTime = 0f;
     }
 
     protected virtual void Update()
@@ -39,9 +41,10 @@ public abstract class Agent : MonoBehaviour
         }
 
         timeSpentOnThisFloor += Time.deltaTime;
+        totalTime += Time.deltaTime;
     }
 
-    #region State machine related functions
+    #region State Machine Related
 
     protected abstract void PerformCurrentState();
 
@@ -52,12 +55,7 @@ public abstract class Agent : MonoBehaviour
 
     #endregion
 
-    #region Action Queue related functions
-
-    public bool ExecutingActionQueue
-    {
-        get => executingQueue;
-    }
+    #region Action Queue Related
 
     public bool ThereAreActionsLeft()
     {
@@ -133,15 +131,18 @@ public abstract class Agent : MonoBehaviour
         executingQueue = false;
     }
 
+    public bool ExecutingActionQueue
+    {
+        get => executingQueue;
+    }
+
     #endregion
 
-    #region Stimulus related functions
+    #region Stimulus Related
 
     public abstract void OnStoreSeen(Store store);
 
     public abstract void OnOtherAgentSeen(Agent agent);
-
-    public abstract void OnExitSeen(Exit exit);
 
     protected void MoveTo(LocationData location, MoveAction.Destination destination)
     {
@@ -161,17 +162,23 @@ public abstract class Agent : MonoBehaviour
         if (currentLocation.FLOOR != location.FLOOR)
         {
             Stairs.Direction direction = (currentLocation.FLOOR < location.FLOOR) ? Stairs.Direction.Up : Stairs.Direction.Down;
-            Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(currentLocation, direction);
-            LocationData stairsLocation = closestStairs.StartingLocation;
-            LocationData stairsEndLocation = closestStairs.EndingLocation;
+            int floorDifference = Mathf.Abs(currentLocation.FLOOR - location.FLOOR);
 
-            IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
-            AddActionToQueue(moveToStairs);
+            LocationData auxLocation = new LocationData(currentLocation.POSITION, currentLocation.FLOOR);
+            for (int i = 0; i < floorDifference; ++i)
+            {
+                Stairs closestStairs = Mall.INSTANCE.GetClosestStairs(auxLocation, direction);
+                LocationData stairsLocation = closestStairs.StartingLocation;
+                LocationData stairsEndLocation = closestStairs.EndingLocation;
 
-            IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
-            AddActionToQueue(goUpStairs);
+                IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
+                AddActionToQueue(moveToStairs);
 
-            timeSpentOnThisFloor = 0f;
+                IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
+                AddActionToQueue(goUpStairs);
+
+                auxLocation = stairsEndLocation;
+            }
         }
 
         AddActionToQueue(moveAction);
@@ -196,7 +203,16 @@ public abstract class Agent : MonoBehaviour
         float chance = 1f - 1f / (0.15f * ratioTimeSpent + 1f);
         float random = Random.Range(0f, 1f);
 
-        return random <= chance;
+        return random < chance;
+    }
+
+    #endregion
+
+    #region Properties
+
+    public LocationData Location
+    {
+        get => new LocationData(transform.position, currentFloor);
     }
 
     #endregion
