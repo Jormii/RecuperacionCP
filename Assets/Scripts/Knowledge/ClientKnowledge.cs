@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 public class ClientKnowledge
 {
@@ -27,13 +25,13 @@ public class ClientKnowledge
         return knownStores[storeID];
     }
 
-    public void CreateKnowledge(Store store)
+    public void CreateStoreKnowledge(Store store)
     {
         StoreKnowledge knowledge = new StoreKnowledge(store.ID, store.Location);
-        CreateKnowledge(knowledge);
+        CreateStoreKnowledge(knowledge);
     }
 
-    public void CreateKnowledge(StoreKnowledge storeKnowledge)
+    public void CreateStoreKnowledge(StoreKnowledge storeKnowledge)
     {
         knownStores.Add(storeKnowledge.STORE_ID, storeKnowledge);
         UpdateKnowledge(storeKnowledge);
@@ -66,7 +64,6 @@ public class ClientKnowledge
                 list.Add(knowledge);
                 knownStoresByProduct.Add(productID, list);
             }
-
         }
     }
 
@@ -83,7 +80,7 @@ public class ClientKnowledge
             if (knownStoresByProduct.ContainsKey(productID))
             {
                 List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
-                if (knowledges.Contains(knowledge))
+                if (!knowledges.Contains(knowledge))
                 {
                     knowledges.Add(knowledge);
                 }
@@ -104,7 +101,7 @@ public class ClientKnowledge
 
     public List<StoreKnowledge> GetStoresThatSellProduct(int productID)
     {
-        return knownStoresByProduct[productID];
+        return new List<StoreKnowledge>(knownStoresByProduct[productID]);
     }
 
     #endregion
@@ -121,8 +118,13 @@ public class ClientKnowledge
         return knownExits.ContainsKey(exitID);
     }
 
-    public void CreateKnowledge(Exit exit)
+    public void CreateExitKnowledge(Exit exit)
     {
+        if (knownExits.ContainsKey(exit.ID))
+        {
+            return;
+        }
+
         LocationData exitLocation = new LocationData(exit.transform.position, exit.Floor);
         ExitKnowledge newKnowledge = new ExitKnowledge(exit.ID, exitLocation);
 
@@ -135,5 +137,4 @@ public class ClientKnowledge
     }
 
     #endregion
-
 }

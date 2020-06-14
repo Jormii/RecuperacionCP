@@ -139,7 +139,7 @@ public class Client : Agent
             }
             else
             {
-                knowledge.CreateKnowledge(givenKnowledge);
+                knowledge.CreateStoreKnowledge(givenKnowledge);
             }
         }
 
@@ -553,7 +553,7 @@ public class Client : Agent
             return;
         }
 
-        knowledge.CreateKnowledge(store);
+        knowledge.CreateStoreKnowledge(store);
         if (currentState == ClientState.WanderingAround)
         {
             List<int> products = resources.GetProductsInterestedIn(store);
@@ -601,7 +601,7 @@ public class Client : Agent
             Debug.LogFormat("Client {0} knows a new exit", name);
         }
 
-        knowledge.CreateKnowledge(exit);
+        knowledge.CreateExitKnowledge(exit);
     }
 
     #endregion

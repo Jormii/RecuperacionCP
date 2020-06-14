@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public struct ExitKnowledge
+﻿public struct ExitKnowledge
 {
     public readonly int EXIT_ID;
     public readonly LocationData LOCATION;
@@ -12,5 +8,4 @@ public struct ExitKnowledge
         this.EXIT_ID = id;
         this.LOCATION = location;
     }
-
 }

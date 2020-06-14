@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 public struct StoreKnowledge
 {
@@ -44,6 +42,7 @@ public struct StoreKnowledge
             productsToUpdate.Add(productID, price);
         }
 
+        // Calling UpdateProduct in the loop above modifies the collection
         foreach (KeyValuePair<int, int> entry in productsToUpdate)
         {
             int productID = entry.Key;
@@ -64,14 +63,8 @@ public struct StoreKnowledge
         }
     }
 
-    public override int GetHashCode()
-    {
-        return STORE_ID;
-    }
-
     public Dictionary<int, int> KnownStock
     {
         get => new Dictionary<int, int>(productsOnSale);
     }
-
 }
