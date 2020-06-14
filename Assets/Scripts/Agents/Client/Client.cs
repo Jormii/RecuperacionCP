@@ -23,6 +23,7 @@ public class Client : Agent
     private ClientKnowledge knowledge;
     private ClientResources resources;
     private Dictionary<int, float> storesIgnored;
+    private HashSet<int> employeesAsked;
 
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
@@ -35,6 +36,7 @@ public class Client : Agent
         knowledge = new ClientKnowledge();
         resources = GetComponent<ClientResources>();
         storesIgnored = new Dictionary<int, float>();
+        employeesAsked = new HashSet<int>();
     }
 
     protected override void Update()
@@ -528,6 +530,7 @@ public class Client : Agent
     {
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
+        timeSpentOnThisFloor = 0f;
     }
 
     private void OnStoreReached(MoveAction moveAction)
@@ -576,9 +579,10 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted())
+            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
             {
                 employeeFound = employee;
+                employeesAsked.Add(employee.GetInstanceID());
                 ChangeState(ClientState.MovingTowardsEmployee);
             }
         }

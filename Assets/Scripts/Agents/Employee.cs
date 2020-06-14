@@ -536,6 +536,7 @@ public class Employee : Agent
     {
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
+        timeSpentOnThisFloor = 0f;
     }
 
     private void OnStorageReached(MoveAction moveAction)

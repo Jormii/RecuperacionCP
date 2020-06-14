@@ -12,12 +12,12 @@ public abstract class Agent : MonoBehaviour
     protected Vision vision;
     protected Navigation navigation;
     protected int currentFloor;
+    protected float timeSpentOnThisFloor;
 
     private Queue<IAction> actions;
     private IAction currentAction;
     private bool executingQueue;
     private bool consumedState;
-    private float timeSpentOnThisFloor;
 
     protected virtual void Start()
     {
@@ -170,8 +170,6 @@ public abstract class Agent : MonoBehaviour
 
             IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
             AddActionToQueue(goUpStairs);
-
-            timeSpentOnThisFloor = 0f;
         }
 
         AddActionToQueue(moveAction);

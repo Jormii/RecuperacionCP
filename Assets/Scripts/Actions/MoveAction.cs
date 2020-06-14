@@ -1,4 +1,6 @@
-﻿public class MoveAction : IAction
+﻿using UnityEngine;
+
+public class MoveAction : IAction
 {
     public enum Destination
     {
@@ -22,9 +24,22 @@
         this.destination = destination;
     }
 
-    public void Execute()
+    public virtual void Execute()
     {
-        navigation.MoveTo(location.POSITION);
+        if (destination != Destination.StairsEnd)
+        {
+            Vector2 currentPosition = navigation.transform.position;
+            Vector2 destinationPosition = new Vector2(
+                location.POSITION.x,
+                currentPosition.y
+            );
+
+            navigation.MoveTo(destinationPosition);
+        }
+        else
+        {
+            navigation.MoveTo(location.POSITION);
+        }
     }
 
     public void Cancel()
