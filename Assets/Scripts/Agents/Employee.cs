@@ -5,6 +5,7 @@ public class Employee : Agent
 {
     private enum EmployeeState
     {
+        Leaving,
         MovingToStorage,
         MovingToStore,
         ObservingStock,
@@ -22,6 +23,7 @@ public class Employee : Agent
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
     private bool interrupted;
+    private bool shiftIsOver = false;
 
     protected override void Start()
     {
@@ -38,6 +40,11 @@ public class Employee : Agent
     public bool InChargeOfFloor(int floor)
     {
         return floorsInCharge.Contains(floor);
+    }
+
+    public void SendHome()
+    {
+        shiftIsOver = true;
     }
 
     #region Interruption Related
@@ -89,8 +96,19 @@ public class Employee : Agent
             return;
         }
 
+        bool cancelCurrentAction = true;
+        if (ExecutingActionQueue)
+        {
+            IAction actionBeingExecuted = CurrentAction;
+            if (actionBeingExecuted is MoveAction)
+            {
+                MoveAction moveAction = actionBeingExecuted as MoveAction;
+                cancelCurrentAction = moveAction.GetDestination != MoveAction.Destination.StairsEnd;
+            }
+        }
+
         lastStoreSeen = store;
-        StopExecutingActionQueue();
+        StopExecutingActionQueue(cancelCurrentAction);
         MoveProductsFromCarriedToRefill(store.ID, reStock);
         if (AlreadyHasProductsWanted(store.ID, reStock))
         {
@@ -227,6 +245,9 @@ public class Employee : Agent
     {
         switch (currentState)
         {
+            case EmployeeState.Leaving:
+                Leaving();
+                break;
             case EmployeeState.MovingToStorage:
                 MovingToStorage();
                 break;
@@ -249,6 +270,16 @@ public class Employee : Agent
                 break;
         }
     }
+
+    #region Leaving Related
+
+    private void Leaving()
+    {
+        LocationData closestExit = Mall.INSTANCE.GetClosestExit(Location);
+        MoveTo(closestExit, MoveAction.Destination.Exit);
+    }
+
+    #endregion
 
     #region MovingToStorage related
 
@@ -460,6 +491,12 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is wandering around", name);
         }
 
+        if (shiftIsOver)
+        {
+            ChangeState(EmployeeState.Leaving);
+            return;
+        }
+
         hasVisitedStorage = false;
 
         Vector2 wanderDestination = CalculateWanderDestination();
@@ -532,6 +569,9 @@ public class Employee : Agent
             MoveAction moveAction = action as MoveAction;
             switch (moveAction.GetDestination)
             {
+                case MoveAction.Destination.Exit:
+                    OnExitReached(moveAction);
+                    break;
                 case MoveAction.Destination.NoDestination:
                     OnNoDestinationReached(moveAction);
                     break;
@@ -548,7 +588,6 @@ public class Employee : Agent
                     OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Agent:
-                case MoveAction.Destination.Exit:
                 default:
                     Debug.LogErrorFormat("Error in employee {0}. An employee's moving action can't have {1} as destination", name, moveAction.GetDestination);
                     break;
@@ -558,12 +597,20 @@ public class Employee : Agent
         base.OnActionCompleted(action);
     }
 
+    private void OnExitReached(MoveAction moveAction)
+    {
+        gameObject.SetActive(false);
+    }
+
     private void OnNoDestinationReached(MoveAction moveAction)
     {
         ChangeState(EmployeeState.WanderingAround);
     }
 
-    private void OnStairsReached(MoveAction moveAction) { }
+    private void OnStairsReached(MoveAction moveAction)
+    {
+        MakeInteractable(false);
+    }
 
     private void OnStairsEndReached(MoveAction moveAction)
     {
@@ -579,6 +626,7 @@ public class Employee : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+        MakeInteractable(true);
     }
 
     private void OnStorageReached(MoveAction moveAction)

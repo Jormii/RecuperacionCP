@@ -21,9 +21,10 @@ public class Mall
     private Dictionary<int, Stairs> allStairs;
     private Dictionary<int, List<Stairs>> stairsByFloor;
 
-    // Exits and storages
+    // Exits, storages and clients
     private Dictionary<int, LocationData> exits;
     private Dictionary<int, LocationData> storages;
+    private HashSet<Client> clientsInMall;
 
     private Mall()
     {
@@ -36,6 +37,7 @@ public class Mall
 
         this.exits = new Dictionary<int, LocationData>();
         this.storages = new Dictionary<int, LocationData>();
+        this.clientsInMall = new HashSet<Client>();
     }
 
     public bool FloorExists(int floor)
@@ -99,6 +101,11 @@ public class Mall
     public List<Store> GetStoresThatSellProduct(int productID)
     {
         return new List<Store>(storesThatSellProduct[productID]);
+    }
+
+    public List<Store> GetAllStores()
+    {
+        return new List<Store>(allStores.Values);
     }
 
     #endregion
@@ -223,6 +230,20 @@ public class Mall
         }
 
         return closestStorage;
+    }
+
+    #endregion
+
+    #region Client Related
+
+    public void ClientEntersMall(Client client)
+    {
+        clientsInMall.Add(client);
+    }
+
+    public void ClientLeavesMall(Client client)
+    {
+        clientsInMall.Remove(client);
     }
 
     #endregion

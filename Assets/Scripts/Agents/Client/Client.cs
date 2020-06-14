@@ -27,6 +27,7 @@ public class Client : Agent
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
+    private bool hasToLeave = false;
 
     protected override void Start()
     {
@@ -38,6 +39,8 @@ public class Client : Agent
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+
+        Mall.INSTANCE.ClientEntersMall(this);
     }
 
     protected override void Update()
@@ -45,6 +48,11 @@ public class Client : Agent
         base.Update();
 
         UpdateIgnoredStores();
+    }
+
+    public void MakeLeave()
+    {
+        hasToLeave = true;
     }
 
     #region Ignored Stores Related
@@ -248,7 +256,7 @@ public class Client : Agent
             Debug.LogFormat("Client {0} is evaluating the situation", name);
         }
 
-        if (!resources.ThereAreThingsLeftToBuy())
+        if (!resources.ThereAreThingsLeftToBuy() || hasToLeave)
         {
             ChangeState(ClientState.Leaving);
             return;
@@ -522,6 +530,7 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
+        Mall.INSTANCE.ClientLeavesMall(this);
         gameObject.SetActive(false);
     }
 
@@ -536,6 +545,8 @@ public class Client : Agent
         {
             Debug.LogFormat("Client {0} has reached the stairs", name);
         }
+
+        MakeInteractable(false);
     }
 
     private void OnStairsEndReached(MoveAction moveAction)
@@ -557,6 +568,8 @@ public class Client : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+
+        MakeInteractable(true);
     }
 
     private void OnStoreReached(MoveAction moveAction)
@@ -566,7 +579,15 @@ public class Client : Agent
             Debug.LogFormat("Client {0} has reached the store {1}", name, storeInterestedIn.STORE_ID);
         }
 
-        ChangeState(ClientState.CheckingStock);
+        Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
+        if (store.IsOpen)
+        {
+            ChangeState(ClientState.CheckingStock);
+        }
+        else
+        {
+            ChangeState(ClientState.Evaluating);
+        }
     }
 
     #endregion

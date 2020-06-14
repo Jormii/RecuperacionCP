@@ -14,6 +14,7 @@ public abstract class Agent : MonoBehaviour
     protected int currentFloor;
     protected float timeSpentOnThisFloor;
     protected float totalTime;
+    protected bool canInteractWith = true;
 
     private Queue<IAction> actions;
     private IAction currentAction;
@@ -42,6 +43,25 @@ public abstract class Agent : MonoBehaviour
 
         timeSpentOnThisFloor += Time.deltaTime;
         totalTime += Time.deltaTime;
+    }
+
+    public void MakeInteractable(bool interactable)
+    {
+        if (!interactable)
+        {
+            canInteractWith = false;
+            vision.enabled = false;
+        }
+        else
+        {
+            Invoke("MakeInteractableAfterDelay", 0.5f);
+        }
+    }
+
+    private void MakeInteractableAfterDelay()
+    {
+        canInteractWith = true;
+        vision.enabled = true;
     }
 
     #region State Machine Related
@@ -101,7 +121,7 @@ public abstract class Agent : MonoBehaviour
         executingQueue = false;
     }
 
-    public void StopExecutingActionQueue()
+    public void StopExecutingActionQueue(bool cancelCurrentAction)
     {
         if (!executingQueue)
         {
@@ -110,7 +130,17 @@ public abstract class Agent : MonoBehaviour
 
         currentAction.Cancel();
         actions.Clear();
-        executingQueue = false;
+        executingQueue = !cancelCurrentAction;
+
+        if (!cancelCurrentAction)
+        {
+            AddActionToHeadOfQueue(currentAction);
+        }
+    }
+
+    public void StopExecutingActionQueue()
+    {
+        StopExecutingActionQueue(true);
     }
 
     public virtual void OnActionCompleted(IAction action)
@@ -134,6 +164,11 @@ public abstract class Agent : MonoBehaviour
     public bool ExecutingActionQueue
     {
         get => executingQueue;
+    }
+
+    public IAction CurrentAction
+    {
+        get => currentAction;
     }
 
     #endregion
@@ -213,6 +248,11 @@ public abstract class Agent : MonoBehaviour
     public LocationData Location
     {
         get => new LocationData(transform.position, currentFloor);
+    }
+
+    public bool CanInteractWith
+    {
+        get => canInteractWith;
     }
 
     #endregion

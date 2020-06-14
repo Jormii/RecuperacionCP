@@ -25,7 +25,7 @@ public class Vision : MonoBehaviour
             GameObject gameObjectHit = hit.transform.gameObject;
 
             Agent agentSeen = gameObjectHit.GetComponent<Agent>();
-            if (agentSeen)
+            if (agentSeen && agentSeen.CanInteractWith)
             {
                 agent.OnOtherAgentSeen(agentSeen);
             }

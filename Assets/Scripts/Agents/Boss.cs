@@ -6,6 +6,7 @@ public class Boss
     public static readonly Boss INSTANCE = new Boss();
 
     private Dictionary<int, Employee> employees;
+    private Dictionary<int, SalesReport> storesSales;
 
     private Boss()
     {
@@ -21,6 +22,11 @@ public class Boss
         }
 
         employees.Add(employeeID, employee);
+    }
+
+    public List<Employee> GetAllEmployees()
+    {
+        return new List<Employee>(employees.Values);
     }
 
     public void RequestReStock(Store store, Dictionary<int, int> reStock)
@@ -59,5 +65,10 @@ public class Boss
         }
 
         closestEmployee.SendToReStock(store, reStock);
+    }
+
+    public void SendSalesReport(SalesReport salesReport)
+    {
+        // TODO
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 [RequireComponent(typeof(Stock))]
 public class Store : MonoBehaviour
@@ -9,12 +10,15 @@ public class Store : MonoBehaviour
 
     private Stock stock;
     private LocationData location;
+    private bool open = true;
     private int profit = 0;
+    private Dictionary<int, int> productsSouldInLastHour;
 
     private void Start()
     {
         stock = GetComponent<Stock>();
         location = new LocationData(transform.position, floor);
+        productsSouldInLastHour = new Dictionary<int, int>();
 
         Mall.INSTANCE.AddStore(this);
     }
@@ -23,6 +27,20 @@ public class Store : MonoBehaviour
     {
         int profitObtained = stock.Sell(productID, amount);
         profit += profitObtained;
+    }
+
+    public void OnNewHour()
+    {
+        SalesReport salesReport = new SalesReport(ID, profit, productsSouldInLastHour);
+        Boss.INSTANCE.SendSalesReport(salesReport);
+
+        profit = 0;
+        productsSouldInLastHour.Clear();
+    }
+
+    public void Close()
+    {
+        open = false;
     }
 
     #region Properties
@@ -40,6 +58,11 @@ public class Store : MonoBehaviour
     public LocationData Location
     {
         get => location;
+    }
+
+    public bool IsOpen
+    {
+        get => open;
     }
 
     #endregion
