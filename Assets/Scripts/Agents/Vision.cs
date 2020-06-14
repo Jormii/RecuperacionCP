@@ -35,12 +35,6 @@ public class Vision : MonoBehaviour
             {
                 agent.OnStoreSeen(storeSeen);
             }
-
-            Exit exitSeen = gameObjectHit.GetComponent<Exit>();
-            if (exitSeen)
-            {
-                agent.OnExitSeen(exitSeen);
-            }
         }
     }
 

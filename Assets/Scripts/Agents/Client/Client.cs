@@ -348,39 +348,8 @@ public class Client : Agent
             Debug.LogFormat("Client {0} is leaving the mall", name);
         }
 
-        if (!knowledge.KnowsAnyExit())
-        {
-            Debug.LogWarningFormat("Client {0} knows no exists. This shouldn't happen", name);
-            ChangeState(ClientState.WanderingAround);
-            return;
-        }
-
-        ExitKnowledge closestExit = GetClosestExit();
-        LocationData exitLocation = closestExit.LOCATION;
-        MoveTo(exitLocation, MoveAction.Destination.Exit);
-    }
-
-    private ExitKnowledge GetClosestExit()
-    {
-        List<ExitKnowledge> knownExits = knowledge.GetKnownExits();
-
-        Vector2 currentPosition = transform.position;
-        ExitKnowledge closestExit = new ExitKnowledge();
-        float distanceToClosestExit = Mathf.Infinity;
-        for (int i = 0; i < knownExits.Count; ++i)
-        {
-            ExitKnowledge exitKnown = knownExits[i];
-            Vector2 exitPosition = exitKnown.LOCATION.POSITION;
-            float manhattanDistance = Utils.ManhattanDistance(currentPosition, exitPosition);
-
-            if (manhattanDistance < distanceToClosestExit)
-            {
-                closestExit = exitKnown;
-                distanceToClosestExit = manhattanDistance;
-            }
-        }
-
-        return closestExit;
+        LocationData closestExit = Mall.INSTANCE.GetClosestExit(Location);
+        MoveTo(closestExit, MoveAction.Destination.Exit);
     }
 
     #endregion
@@ -647,26 +616,6 @@ public class Client : Agent
                 ChangeState(ClientState.MovingTowardsEmployee);
             }
         }
-    }
-
-    public override void OnExitSeen(Exit exit)
-    {
-        if (debug)
-        {
-            Debug.LogFormat("Client {0} has seen an exit", name);
-        }
-
-        if (knowledge.KnowsExit(exit.ID))
-        {
-            return;
-        }
-
-        if (debug)
-        {
-            Debug.LogFormat("Client {0} knows a new exit", name);
-        }
-
-        knowledge.CreateExitKnowledge(exit);
     }
 
     #endregion

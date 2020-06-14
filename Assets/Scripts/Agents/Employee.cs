@@ -625,7 +625,5 @@ public class Employee : Agent
 
     public override void OnOtherAgentSeen(Agent agent) { }
 
-    public override void OnExitSeen(Exit exit) { }
-
     #endregion
 }

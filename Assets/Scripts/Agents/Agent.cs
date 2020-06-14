@@ -144,8 +144,6 @@ public abstract class Agent : MonoBehaviour
 
     public abstract void OnOtherAgentSeen(Agent agent);
 
-    public abstract void OnExitSeen(Exit exit);
-
     protected void MoveTo(LocationData location, MoveAction.Destination destination)
     {
         MoveAction moveTo = new MoveAction(navigation, location, destination);

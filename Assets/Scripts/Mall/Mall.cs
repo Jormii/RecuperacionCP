@@ -173,7 +173,23 @@ public class Mall
         UpdateFloors(exit.Floor);
     }
 
-    // TODO: GetClosestExit?
+    public LocationData GetClosestExit(LocationData location)
+    {
+        LocationData closestExit = new LocationData();
+        float distanceToClosestExit = Mathf.Infinity;
+
+        foreach (LocationData exits in exits.Values)
+        {
+            float manhattanDistance = Utils.ManhattanDistance(location.POSITION, exits.POSITION);
+            if (manhattanDistance < distanceToClosestExit)
+            {
+                closestExit = exits;
+                distanceToClosestExit = manhattanDistance;
+            }
+        }
+
+        return closestExit;
+    }
 
     #endregion
 
