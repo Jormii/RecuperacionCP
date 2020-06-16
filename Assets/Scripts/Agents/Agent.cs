@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Vision))]
-[RequireComponent(typeof(Navigation))]
 public abstract class Agent : MonoBehaviour
 {
     public bool debug = true;

@@ -4,8 +4,8 @@ using UnityEngine;
 public class Mall
 {
     // TODO: Tweak these variables when graphics are in
-    public const float MALL_LEFT_LIMIT = -12.3f;
-    public const float MALL_RIGHT_LIMIT = 12.3f;
+    public const float MALL_LEFT_LIMIT = -7.8f;
+    public const float MALL_RIGHT_LIMIT = 7.8f;
 
     public static readonly Mall INSTANCE = new Mall();
 

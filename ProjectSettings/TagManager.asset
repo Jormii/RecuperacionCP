@@ -8,6 +8,7 @@ TagManager:
   - Exit
   - Client
   - Employee
+  - Staircase
   layers:
   - Default
   - TransparentFX
@@ -44,4 +45,19 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Stores
+    uniqueID: 1365796477
+    locked: 0
+  - name: Other Mall Props
+    uniqueID: 1846993139
+    locked: 0
+  - name: Staircase
+    uniqueID: 4236738355
+    locked: 0
+  - name: People
+    uniqueID: 3027707973
+    locked: 0
+  - name: Interface
+    uniqueID: 875651189
     locked: 0
