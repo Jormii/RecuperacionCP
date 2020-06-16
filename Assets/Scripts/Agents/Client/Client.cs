@@ -24,6 +24,7 @@ public class Client : Agent
     private Dictionary<int, float> storesIgnored;
     private HashSet<int> employeesAsked;
 
+    private Animator animator;
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
@@ -33,6 +34,7 @@ public class Client : Agent
     {
         base.Start();
 
+        animator = GetComponent<Animator>();
         currentState = ClientState.Evaluating;
         knowledge = new ClientKnowledge();
         resources = GetComponent<ClientResources>();
@@ -198,8 +200,8 @@ public class Client : Agent
             }
         }
 
-        ChangeState(ClientState.Evaluating);
         IgnoreStoreTemporarily();
+        Invoke("LeaveStore", 1f);
     }
 
     #endregion
@@ -223,8 +225,17 @@ public class Client : Agent
         else
         {
             IgnoreStoreTemporarily();
-            ChangeState(ClientState.Evaluating);
+
+            Invoke("LeaveStore", 1f);
         }
+    }
+
+    private void LeaveStore()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
+        ChangeState(ClientState.Evaluating);
     }
 
     private bool StoreHasAnyOfWantedProductsInStock()
@@ -530,6 +541,8 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
         Mall.INSTANCE.ClientLeavesMall(this);
         gameObject.SetActive(false);
     }
@@ -583,6 +596,10 @@ public class Client : Agent
         if (store.IsOpen)
         {
             ChangeState(ClientState.CheckingStock);
+
+            animator.SetBool("enteringStore", true);
+            animator.SetBool("leavingStore", false);
+            MakeInteractable(false);
         }
         else
         {

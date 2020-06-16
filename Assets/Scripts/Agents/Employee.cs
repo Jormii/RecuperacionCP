@@ -20,6 +20,7 @@ public class Employee : Agent
     private Dictionary<int, int> productsBeingCarried;
     private Dictionary<int, float> timeSpentPerFloor;
 
+    private Animator animator;
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
     private bool interrupted;
@@ -33,6 +34,8 @@ public class Employee : Agent
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+
+        animator = GetComponent<Animator>();
 
         Boss.INSTANCE.AddEmployee(this);
     }
@@ -439,6 +442,15 @@ public class Employee : Agent
         Dictionary<int, int> overStock = stock.ReStock(restock);
         HandleUnnecessaryStock(overStock);
 
+        Invoke("LeaveStore", 1f);
+    }
+
+    private void LeaveStore()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
+
         // Still has products to restock
         if (productsToRefill.Count != 0)
         {
@@ -632,6 +644,20 @@ public class Employee : Agent
     private void OnStorageReached(MoveAction moveAction)
     {
         hasVisitedStorage = true;
+
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
+        MakeInteractable(false);
+
+        int storesToRestock = productsToRefill.Count;
+        Invoke("LeaveStorage", (float)storesToRestock + 0.5f);
+    }
+
+    private void LeaveStorage()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
         ChangeState(EmployeeState.MovingToStore);
     }
 
@@ -641,6 +667,10 @@ public class Employee : Agent
 
         lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
+
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
+        MakeInteractable(false);
     }
 
     #endregion

@@ -60,7 +60,8 @@ public class Navigation : MonoBehaviour
         bool movingRight = direction.x > 0;
         bool movingVertically = direction.y != 0;
         spriteRenderer.flipX = movingRight;
-        animator.SetBool("moving", !movingVertically);
+        // animator.SetBool("moving", !movingVertically);
+        animator.SetBool("moving", true);
     }
 
     public void StopMoving()
