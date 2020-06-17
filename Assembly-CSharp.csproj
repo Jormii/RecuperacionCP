@@ -66,6 +66,7 @@
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
+     <Compile Include="Assets\Scripts\Bubble.cs" />
      <Compile Include="Assets\Scripts\IDProvider.cs" />
      <Compile Include="Assets\Scripts\LocationData.cs" />
      <Compile Include="Assets\Scripts\Mall\Exit.cs" />

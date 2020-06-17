@@ -7,20 +7,27 @@ public class Store : MonoBehaviour
     public readonly int ID = IDProvider.GetID();
 
     public int floor = 0;
+    public Transform entrancePosition;
+    public Bubble bubblePrefab;
 
     private Stock stock;
     private LocationData location;
     private bool open = true;
     private int profit = 0;
     private Dictionary<int, int> productsSoldInLastHour;
+    private Bubble storesBubble;
 
     private void Start()
     {
         stock = GetComponent<Stock>();
-        location = new LocationData(transform.position, floor);
+        location = new LocationData(entrancePosition.position, floor);
         productsSoldInLastHour = new Dictionary<int, int>();
 
+        Vector3 bubblePosition = new Vector3(entrancePosition.position.x + 0.6f, entrancePosition.position.y, entrancePosition.position.z);
+        storesBubble = GameObject.Instantiate<Bubble>(bubblePrefab, bubblePosition, Quaternion.identity, transform);
+
         Mall.INSTANCE.AddStore(this);
+        UpdateBubble();
     }
 
     public void Sell(int productID, int amount)
@@ -48,11 +55,24 @@ public class Store : MonoBehaviour
 
         profit = 0;
         productsSoldInLastHour.Clear();
+        UpdateBubble();
     }
 
     public void Close()
     {
         open = false;
+    }
+
+    private void UpdateBubble()
+    {
+        List<StockData> stockSold = stock.StockSold;
+        List<GameObject> gameObjects = new List<GameObject>();
+        for (int i = 0; i < stockSold.Count; ++i)
+        {
+            gameObjects.Add(stockSold[i].Product.gameObject);
+        }
+
+        bubblePrefab.DrawMany(gameObjects);
     }
 
     #region Properties

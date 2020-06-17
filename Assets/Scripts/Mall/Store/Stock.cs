@@ -4,6 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(Store))]
 public class Stock : MonoBehaviour
 {
+    public const int MAX_PRODUCTS = 3;
+
     public List<StockData> initialStock = new List<StockData>();
     public float stockTimeout = 5f;
 
@@ -17,7 +19,13 @@ public class Stock : MonoBehaviour
     {
         stock = new Dictionary<int, StockData>();
 
-        for (int i = 0; i < initialStock.Count; ++i)
+        if (initialStock.Count > MAX_PRODUCTS)
+        {
+            Debug.LogWarning("The maximum number of products a store can sell is {0}. Discarting excessive products");
+        }
+
+        int maxIndex = Mathf.Min(initialStock.Count, MAX_PRODUCTS);
+        for (int i = 0; i < maxIndex; ++i)
         {
             StockData stockData = initialStock[i];
             stock.Add(stockData.Product.ID, stockData);
