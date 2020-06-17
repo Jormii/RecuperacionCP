@@ -240,6 +240,8 @@ public class Employee : Agent
 
     private void ChangeState(EmployeeState state)
     {
+        CancelInvoke();
+
         currentState = state;
         OnStateChanged();
     }
@@ -524,14 +526,15 @@ public class Employee : Agent
 
     private Vector2 CalculateWanderDestination()
     {
-        // TODO: Improve
-        Vector2 wanderDirection = new Vector2(
-            (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
-            0f
-        );
+        float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
+        float xPercentage = transform.position.x / mallTotalDistance;
+
+        int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
+
+        float distanceToTravel = Random.Range(0.125f, 0.5f) * mallTotalDistance;
 
         Vector2 wanderDestination = new Vector2(
-            (wanderDirection.x < 0) ? Mall.MALL_LEFT_LIMIT : Mall.MALL_RIGHT_LIMIT,
+            Mathf.Clamp(transform.position.x + distanceToTravel * xDirection, Mall.MALL_LEFT_LIMIT, Mall.MALL_RIGHT_LIMIT),
             transform.position.y
         );
 
@@ -615,6 +618,11 @@ public class Employee : Agent
     }
 
     private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        Invoke("WaitBeforeProceeding", Random.Range(1f, 1.5f));
+    }
+
+    private void WaitBeforeProceeding()
     {
         ChangeState(EmployeeState.WanderingAround);
     }

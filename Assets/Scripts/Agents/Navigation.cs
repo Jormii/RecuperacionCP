@@ -37,7 +37,7 @@ public class Navigation : MonoBehaviour
         if (ReachedItsDestination())
         {
             thisComponent.enabled = false;
-            animator.SetBool("moving", true);
+            animator.SetBool("moving", false);
             agent.UponReachingDestination();
         }
     }
