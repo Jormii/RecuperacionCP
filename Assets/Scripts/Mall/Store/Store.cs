@@ -12,13 +12,13 @@ public class Store : MonoBehaviour
     private LocationData location;
     private bool open = true;
     private int profit = 0;
-    private Dictionary<int, int> productsSouldInLastHour;
+    private Dictionary<int, int> productsSoldInLastHour;
 
     private void Start()
     {
         stock = GetComponent<Stock>();
         location = new LocationData(transform.position, floor);
-        productsSouldInLastHour = new Dictionary<int, int>();
+        productsSoldInLastHour = new Dictionary<int, int>();
 
         Mall.INSTANCE.AddStore(this);
     }
@@ -27,15 +27,27 @@ public class Store : MonoBehaviour
     {
         int profitObtained = stock.Sell(productID, amount);
         profit += profitObtained;
+
+        if (productsSoldInLastHour.ContainsKey(productID))
+        {
+            productsSoldInLastHour[productID] += amount;
+        }
+        else
+        {
+            productsSoldInLastHour.Add(productID, amount);
+        }
     }
 
     public void OnNewHour()
     {
-        SalesReport salesReport = new SalesReport(ID, profit, productsSouldInLastHour);
-        Boss.INSTANCE.SendSalesReport(salesReport);
+        Dictionary<int, int> timesReStockAsked = stock.GetSalesReport();
+        SalesReport salesReport = new SalesReport(ID, profit, productsSoldInLastHour, timesReStockAsked);
+        StockChanges stockChanges = Boss.INSTANCE.SendSalesReport(salesReport);
+
+        stock.ModifyStock(stockChanges);
 
         profit = 0;
-        productsSouldInLastHour.Clear();
+        productsSoldInLastHour.Clear();
     }
 
     public void Close()

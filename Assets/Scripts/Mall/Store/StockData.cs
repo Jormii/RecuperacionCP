@@ -45,6 +45,16 @@ public class StockData
         return maximumStock - currentStock;
     }
 
+    public void ModifyPrice(int amount)
+    {
+        price = Mathf.Min(1, price + amount);
+    }
+
+    public void ModifyMaxStock(int amount)
+    {
+        maximumStock = Mathf.Min(1, maximumStock + amount);
+    }
+
     #region Properties
 
     public Product Product

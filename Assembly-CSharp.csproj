@@ -75,6 +75,7 @@
      <Compile Include="Assets\Scripts\Mall\Stairs.cs" />
      <Compile Include="Assets\Scripts\Mall\Storage.cs" />
      <Compile Include="Assets\Scripts\Mall\Store\Stock.cs" />
+     <Compile Include="Assets\Scripts\Mall\Store\StockChanges.cs" />
      <Compile Include="Assets\Scripts\Mall\Store\StockData.cs" />
      <Compile Include="Assets\Scripts\Mall\Store\Store.cs" />
      <Compile Include="Assets\Scripts\Product.cs" />

@@ -11,6 +11,7 @@ public class Stock : MonoBehaviour
     private Dictionary<int, StockData> stock;
     private bool reStockingCountdownRunning;
     private float reStockingCountdown;
+    private Dictionary<int, int> reStockAsked;
 
     private void Awake()
     {
@@ -27,6 +28,7 @@ public class Stock : MonoBehaviour
     {
         store = GetComponent<Store>();
         reStockingCountdownRunning = false;
+        reStockAsked = new Dictionary<int, int>();
 
         if (NeedsReStocking())
         {
@@ -100,6 +102,16 @@ public class Stock : MonoBehaviour
                 int productID = stockData.Product.ID;
                 int amount = stockData.ReStockNeeded();
                 productsToRefill.Add(productID, amount);
+
+                // Add to reStock asked
+                if (reStockAsked.ContainsKey(productID))
+                {
+                    reStockAsked[productID] += amount;
+                }
+                else
+                {
+                    reStockAsked.Add(productID, amount);
+                }
             }
         }
 
@@ -178,6 +190,47 @@ public class Stock : MonoBehaviour
         reStockingCountdown = 1.5f * stockTimeout;
 
         Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+    }
+
+    #endregion
+
+    #region Stock Modification
+
+    public Dictionary<int, int> GetSalesReport()
+    {
+        Dictionary<int, int> salesReport = new Dictionary<int, int>(reStockAsked);
+        reStockAsked.Clear();
+        return salesReport;
+    }
+
+    public void ModifyStock(StockChanges changes)
+    {
+        foreach (KeyValuePair<int, int> entry in changes.PRICE_CHANGES)
+        {
+            int productID = entry.Key;
+            int modification = entry.Value;
+
+            stock[productID].ModifyPrice(modification);
+        }
+
+        foreach (KeyValuePair<int, int> entry in changes.MAX_STOCK_CHANGES)
+        {
+            int productID = entry.Key;
+            int modification = entry.Value;
+
+            stock[productID].ModifyMaxStock(modification);
+        }
+
+        foreach (int productID in changes.PRODUCTS_TO_REMOVE)
+        {
+            stock.Remove(productID);
+        }
+
+        foreach (int productID in changes.NEW_PRODUCTS)
+        {
+            // TODO
+            // StockData newStock = new StockData();
+        }
     }
 
     #endregion
