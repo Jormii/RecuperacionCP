@@ -18,6 +18,11 @@ public struct StoreKnowledge
         return productsOnSale.ContainsKey(productID);
     }
 
+    public int GetPriceOfProduct(int productID)
+    {
+        return productsOnSale[productID];
+    }
+
     public void Update(Store store)
     {
         Stock stock = store.StoreStock;

@@ -290,8 +290,8 @@ public class Client : Agent
                 Debug.LogFormat("Client {0} knows stores that sell products they want", name);
             }
 
-            StoreKnowledge closestStore = GetClosestStoreThatSellsWantedProducts(productsIDs);
-            if (closestStore.STORE_ID == -1)
+            StoreKnowledge cheapestStore = GetCheapestStoreThatSellsWantedProducts(productsIDs);
+            if (cheapestStore.STORE_ID == -1)
             {
                 if (debug)
                 {
@@ -302,7 +302,7 @@ public class Client : Agent
             }
             else
             {
-                storeInterestedIn = closestStore;
+                storeInterestedIn = cheapestStore;
                 ChangeState(ClientState.MovingToStore);
             }
         }
@@ -325,11 +325,10 @@ public class Client : Agent
         return productsIDs;
     }
 
-    private StoreKnowledge GetClosestStoreThatSellsWantedProducts(List<int> productsIDs)
+    private StoreKnowledge GetCheapestStoreThatSellsWantedProducts(List<int> productsIDs)
     {
-        Vector2 currentPosition = transform.position;
-        StoreKnowledge closestStore = new StoreKnowledge(-1, new LocationData());
-        float distanceToClosestStore = Mathf.Infinity;
+        StoreKnowledge cheapestStore = new StoreKnowledge(-1, new LocationData());
+        int cheapestPrice = int.MaxValue;
         for (int i = 0; i < productsIDs.Count; ++i)
         {
             int productID = productsIDs[i];
@@ -342,18 +341,16 @@ public class Client : Agent
                     continue;
                 }
 
-                Vector2 storePosition = storeKnown.LOCATION.POSITION;
-                float manhattanDistance = Utils.ManhattanDistance(currentPosition, storePosition);
-
-                if (manhattanDistance < distanceToClosestStore)
+                int knownPrice = storeKnown.GetPriceOfProduct(productID);
+                if (knownPrice < cheapestPrice)
                 {
-                    closestStore = storeKnown;
-                    distanceToClosestStore = manhattanDistance;
+                    cheapestStore = storeKnown;
+                    cheapestPrice = knownPrice;
                 }
             }
         }
 
-        return closestStore;
+        return cheapestStore;
     }
 
     #endregion
