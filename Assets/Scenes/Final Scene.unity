@@ -1132,7 +1132,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initialStock:
-  - product: {fileID: 8906023044734385014, guid: 38f25904aa071c64bbdce11b7330dca7,
+  - product: {fileID: 3194938544327063415, guid: b04e4d2301dd18a468097aba98b970e5,
+      type: 3}
+    price: 5
+    currentStock: 0
+    maximumStock: 5
+    reStockMargin: 0
+  - product: {fileID: 5082699879916859454, guid: a293c97688cc39b43989f87a912d253e,
+      type: 3}
+    price: 5
+    currentStock: 0
+    maximumStock: 5
+    reStockMargin: 0
+  - product: {fileID: 3816959713141628811, guid: 60b8dd6f274a76c4eaa8e8f5d1ee829a,
       type: 3}
     price: 5
     currentStock: 0
@@ -2125,7 +2137,7 @@ PrefabInstance:
         type: 3}
       propertyPath: initialShoppingList.Array.data[0].product
       value: 
-      objectReference: {fileID: 5524113975716997685, guid: ebb5bb32a9b74aa45b931b70a8e11664,
+      objectReference: {fileID: 5082699879916859454, guid: a293c97688cc39b43989f87a912d253e,
         type: 3}
     - target: {fileID: 7810388281108517589, guid: 781ce4b37542d1a4abf699c30bed8bdb,
         type: 3}
@@ -2146,7 +2158,7 @@ PrefabInstance:
         type: 3}
       propertyPath: initialShoppingList.Array.data[1].product
       value: 
-      objectReference: {fileID: 8906023044734385014, guid: 38f25904aa071c64bbdce11b7330dca7,
+      objectReference: {fileID: 3816959713141628811, guid: 60b8dd6f274a76c4eaa8e8f5d1ee829a,
         type: 3}
     - target: {fileID: 7810388281108517589, guid: 781ce4b37542d1a4abf699c30bed8bdb,
         type: 3}
