@@ -17,6 +17,12 @@ public class Stock : MonoBehaviour
 
     private void Awake()
     {
+        if (initialStock.Count == 0)
+        {
+            Debug.LogErrorFormat("Error: Store {0} has no products in sale", name);
+            Destroy(gameObject);
+        }
+
         stock = new Dictionary<int, StockData>();
 
         if (initialStock.Count > MAX_PRODUCTS)

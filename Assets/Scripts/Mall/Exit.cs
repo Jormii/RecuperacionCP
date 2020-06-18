@@ -4,17 +4,18 @@ public class Exit : MonoBehaviour
 {
     public readonly int ID = IDProvider.GetID();
 
+    public Transform spawnPosition;
+
     [SerializeField] private int floor;
 
-    private void Start()
+    private void Awake()
     {
         Mall.INSTANCE.AddExit(this);
-
         GetComponent<Exit>().enabled = false;
     }
 
-    public int Floor
+    public LocationData Location
     {
-        get => floor;
+        get => new LocationData(spawnPosition.position, floor);
     }
 }

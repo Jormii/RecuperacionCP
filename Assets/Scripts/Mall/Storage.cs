@@ -4,17 +4,18 @@ public class Storage : MonoBehaviour
 {
     public readonly int ID = IDProvider.GetID();
 
+    public Transform entrance;
+
     [SerializeField] private int floor = 0;
 
-    private void Start()
+    private void Awake()
     {
         Mall.INSTANCE.AddStorage(this);
-
         GetComponent<Storage>().enabled = false;
     }
 
-    public int Floor
+    public LocationData Location
     {
-        get => floor;
+        get => new LocationData(entrance.position, floor);
     }
 }

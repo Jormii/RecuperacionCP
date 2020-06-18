@@ -6,7 +6,7 @@ public class ClientsManager : MonoBehaviour
 {
     public static ClientsManager INSTANCE;
 
-    public int maxClientsPresentAtOnce = 5;
+    public int maxClientsPresentAtOnce = 1;
     [SerializeField] private List<Client> clientPrefabs = new List<Client>();
 
     private int clientsPresent;
@@ -22,7 +22,6 @@ public class ClientsManager : MonoBehaviour
         clientsCreated = new List<Client>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (clientsPresent == maxClientsPresentAtOnce)

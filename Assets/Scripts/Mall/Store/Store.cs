@@ -17,7 +17,7 @@ public class Store : MonoBehaviour
     private Dictionary<int, int> productsSoldInLastHour;
     private Bubble storesBubble;
 
-    private void Start()
+    private void Awake()
     {
         stock = GetComponent<Stock>();
         location = new LocationData(entrancePosition.position, floor);

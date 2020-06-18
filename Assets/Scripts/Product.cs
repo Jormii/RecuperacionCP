@@ -11,7 +11,7 @@ public class Product : MonoBehaviour
     private void Awake()
     {
         ALL_PRODUCTS.Add(ID, this);
-        GetComponent<Product>().enabled = false;
+        gameObject.SetActive(false);
     }
 
     public static List<Product> GetRandomProducts(int howMany)

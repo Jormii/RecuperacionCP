@@ -173,9 +173,9 @@ public class Mall
             return;
         }
 
-        LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
+        LocationData locationData = exit.Location;
         exits.Add(exit.ID, locationData);
-        UpdateFloors(exit.Floor);
+        UpdateFloors(locationData.FLOOR);
     }
 
     public LocationData GetClosestExit(LocationData location)
@@ -218,9 +218,9 @@ public class Mall
             return;
         }
 
-        LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
+        LocationData locationData = storage.Location;
         storages.Add(storage.ID, locationData);
-        UpdateFloors(storage.Floor);
+        UpdateFloors(locationData.FLOOR);
     }
 
     public LocationData GetClosestStorage(LocationData location)
