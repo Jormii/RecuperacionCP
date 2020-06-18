@@ -18,14 +18,14 @@ public class Vision : MonoBehaviour
 
     private void See()
     {
-        RaycastHit[] hits = Physics.RaycastAll(transform.position, navigation.Direction, viewDistance);
+        RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, navigation.Direction, viewDistance);
         for (int i = 0; i < hits.Length; ++i)
         {
-            RaycastHit hit = hits[i];
+            RaycastHit2D hit = hits[i];
             GameObject gameObjectHit = hit.transform.gameObject;
 
             Agent agentSeen = gameObjectHit.GetComponent<Agent>();
-            if (agentSeen)
+            if (agentSeen && agentSeen.CanInteractWith)
             {
                 agent.OnOtherAgentSeen(agentSeen);
             }

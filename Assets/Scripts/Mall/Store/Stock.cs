@@ -4,6 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(Store))]
 public class Stock : MonoBehaviour
 {
+    public const int MAX_PRODUCTS = 3;
+
     public List<StockData> initialStock = new List<StockData>();
     public float stockTimeout = 5f;
 
@@ -11,12 +13,19 @@ public class Stock : MonoBehaviour
     private Dictionary<int, StockData> stock;
     private bool reStockingCountdownRunning;
     private float reStockingCountdown;
+    private Dictionary<int, int> reStockAsked;
 
     private void Awake()
     {
         stock = new Dictionary<int, StockData>();
 
-        for (int i = 0; i < initialStock.Count; ++i)
+        if (initialStock.Count > MAX_PRODUCTS)
+        {
+            Debug.LogWarning("The maximum number of products a store can sell is {0}. Discarting excessive products");
+        }
+
+        int maxIndex = Mathf.Min(initialStock.Count, MAX_PRODUCTS);
+        for (int i = 0; i < maxIndex; ++i)
         {
             StockData stockData = initialStock[i];
             stock.Add(stockData.Product.ID, stockData);
@@ -27,6 +36,7 @@ public class Stock : MonoBehaviour
     {
         store = GetComponent<Store>();
         reStockingCountdownRunning = false;
+        reStockAsked = new Dictionary<int, int>();
 
         if (NeedsReStocking())
         {
@@ -100,6 +110,16 @@ public class Stock : MonoBehaviour
                 int productID = stockData.Product.ID;
                 int amount = stockData.ReStockNeeded();
                 productsToRefill.Add(productID, amount);
+
+                // Add to reStock asked
+                if (reStockAsked.ContainsKey(productID))
+                {
+                    reStockAsked[productID] += amount;
+                }
+                else
+                {
+                    reStockAsked.Add(productID, amount);
+                }
             }
         }
 
@@ -178,6 +198,47 @@ public class Stock : MonoBehaviour
         reStockingCountdown = 1.5f * stockTimeout;
 
         Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+    }
+
+    #endregion
+
+    #region Stock Modification
+
+    public Dictionary<int, int> GetSalesReport()
+    {
+        Dictionary<int, int> salesReport = new Dictionary<int, int>(reStockAsked);
+        reStockAsked.Clear();
+        return salesReport;
+    }
+
+    public void ModifyStock(StockChanges changes)
+    {
+        foreach (KeyValuePair<int, int> entry in changes.PRICE_CHANGES)
+        {
+            int productID = entry.Key;
+            int modification = entry.Value;
+
+            stock[productID].ModifyPrice(modification);
+        }
+
+        foreach (KeyValuePair<int, int> entry in changes.MAX_STOCK_CHANGES)
+        {
+            int productID = entry.Key;
+            int modification = entry.Value;
+
+            stock[productID].ModifyMaxStock(modification);
+        }
+
+        foreach (int productID in changes.PRODUCTS_TO_REMOVE)
+        {
+            stock.Remove(productID);
+        }
+
+        foreach (int productID in changes.NEW_PRODUCTS)
+        {
+            // TODO
+            // StockData newStock = new StockData();
+        }
     }
 
     #endregion

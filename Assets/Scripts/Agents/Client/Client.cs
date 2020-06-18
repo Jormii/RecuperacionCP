@@ -24,20 +24,25 @@ public class Client : Agent
     private Dictionary<int, float> storesIgnored;
     private HashSet<int> employeesAsked;
 
+    private Animator animator;
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
+    private bool hasToLeave = false;
 
     protected override void Start()
     {
         base.Start();
 
+        animator = GetComponent<Animator>();
         currentState = ClientState.Evaluating;
         knowledge = new ClientKnowledge();
         resources = GetComponent<ClientResources>();
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+
+        Mall.INSTANCE.ClientEntersMall(this);
     }
 
     protected override void Update()
@@ -45,6 +50,11 @@ public class Client : Agent
         base.Update();
 
         UpdateIgnoredStores();
+    }
+
+    public void MakeLeave()
+    {
+        hasToLeave = true;
     }
 
     #region Ignored Stores Related
@@ -84,6 +94,8 @@ public class Client : Agent
 
     private void ChangeState(ClientState state)
     {
+        CancelInvoke();
+
         currentState = state;
         OnStateChanged();
     }
@@ -190,8 +202,8 @@ public class Client : Agent
             }
         }
 
-        ChangeState(ClientState.Evaluating);
         IgnoreStoreTemporarily();
+        Invoke("LeaveStore", 1f);
     }
 
     #endregion
@@ -215,8 +227,17 @@ public class Client : Agent
         else
         {
             IgnoreStoreTemporarily();
-            ChangeState(ClientState.Evaluating);
+
+            Invoke("LeaveStore", 1f);
         }
+    }
+
+    private void LeaveStore()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
+        ChangeState(ClientState.Evaluating);
     }
 
     private bool StoreHasAnyOfWantedProductsInStock()
@@ -248,7 +269,7 @@ public class Client : Agent
             Debug.LogFormat("Client {0} is evaluating the situation", name);
         }
 
-        if (!resources.ThereAreThingsLeftToBuy())
+        if (!resources.ThereAreThingsLeftToBuy() || hasToLeave)
         {
             ChangeState(ClientState.Leaving);
             return;
@@ -271,8 +292,8 @@ public class Client : Agent
                 Debug.LogFormat("Client {0} knows stores that sell products they want", name);
             }
 
-            StoreKnowledge closestStore = GetClosestStoreThatSellsWantedProducts(productsIDs);
-            if (closestStore.STORE_ID == -1)
+            StoreKnowledge cheapestStore = GetCheapestStoreThatSellsWantedProducts(productsIDs);
+            if (cheapestStore.STORE_ID == -1)
             {
                 if (debug)
                 {
@@ -283,7 +304,7 @@ public class Client : Agent
             }
             else
             {
-                storeInterestedIn = closestStore;
+                storeInterestedIn = cheapestStore;
                 ChangeState(ClientState.MovingToStore);
             }
         }
@@ -306,11 +327,10 @@ public class Client : Agent
         return productsIDs;
     }
 
-    private StoreKnowledge GetClosestStoreThatSellsWantedProducts(List<int> productsIDs)
+    private StoreKnowledge GetCheapestStoreThatSellsWantedProducts(List<int> productsIDs)
     {
-        Vector2 currentPosition = transform.position;
-        StoreKnowledge closestStore = new StoreKnowledge(-1, new LocationData());
-        float distanceToClosestStore = Mathf.Infinity;
+        StoreKnowledge cheapestStore = new StoreKnowledge(-1, new LocationData());
+        int cheapestPrice = int.MaxValue;
         for (int i = 0; i < productsIDs.Count; ++i)
         {
             int productID = productsIDs[i];
@@ -323,18 +343,16 @@ public class Client : Agent
                     continue;
                 }
 
-                Vector2 storePosition = storeKnown.LOCATION.POSITION;
-                float manhattanDistance = Utils.ManhattanDistance(currentPosition, storePosition);
-
-                if (manhattanDistance < distanceToClosestStore)
+                int knownPrice = storeKnown.GetPriceOfProduct(productID);
+                if (knownPrice < cheapestPrice)
                 {
-                    closestStore = storeKnown;
-                    distanceToClosestStore = manhattanDistance;
+                    cheapestStore = storeKnown;
+                    cheapestPrice = knownPrice;
                 }
             }
         }
 
-        return closestStore;
+        return cheapestStore;
     }
 
     #endregion
@@ -417,14 +435,15 @@ public class Client : Agent
 
     private Vector2 CalculateWanderDestination()
     {
-        // TODO: Improve
-        Vector2 wanderDirection = new Vector2(
-            (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
-            0f
-        );
+        float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
+        float xPercentage = transform.position.x / mallTotalDistance;
+
+        int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
+
+        float distanceToTravel = Random.Range(0.125f, 0.5f) * mallTotalDistance;
 
         Vector2 wanderDestination = new Vector2(
-            (wanderDirection.x < 0) ? Mall.MALL_LEFT_LIMIT : Mall.MALL_RIGHT_LIMIT,
+            Mathf.Clamp(transform.position.x + distanceToTravel * xDirection, Mall.MALL_LEFT_LIMIT, Mall.MALL_RIGHT_LIMIT),
             transform.position.y
         );
 
@@ -522,10 +541,18 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
+        Mall.INSTANCE.ClientLeavesMall(this);
         gameObject.SetActive(false);
     }
 
     private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        Invoke("WaitBeforeProceeding", Random.Range(1f, 1.5f));
+    }
+
+    private void WaitBeforeProceeding()
     {
         ChangeState(ClientState.Evaluating);
     }
@@ -536,6 +563,8 @@ public class Client : Agent
         {
             Debug.LogFormat("Client {0} has reached the stairs", name);
         }
+
+        MakeInteractable(false);
     }
 
     private void OnStairsEndReached(MoveAction moveAction)
@@ -557,6 +586,8 @@ public class Client : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+
+        MakeInteractable(true);
     }
 
     private void OnStoreReached(MoveAction moveAction)
@@ -566,7 +597,19 @@ public class Client : Agent
             Debug.LogFormat("Client {0} has reached the store {1}", name, storeInterestedIn.STORE_ID);
         }
 
-        ChangeState(ClientState.CheckingStock);
+        Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
+        if (store.IsOpen)
+        {
+            ChangeState(ClientState.CheckingStock);
+
+            animator.SetBool("enteringStore", true);
+            animator.SetBool("leavingStore", false);
+            MakeInteractable(false);
+        }
+        else
+        {
+            ChangeState(ClientState.Evaluating);
+        }
     }
 
     #endregion
@@ -621,4 +664,31 @@ public class Client : Agent
     #endregion
 
     #endregion
+
+    public override List<Sprite> GetSpritesToDisplay()
+    {
+        List<Sprite> sprites = new List<Sprite>();
+
+        switch (currentState)
+        {
+            case ClientState.AskingForInformation:
+            case ClientState.MovingTowardsEmployee:
+                sprites.Add(SpriteManager.INSTANCE.GetAskingEmployeeSprite());
+                break;
+            case ClientState.Buying:
+            case ClientState.MovingToStore:
+                sprites.Add(SpriteManager.INSTANCE.GetStoreSprite(storeInterestedIn.STORE_ID));
+                break;
+            case ClientState.Leaving:
+                sprites.Add(SpriteManager.INSTANCE.GetLeaveSprite());
+                break;
+            case ClientState.WanderingAround:
+                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                break;
+            default:
+                break;
+        }
+
+        return sprites;
+    }
 }

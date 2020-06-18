@@ -3,14 +3,14 @@ using UnityEngine;
 
 public class Product : MonoBehaviour
 {
-    public static readonly Dictionary<int, Product> ALL_PROODUCTS = new Dictionary<int, Product>();
+    public static readonly Dictionary<int, Product> ALL_PRODUCTS = new Dictionary<int, Product>();
 
     public readonly int ID = IDProvider.GetID();
     [SerializeField] private string productName = "ProductName";
 
-    private void Start()
+    private void Awake()
     {
-        ALL_PROODUCTS.Add(ID, this);
+        ALL_PRODUCTS.Add(ID, this);
         GetComponent<Product>().enabled = false;
     }
 

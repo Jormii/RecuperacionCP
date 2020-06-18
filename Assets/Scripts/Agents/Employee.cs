@@ -5,6 +5,7 @@ public class Employee : Agent
 {
     private enum EmployeeState
     {
+        Leaving,
         MovingToStorage,
         MovingToStore,
         ObservingStock,
@@ -19,9 +20,11 @@ public class Employee : Agent
     private Dictionary<int, int> productsBeingCarried;
     private Dictionary<int, float> timeSpentPerFloor;
 
+    private Animator animator;
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
     private bool interrupted;
+    private bool shiftIsOver = false;
 
     protected override void Start()
     {
@@ -32,12 +35,19 @@ public class Employee : Agent
         productsBeingCarried = new Dictionary<int, int>();
         timeSpentPerFloor = new Dictionary<int, float>();
 
+        animator = GetComponent<Animator>();
+
         Boss.INSTANCE.AddEmployee(this);
     }
 
     public bool InChargeOfFloor(int floor)
     {
         return floorsInCharge.Contains(floor);
+    }
+
+    public void SendHome()
+    {
+        shiftIsOver = true;
     }
 
     #region Interruption Related
@@ -89,8 +99,19 @@ public class Employee : Agent
             return;
         }
 
+        bool cancelCurrentAction = true;
+        if (ExecutingActionQueue)
+        {
+            IAction actionBeingExecuted = CurrentAction;
+            if (actionBeingExecuted is MoveAction)
+            {
+                MoveAction moveAction = actionBeingExecuted as MoveAction;
+                cancelCurrentAction = moveAction.GetDestination != MoveAction.Destination.StairsEnd;
+            }
+        }
+
         lastStoreSeen = store;
-        StopExecutingActionQueue();
+        StopExecutingActionQueue(cancelCurrentAction);
         MoveProductsFromCarriedToRefill(store.ID, reStock);
         if (AlreadyHasProductsWanted(store.ID, reStock))
         {
@@ -219,6 +240,8 @@ public class Employee : Agent
 
     private void ChangeState(EmployeeState state)
     {
+        CancelInvoke();
+
         currentState = state;
         OnStateChanged();
     }
@@ -227,6 +250,9 @@ public class Employee : Agent
     {
         switch (currentState)
         {
+            case EmployeeState.Leaving:
+                Leaving();
+                break;
             case EmployeeState.MovingToStorage:
                 MovingToStorage();
                 break;
@@ -249,6 +275,16 @@ public class Employee : Agent
                 break;
         }
     }
+
+    #region Leaving Related
+
+    private void Leaving()
+    {
+        LocationData closestExit = Mall.INSTANCE.GetClosestExit(Location);
+        MoveTo(closestExit, MoveAction.Destination.Exit);
+    }
+
+    #endregion
 
     #region MovingToStorage related
 
@@ -408,6 +444,15 @@ public class Employee : Agent
         Dictionary<int, int> overStock = stock.ReStock(restock);
         HandleUnnecessaryStock(overStock);
 
+        Invoke("LeaveStore", 1f);
+    }
+
+    private void LeaveStore()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
+
         // Still has products to restock
         if (productsToRefill.Count != 0)
         {
@@ -460,6 +505,12 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is wandering around", name);
         }
 
+        if (shiftIsOver)
+        {
+            ChangeState(EmployeeState.Leaving);
+            return;
+        }
+
         hasVisitedStorage = false;
 
         Vector2 wanderDestination = CalculateWanderDestination();
@@ -475,14 +526,15 @@ public class Employee : Agent
 
     private Vector2 CalculateWanderDestination()
     {
-        // TODO: Improve
-        Vector2 wanderDirection = new Vector2(
-            (Random.Range(0f, 1f) > 0.5f) ? 1 : -1,
-            0f
-        );
+        float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
+        float xPercentage = transform.position.x / mallTotalDistance;
+
+        int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
+
+        float distanceToTravel = Random.Range(0.125f, 0.5f) * mallTotalDistance;
 
         Vector2 wanderDestination = new Vector2(
-            (wanderDirection.x < 0) ? Mall.MALL_LEFT_LIMIT : Mall.MALL_RIGHT_LIMIT,
+            Mathf.Clamp(transform.position.x + distanceToTravel * xDirection, Mall.MALL_LEFT_LIMIT, Mall.MALL_RIGHT_LIMIT),
             transform.position.y
         );
 
@@ -532,6 +584,9 @@ public class Employee : Agent
             MoveAction moveAction = action as MoveAction;
             switch (moveAction.GetDestination)
             {
+                case MoveAction.Destination.Exit:
+                    OnExitReached(moveAction);
+                    break;
                 case MoveAction.Destination.NoDestination:
                     OnNoDestinationReached(moveAction);
                     break;
@@ -548,7 +603,6 @@ public class Employee : Agent
                     OnStoreReached(moveAction);
                     break;
                 case MoveAction.Destination.Agent:
-                case MoveAction.Destination.Exit:
                 default:
                     Debug.LogErrorFormat("Error in employee {0}. An employee's moving action can't have {1} as destination", name, moveAction.GetDestination);
                     break;
@@ -558,12 +612,25 @@ public class Employee : Agent
         base.OnActionCompleted(action);
     }
 
+    private void OnExitReached(MoveAction moveAction)
+    {
+        gameObject.SetActive(false);
+    }
+
     private void OnNoDestinationReached(MoveAction moveAction)
+    {
+        Invoke("WaitBeforeProceeding", Random.Range(1f, 1.5f));
+    }
+
+    private void WaitBeforeProceeding()
     {
         ChangeState(EmployeeState.WanderingAround);
     }
 
-    private void OnStairsReached(MoveAction moveAction) { }
+    private void OnStairsReached(MoveAction moveAction)
+    {
+        MakeInteractable(false);
+    }
 
     private void OnStairsEndReached(MoveAction moveAction)
     {
@@ -579,11 +646,26 @@ public class Employee : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+        MakeInteractable(true);
     }
 
     private void OnStorageReached(MoveAction moveAction)
     {
         hasVisitedStorage = true;
+
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
+        MakeInteractable(false);
+
+        int storesToRestock = productsToRefill.Count;
+        Invoke("LeaveStorage", (float)storesToRestock + 0.5f);
+    }
+
+    private void LeaveStorage()
+    {
+        animator.SetBool("enteringStore", false);
+        animator.SetBool("leavingStore", true);
+        MakeInteractable(true);
         ChangeState(EmployeeState.MovingToStore);
     }
 
@@ -593,6 +675,10 @@ public class Employee : Agent
 
         lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
+
+        animator.SetBool("enteringStore", true);
+        animator.SetBool("leavingStore", false);
+        MakeInteractable(false);
     }
 
     #endregion
@@ -626,4 +712,32 @@ public class Employee : Agent
     public override void OnOtherAgentSeen(Agent agent) { }
 
     #endregion
+
+    public override List<Sprite> GetSpritesToDisplay()
+    {
+        List<Sprite> sprites = new List<Sprite>();
+
+        switch (currentState)
+        {
+            case EmployeeState.Leaving:
+                sprites.Add(SpriteManager.INSTANCE.GetLeaveSprite());
+                break;
+            case EmployeeState.MovingToStorage:
+                sprites.Add(SpriteManager.INSTANCE.GetStorageSprite());
+                break;
+            case EmployeeState.MovingToStore:
+                foreach (int storeID in productsToRefill.Keys)
+                {
+                    sprites.Add(SpriteManager.INSTANCE.GetStoreSprite(storeID));
+                }
+                break;
+            case EmployeeState.WanderingAround:
+                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                break;
+            default:
+                break;
+        }
+
+        return sprites;
+    }
 }

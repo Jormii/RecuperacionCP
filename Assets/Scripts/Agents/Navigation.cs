@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Agent))]
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class Navigation : MonoBehaviour
 {
     public const float DISTANCE_MARGIN = 0.1f;
 
-    [SerializeField] private float movementSpeed;
+    [SerializeField] private float movementSpeed = 2f;
 
     private Agent agent;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private Vector2 destination;
     private Vector2 direction;
     private Navigation thisComponent;
@@ -16,6 +20,8 @@ public class Navigation : MonoBehaviour
     private void Start()
     {
         agent = GetComponent<Agent>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         thisComponent = GetComponent<Navigation>();
         constantZ = transform.position.z;
     }
@@ -31,6 +37,7 @@ public class Navigation : MonoBehaviour
         if (ReachedItsDestination())
         {
             thisComponent.enabled = false;
+            animator.SetBool("moving", false);
             agent.UponReachingDestination();
         }
     }
@@ -49,11 +56,18 @@ public class Navigation : MonoBehaviour
 
         destination = position;
         direction = (position - currentPosition2D).normalized;
+
+        bool movingRight = direction.x > 0;
+        bool movingVertically = direction.y != 0;
+        spriteRenderer.flipX = movingRight;
+        // animator.SetBool("moving", !movingVertically);
+        animator.SetBool("moving", true);
     }
 
     public void StopMoving()
     {
         thisComponent.enabled = false;
+        animator.SetBool("moving", false);
     }
 
     #region Properties
