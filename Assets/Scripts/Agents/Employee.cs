@@ -65,13 +65,18 @@ public class Employee : Agent
         }
     }
 
-    public void Interrupt()
+    public void Interrupt(Agent agentWhoInterrupted)
     {
         interrupted = true;
         if (ExecutingActionQueue)
         {
             PauseActionQueue();
         }
+
+        // Next is ugly
+        float employeeX = transform.position.x;
+        float otherAgentX = agentWhoInterrupted.transform.position.x;
+        GetComponent<SpriteRenderer>().flipX = employeeX < otherAgentX;
     }
 
     public void ContinueTasks()

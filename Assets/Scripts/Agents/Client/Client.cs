@@ -142,7 +142,15 @@ public class Client : Agent
     {
         AskForInformation(employeeFound);
         StopExecutingActionQueue();
+
+        employeesAsked.Add(employeeFound.GetInstanceID());
+        Invoke("WaitBeforeContinuing", 1.5f);
+    }
+
+    private void WaitBeforeContinuing()
+    {
         ChangeState(ClientState.Evaluating);
+        employeeFound.ContinueTasks();
     }
 
     private void AskForInformation(Employee employee)
@@ -166,9 +174,6 @@ public class Client : Agent
                 knowledge.CreateStoreKnowledge(givenKnowledge);
             }
         }
-
-        ChangeState(ClientState.Evaluating);
-        employeeFound.ContinueTasks();
     }
 
     #endregion
@@ -399,7 +404,7 @@ public class Client : Agent
             return;
         }
 
-        employeeFound.Interrupt();
+        employeeFound.Interrupt(this);
 
         // TODO once sprites are done: Tweak to not end on top of the employee when asking
         Vector2 employeePosition = employeeFound.transform.position;
@@ -655,7 +660,6 @@ public class Client : Agent
             if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
             {
                 employeeFound = employee;
-                employeesAsked.Add(employee.GetInstanceID());
                 ChangeState(ClientState.MovingTowardsEmployee);
             }
         }
