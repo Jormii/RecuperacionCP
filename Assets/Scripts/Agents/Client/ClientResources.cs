@@ -1,21 +1,28 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class ClientResources : MonoBehaviour
+public class ClientResources
 {
-    public List<ShoppingList> initialShoppingList;
+    public const int MIN_MONEY = 50;
+    public const int MAX_MONEY = 100;
+    public const int MAX_PRODUCTS_IN_SHOPPING_LIST = 3;
 
     private Dictionary<int, ShoppingList> shoppingList;
-    [SerializeField] private int money;
+    private int money;
 
-    private void Awake()
+    public ClientResources()
     {
-        shoppingList = new Dictionary<int, ShoppingList>();
-        for (int i = 0; i < initialShoppingList.Count; ++i)
+        this.money = Random.Range(MIN_MONEY, MAX_MONEY);
+        this.shoppingList = new Dictionary<int, ShoppingList>();
+
+        List<Product> products = Product.GetRandomProducts(MAX_PRODUCTS_IN_SHOPPING_LIST);
+        for (int i = 0; i < MAX_PRODUCTS_IN_SHOPPING_LIST; ++i)
         {
-            ShoppingList wantedProduct = initialShoppingList[i];
-            int productID = wantedProduct.Product.ID;
-            shoppingList.Add(productID, wantedProduct);
+            Product product = products[i];
+            int quantityWanted = Random.Range(1, 5);
+
+            ShoppingList productShoppingList = new ShoppingList(product, quantityWanted);
+            shoppingList.Add(product.ID, productShoppingList);
         }
     }
 

@@ -43,6 +43,14 @@ public abstract class Agent : MonoBehaviour
         totalTime += Time.deltaTime;
     }
 
+    public virtual void Reset(LocationData location)
+    {
+        transform.position = location.POSITION;
+        currentFloor = location.FLOOR;
+
+        Start();
+    }
+
     public void MakeInteractable(bool interactable)
     {
         if (!interactable)

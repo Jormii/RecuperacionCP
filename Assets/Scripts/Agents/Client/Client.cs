@@ -37,12 +37,10 @@ public class Client : Agent
         animator = GetComponent<Animator>();
         currentState = ClientState.Evaluating;
         knowledge = new ClientKnowledge();
-        resources = GetComponent<ClientResources>();
+        resources = new ClientResources();
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
         timeSpentPerFloor = new Dictionary<int, float>();
-
-        Mall.INSTANCE.ClientEntersMall(this);
     }
 
     protected override void Update()
@@ -50,6 +48,16 @@ public class Client : Agent
         base.Update();
 
         UpdateIgnoredStores();
+    }
+
+    public override void Reset(LocationData location)
+    {
+        base.Reset(location);
+
+        currentState = ClientState.WanderingAround;
+        storesIgnored?.Clear();
+        employeesAsked?.Clear();
+        timeSpentPerFloor?.Clear();
     }
 
     public void MakeLeave()
@@ -548,8 +556,7 @@ public class Client : Agent
 
         animator.SetBool("enteringStore", true);
         animator.SetBool("leavingStore", false);
-        Mall.INSTANCE.ClientLeavesMall(this);
-        gameObject.SetActive(false);
+        ClientsManager.INSTANCE.ClientLeavesMall(this);
     }
 
     private void OnNoDestinationReached(MoveAction moveAction)

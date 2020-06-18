@@ -67,6 +67,7 @@
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
      <Compile Include="Assets\Scripts\Bubble.cs" />
+     <Compile Include="Assets\Scripts\ClientsManager.cs" />
      <Compile Include="Assets\Scripts\IDProvider.cs" />
      <Compile Include="Assets\Scripts\Interaction.cs" />
      <Compile Include="Assets\Scripts\LocationData.cs" />

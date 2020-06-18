@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3087276120168011222}
   - component: {fileID: 2158864444218911048}
   - component: {fileID: 8360610134695039216}
-  - component: {fileID: 8174310119441417925}
   - component: {fileID: 6931167072084578668}
   - component: {fileID: 7745840436843184147}
   m_Layer: 0
@@ -146,20 +145,6 @@ MonoBehaviour:
   initialFloor: 0
   maxTimeSpentPerFloor: 10
   currentState: 3
---- !u!114 &8174310119441417925
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2158864444218911049}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d3b7f93c7a5b2640a0b515f0c5fb698, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  initialShoppingList: []
-  money: 0
 --- !u!114 &6931167072084578668
 MonoBehaviour:
   m_ObjectHideFlags: 0

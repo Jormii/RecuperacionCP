@@ -24,7 +24,6 @@ public class Mall
     // Exits, storages and clients
     private Dictionary<int, LocationData> exits;
     private Dictionary<int, LocationData> storages;
-    private HashSet<Client> clientsInMall;
 
     private Mall()
     {
@@ -37,7 +36,6 @@ public class Mall
 
         this.exits = new Dictionary<int, LocationData>();
         this.storages = new Dictionary<int, LocationData>();
-        this.clientsInMall = new HashSet<Client>();
     }
 
     public bool FloorExists(int floor)
@@ -198,6 +196,17 @@ public class Mall
         return closestExit;
     }
 
+    public List<LocationData> GetAllExits()
+    {
+        List<LocationData> exitsLocations = new List<LocationData>();
+        foreach (LocationData location in exits.Values)
+        {
+            exitsLocations.Add(location);
+        }
+
+        return exitsLocations;
+    }
+
     #endregion
 
     #region Storage Related
@@ -230,20 +239,6 @@ public class Mall
         }
 
         return closestStorage;
-    }
-
-    #endregion
-
-    #region Client Related
-
-    public void ClientEntersMall(Client client)
-    {
-        clientsInMall.Add(client);
-    }
-
-    public void ClientLeavesMall(Client client)
-    {
-        clientsInMall.Remove(client);
     }
 
     #endregion
