@@ -712,4 +712,32 @@ public class Employee : Agent
     public override void OnOtherAgentSeen(Agent agent) { }
 
     #endregion
+
+    public override List<Sprite> GetSpritesToDisplay()
+    {
+        List<Sprite> sprites = new List<Sprite>();
+
+        switch (currentState)
+        {
+            case EmployeeState.Leaving:
+                sprites.Add(SpriteManager.INSTANCE.GetLeaveSprite());
+                break;
+            case EmployeeState.MovingToStorage:
+                sprites.Add(SpriteManager.INSTANCE.GetStorageSprite());
+                break;
+            case EmployeeState.MovingToStore:
+                foreach (int storeID in productsToRefill.Keys)
+                {
+                    sprites.Add(SpriteManager.INSTANCE.GetStoreSprite(storeID));
+                }
+                break;
+            case EmployeeState.WanderingAround:
+                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                break;
+            default:
+                break;
+        }
+
+        return sprites;
+    }
 }

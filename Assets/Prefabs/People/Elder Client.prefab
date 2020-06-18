@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 9017502531479881084}
   - component: {fileID: 8532678256956150787}
   m_Layer: 0
-  m_Name: Elder Client Variant
+  m_Name: Elder Client
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -109,7 +109,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.3, y: 0.48}
+  m_Size: {x: 0.625, y: 0.9583333}
   m_EdgeRadius: 0
 --- !u!95 &63396441364938072
 Animator:

@@ -241,6 +241,8 @@ public abstract class Agent : MonoBehaviour
 
     #endregion
 
+    public abstract List<Sprite> GetSpritesToDisplay();
+
     #region Properties
 
     public LocationData Location

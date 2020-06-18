@@ -6,6 +6,7 @@ public class Interaction : MonoBehaviour
 {
     public Bubble bubblePrefab;
 
+    private Agent activeAgent;
     private Bubble bubbleInstantiated;
     private bool bubbleExisting;
 
@@ -15,6 +16,15 @@ public class Interaction : MonoBehaviour
     }
 
     private void Update()
+    {
+        HandleInput();
+        if (activeAgent)
+        {
+            UpdateBubble();
+        }
+    }
+
+    private void HandleInput()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -27,13 +37,13 @@ public class Interaction : MonoBehaviour
                 Agent agent = gameObjectClicked.GetComponent<Agent>();
                 if (agent)
                 {
-                    DrawBubble(agent);
+                    activeAgent = agent;
                 }
             }
         }
     }
 
-    private void DrawBubble(Agent agent)
+    private void UpdateBubble()
     {
         if (!bubbleExisting)
         {
@@ -41,13 +51,20 @@ public class Interaction : MonoBehaviour
             bubbleExisting = true;
         }
 
+        List<Sprite> sprites = activeAgent.GetSpritesToDisplay();
+        if (sprites.Count == 0)
+        {
+            return;
+        }
+
         Vector3 bubblePosition = new Vector3(
-            agent.transform.position.x + 0.7f,
-            agent.transform.position.y + 0.7f,
-            agent.transform.position.z
+            activeAgent.transform.position.x + 0.7f,
+            activeAgent.transform.position.y + 0.7f,
+            activeAgent.transform.position.z
         );
 
         bubbleInstantiated.transform.position = bubblePosition;
-        bubbleInstantiated.transform.parent = agent.transform;
+        bubbleInstantiated.transform.SetParent(activeAgent.transform);
+        bubbleInstantiated.Draw(sprites);
     }
 }

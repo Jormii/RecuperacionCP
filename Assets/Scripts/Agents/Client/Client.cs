@@ -664,4 +664,31 @@ public class Client : Agent
     #endregion
 
     #endregion
+
+    public override List<Sprite> GetSpritesToDisplay()
+    {
+        List<Sprite> sprites = new List<Sprite>();
+
+        switch (currentState)
+        {
+            case ClientState.AskingForInformation:
+            case ClientState.MovingTowardsEmployee:
+                sprites.Add(SpriteManager.INSTANCE.GetAskingEmployeeSprite());
+                break;
+            case ClientState.Buying:
+            case ClientState.MovingToStore:
+                sprites.Add(SpriteManager.INSTANCE.GetStoreSprite(storeInterestedIn.STORE_ID));
+                break;
+            case ClientState.Leaving:
+                sprites.Add(SpriteManager.INSTANCE.GetLeaveSprite());
+                break;
+            case ClientState.WanderingAround:
+                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                break;
+            default:
+                break;
+        }
+
+        return sprites;
+    }
 }

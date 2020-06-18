@@ -66,13 +66,14 @@ public class Store : MonoBehaviour
     private void UpdateBubble()
     {
         List<StockData> stockSold = stock.StockSold;
-        List<GameObject> gameObjects = new List<GameObject>();
+        List<Sprite> productsSprites = new List<Sprite>();
         for (int i = 0; i < stockSold.Count; ++i)
         {
-            gameObjects.Add(stockSold[i].Product.gameObject);
+            Sprite sprite = stockSold[i].Product.GetComponent<SpriteRenderer>().sprite;
+            productsSprites.Add(sprite);
         }
 
-        bubblePrefab.DrawMany(gameObjects);
+        storesBubble.Draw(productsSprites);
     }
 
     #region Properties
