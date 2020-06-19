@@ -25,6 +25,7 @@ public class Client : Agent
     private HashSet<int> employeesAsked;
 
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
@@ -35,6 +36,7 @@ public class Client : Agent
         base.Start();
 
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         knowledge = new ClientKnowledge();
     }
 
@@ -244,8 +246,7 @@ public class Client : Agent
 
     private void LeaveStore()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
         ChangeState(ClientState.Evaluating);
     }
@@ -551,9 +552,9 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
+        spriteRenderer.enabled = false;
         ClientsManager.INSTANCE.ClientLeavesMall(this);
+        gameObject.SetActive(false);
     }
 
     private void OnNoDestinationReached(MoveAction moveAction)
@@ -611,8 +612,7 @@ public class Client : Agent
         {
             ChangeState(ClientState.CheckingStock);
 
-            animator.SetBool("enteringStore", true);
-            animator.SetBool("leavingStore", false);
+            spriteRenderer.enabled = false;
             MakeInteractable(false);
         }
         else

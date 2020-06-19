@@ -21,6 +21,7 @@ public class Employee : Agent
     private Dictionary<int, float> timeSpentPerFloor;
 
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
     private bool interrupted;
@@ -36,6 +37,7 @@ public class Employee : Agent
         timeSpentPerFloor = new Dictionary<int, float>();
 
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         Boss.INSTANCE.AddEmployee(this);
     }
@@ -454,8 +456,7 @@ public class Employee : Agent
 
     private void LeaveStore()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
 
         // Still has products to restock
@@ -658,18 +659,16 @@ public class Employee : Agent
     {
         hasVisitedStorage = true;
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
+        spriteRenderer.enabled = false;
         MakeInteractable(false);
 
         int storesToRestock = productsToRefill.Count;
-        Invoke("LeaveStorage", (float)storesToRestock + 0.5f);
+        Invoke("LeaveStorage", 1.5f);
     }
 
     private void LeaveStorage()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
         ChangeState(EmployeeState.MovingToStore);
     }
@@ -681,8 +680,7 @@ public class Employee : Agent
         lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
+        spriteRenderer.enabled = false;
         MakeInteractable(false);
     }
 
