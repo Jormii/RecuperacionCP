@@ -17,7 +17,7 @@ public class Navigation : MonoBehaviour
     private Navigation thisComponent;
     private float constantZ;
 
-    private void Start()
+    private void Awake()
     {
         agent = GetComponent<Agent>();
         animator = GetComponent<Animator>();

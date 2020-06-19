@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
+[System.Serializable]
 public class ClientKnowledge
 {
+    public List<StoreKnowledge> inspectorKnowledge;
+
     private Dictionary<int, StoreKnowledge> knownStores;
     private Dictionary<int, List<StoreKnowledge>> knownStoresByProduct;
 
     public ClientKnowledge()
     {
+        this.inspectorKnowledge = new List<StoreKnowledge>();
         this.knownStores = new Dictionary<int, StoreKnowledge>();
         this.knownStoresByProduct = new Dictionary<int, List<StoreKnowledge>>();
     }
@@ -63,6 +68,8 @@ public class ClientKnowledge
                 knownStoresByProduct.Add(productID, list);
             }
         }
+
+        UpdateInspectorKnowledge();
     }
 
     public void UpdateKnowledge(StoreKnowledge storeKnowledge)
@@ -89,6 +96,18 @@ public class ClientKnowledge
                 list.Add(knowledge);
                 knownStoresByProduct.Add(productID, list);
             }
+        }
+
+        UpdateInspectorKnowledge();
+    }
+
+    private void UpdateInspectorKnowledge()
+    {
+        inspectorKnowledge.Clear();
+
+        foreach (StoreKnowledge knowledge in knownStores.Values)
+        {
+            inspectorKnowledge.Add(knowledge);
         }
     }
 

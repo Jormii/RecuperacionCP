@@ -6,7 +6,9 @@ public class Stock : MonoBehaviour
 {
     public const int MAX_PRODUCTS = 3;
 
+    public bool debug = false;
     public List<StockData> initialStock = new List<StockData>();
+    public List<StockData> inspectorStock = new List<StockData>();
     public float stockTimeout = 5f;
 
     private Store store;
@@ -48,6 +50,8 @@ public class Stock : MonoBehaviour
         {
             StartReStockingCountdown();
         }
+
+        UpdateInspectorList();
     }
 
     private void Update()
@@ -79,6 +83,8 @@ public class Stock : MonoBehaviour
         {
             StartReStockingCountdown();
         }
+
+        UpdateInspectorList();
 
         return profit;
     }
@@ -158,6 +164,8 @@ public class Stock : MonoBehaviour
             StopReStockingCountdown();
         }
 
+        UpdateInspectorList();
+
         return overStock;
     }
 
@@ -196,14 +204,20 @@ public class Stock : MonoBehaviour
 
     private void OnCountdownFinished()
     {
-        Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+        if (debug)
+        {
+            Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+        }
 
         Dictionary<int, int> reStock = GetProductsToRefill();
         Boss.INSTANCE.RequestReStock(store, reStock);
 
         reStockingCountdown = 1.5f * stockTimeout;
 
-        Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+        if (debug)
+        {
+            Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+        }
     }
 
     #endregion
@@ -245,9 +259,20 @@ public class Stock : MonoBehaviour
             // TODO
             // StockData newStock = new StockData();
         }
+
+        UpdateInspectorList();
     }
 
     #endregion
+
+    private void UpdateInspectorList()
+    {
+        inspectorStock.Clear();
+        foreach (StockData stockData in stock.Values)
+        {
+            inspectorStock.Add(stockData);
+        }
+    }
 
     #region Properties
 

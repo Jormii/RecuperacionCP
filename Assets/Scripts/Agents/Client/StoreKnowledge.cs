@@ -1,13 +1,19 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
+[System.Serializable]
 public struct StoreKnowledge
 {
-    public readonly int STORE_ID;
-    public readonly LocationData LOCATION;
+    public List<Tuple> inspectorList;
+
+    [SerializeField] public readonly int STORE_ID;
+    [SerializeField] public readonly LocationData LOCATION;
     private Dictionary<int, int> productsOnSale;
 
     public StoreKnowledge(int storeID, LocationData location)
     {
+        this.inspectorList = new List<Tuple>();
+
         this.STORE_ID = storeID;
         this.LOCATION = location;
         this.productsOnSale = new Dictionary<int, int>();
@@ -34,6 +40,8 @@ public struct StoreKnowledge
             int price = productStock.Price;
             UpdateProduct(productID, price);
         }
+
+        UpdateInspectorList();
     }
 
     public void Update(StoreKnowledge knowledge)
@@ -54,6 +62,8 @@ public struct StoreKnowledge
             int price = entry.Value;
             UpdateProduct(productID, price);
         }
+
+        UpdateInspectorList();
     }
 
     private void UpdateProduct(int productID, int price)
@@ -65,6 +75,15 @@ public struct StoreKnowledge
         else
         {
             productsOnSale.Add(productID, price);
+        }
+    }
+
+    private void UpdateInspectorList()
+    {
+        inspectorList.Clear();
+        foreach (KeyValuePair<int, int> entry in productsOnSale)
+        {
+            inspectorList.Add(new Tuple(entry.Key, entry.Value));
         }
     }
 

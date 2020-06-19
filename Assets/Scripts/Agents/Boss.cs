@@ -111,7 +111,7 @@ public class Boss
             }
 
             int previousAmountSold = previousSales[productID];
-            int previousAmountReStocked = previousReStock[productID];
+            int previousAmountReStocked = (previousReStock.ContainsKey(productID)) ? previousReStock[productID] : 0;
 
             bool moreProductsSold = amountSold > previousAmountSold;
             bool moreTimesReStocked = amountReStocked > previousAmountReStocked;

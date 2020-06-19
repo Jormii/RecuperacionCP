@@ -47,8 +47,10 @@ public abstract class Agent : MonoBehaviour
     {
         transform.position = location.POSITION;
         currentFloor = location.FLOOR;
+        initialFloor = currentFloor;
 
-        Start();
+        actions = new Queue<IAction>();
+        executingQueue = false;
     }
 
     public void MakeInteractable(bool interactable)
