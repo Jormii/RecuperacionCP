@@ -224,13 +224,6 @@ public class Stock : MonoBehaviour
 
     #region Stock Modification
 
-    public Dictionary<int, int> GetSalesReport()
-    {
-        Dictionary<int, int> salesReport = new Dictionary<int, int>(reStockAsked);
-        reStockAsked.Clear();
-        return salesReport;
-    }
-
     public void ModifyStock(StockChanges changes)
     {
         foreach (KeyValuePair<int, int> entry in changes.PRICE_CHANGES)
@@ -254,10 +247,19 @@ public class Stock : MonoBehaviour
             stock.Remove(productID);
         }
 
-        foreach (int productID in changes.NEW_PRODUCTS)
+        int newProducts = changes.PRODUCTS_TO_REMOVE.Count;
+        for (int i = 0; i < newProducts; ++i)
         {
-            // TODO
-            // StockData newStock = new StockData();
+            Product randomProduct = ProductsManager.INSTANCE.GetRandomProduct();
+            if (stock.ContainsKey(randomProduct.ID) || changes.PRODUCTS_TO_REMOVE.Contains(randomProduct.ID))
+            {
+                i -= 1;
+            }
+            else
+            {
+                StockData newStockData = new StockData(randomProduct, 5, 5, 5, 0);
+                stock.Add(randomProduct.ID, newStockData);
+            }
         }
 
         UpdateInspectorList();

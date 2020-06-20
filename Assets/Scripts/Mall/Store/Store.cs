@@ -47,8 +47,7 @@ public class Store : MonoBehaviour
 
     public void OnNewHour()
     {
-        Dictionary<int, int> timesReStockAsked = stock.GetSalesReport();
-        SalesReport salesReport = new SalesReport(ID, profit, productsSoldInLastHour, timesReStockAsked);
+        SalesReport salesReport = new SalesReport(ID, profit, productsSoldInLastHour);
         StockChanges stockChanges = Boss.INSTANCE.SendSalesReport(salesReport);
 
         stock.ModifyStock(stockChanges);

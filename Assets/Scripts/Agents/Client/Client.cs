@@ -16,7 +16,7 @@ public class Client : Agent
         Error
     };
 
-    public const float IGNORE_STORE_TIME = 5f;
+    public const float IGNORE_STORE_TIME = 30f;
 
     [SerializeField] private ClientState currentState = ClientState.Evaluating;
     [SerializeField] private ClientKnowledge knowledge;

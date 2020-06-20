@@ -13,6 +13,11 @@ public class ProductsManager : MonoBehaviour
         INSTANCE = this;
     }
 
+    public Product GetRandomProduct()
+    {
+        return GetRandomProducts(1)[0];
+    }
+
     public List<Product> GetRandomProducts(int howMany)
     {
         List<Product> productsCopy = new List<Product>(products);
