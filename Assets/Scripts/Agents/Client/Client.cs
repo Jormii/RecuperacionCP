@@ -30,6 +30,7 @@ public class Client : Agent
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
     private bool hasToLeave = false;
+    private bool interruptedEmployee = false;
 
     protected override void Start()
     {
@@ -104,6 +105,12 @@ public class Client : Agent
         CancelInvoke();
 
         currentState = state;
+        if (interruptedEmployee)
+        {
+            employeeFound.ContinueTasks();
+            interruptedEmployee = false;
+        }
+
         OnStateChanged();
     }
 
@@ -154,12 +161,6 @@ public class Client : Agent
         Invoke("WaitBeforeContinuing", 1.5f);
     }
 
-    private void WaitBeforeContinuing()
-    {
-        ChangeState(ClientState.Evaluating);
-        employeeFound.ContinueTasks();
-    }
-
     private void AskForInformation(Employee employee)
     {
         if (debug)
@@ -181,6 +182,13 @@ public class Client : Agent
                 knowledge.CreateStoreKnowledge(givenKnowledge);
             }
         }
+    }
+
+    private void WaitBeforeContinuing()
+    {
+        employeeFound.ContinueTasks();
+        interruptedEmployee = false;
+        ChangeState(ClientState.Evaluating);
     }
 
     #endregion
@@ -402,16 +410,6 @@ public class Client : Agent
 
     private void MovingTowardsEmployee()
     {
-        // In case something interrupted them
-        if (!employeeFound.CanBeInterrupted())
-        {
-            StopExecutingActionQueue();
-            ChangeState(ClientState.WanderingAround);
-            return;
-        }
-
-        employeeFound.Interrupt(this);
-
         // TODO once sprites are done: Tweak to not end on top of the employee when asking
         Vector2 employeePosition = employeeFound.transform.position;
         Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
@@ -661,9 +659,11 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
+            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()) && agent.CanInteractWith)
             {
                 employeeFound = employee;
+                employeeFound.Interrupt(this);
+                interruptedEmployee = true;
                 ChangeState(ClientState.MovingTowardsEmployee);
             }
         }

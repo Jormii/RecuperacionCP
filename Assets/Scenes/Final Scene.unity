@@ -226,7 +226,7 @@ PrefabInstance:
     - target: {fileID: 1670094807820197939, guid: 07338633e68b6724ea5f4c489c990838,
         type: 3}
       propertyPath: m_Name
-      value: Staircases 0->1 (1)
+      value: Staircases 1->0
       objectReference: {fileID: 0}
     - target: {fileID: 1670094807820197949, guid: 07338633e68b6724ea5f4c489c990838,
         type: 3}
@@ -335,7 +335,7 @@ PrefabInstance:
     - target: {fileID: 7672479779874238255, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.91
+      value: 7.64
       objectReference: {fileID: 0}
     - target: {fileID: 7672479779874238255, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -704,7 +704,7 @@ PrefabInstance:
     - target: {fileID: 7672479779874238255, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.43
+      value: -7.76
       objectReference: {fileID: 0}
     - target: {fileID: 7672479779874238255, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -1284,7 +1284,7 @@ PrefabInstance:
     - target: {fileID: 1670094807820197939, guid: 07338633e68b6724ea5f4c489c990838,
         type: 3}
       propertyPath: m_Name
-      value: Staircases 1->2 (1)
+      value: Staircases 2->1
       objectReference: {fileID: 0}
     - target: {fileID: 1670094807820197949, guid: 07338633e68b6724ea5f4c489c990838,
         type: 3}

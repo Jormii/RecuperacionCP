@@ -69,23 +69,45 @@ public class Employee : Agent
 
     public void Interrupt(Agent agentWhoInterrupted)
     {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} is interrupted by client {1}", name, agentWhoInterrupted.name);
+        }
+
         interrupted = true;
+        MakeInteractable(false);
         if (ExecutingActionQueue)
         {
+            if (debug)
+            {
+                Debug.LogFormat("Employee {0}: Pausing action queue", name);
+            }
+
             PauseActionQueue();
         }
 
-        // Next is ugly
+        // This is ugly
         float employeeX = transform.position.x;
         float otherAgentX = agentWhoInterrupted.transform.position.x;
-        GetComponent<SpriteRenderer>().flipX = employeeX < otherAgentX;
+        spriteRenderer.flipX = employeeX < otherAgentX;
     }
 
     public void ContinueTasks()
     {
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} is no longer interrupted", name);
+        }
+
         interrupted = false;
+        MakeInteractable(true);
         if (ThereAreActionsLeft())
         {
+            if (debug)
+            {
+                Debug.LogFormat("Employee {0}: Resuming action queue", name);
+            }
+
             ExecuteActionQueue();
         }
     }
@@ -250,6 +272,8 @@ public class Employee : Agent
         CancelInvoke();
 
         currentState = state;
+        spriteRenderer.enabled = true;
+        MakeInteractable(true);
         OnStateChanged();
     }
 
