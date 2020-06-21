@@ -59,15 +59,13 @@ public class SimulatedTime : MonoBehaviour
         CloseMall();
 
         // TODO: Reopen mall
-
-        Debug.LogWarning("MALL CLOSING");
     }
 
     private void MakeClientsLeave()
     {
+        List<Client> allClients = ClientsManager.INSTANCE.GetAllClientsInMall();
         // TODO: Non efficient
-        Client[] allClients = (Client[])GameObject.FindObjectsOfType(typeof(Client));
-        for (int i = 0; i < allClients.Length; ++i)
+        for (int i = 0; i < allClients.Count; ++i)
         {
             allClients[i].MakeLeave();
         }

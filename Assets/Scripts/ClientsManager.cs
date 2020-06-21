@@ -101,4 +101,9 @@ public class ClientsManager : MonoBehaviour
         clientsInMall.Remove(client);
         clientsCreated.Add(client);
     }
+
+    public List<Client> GetAllClientsInMall()
+    {
+        return new List<Client>(clientsInMall);
+    }
 }

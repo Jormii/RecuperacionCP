@@ -557,7 +557,7 @@ public class Employee : Agent
     private Vector2 CalculateWanderDestination()
     {
         float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
-        float xPercentage = transform.position.x / mallTotalDistance;
+        float xPercentage = (transform.position.x - Mall.MALL_LEFT_LIMIT) / mallTotalDistance;
 
         int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
 

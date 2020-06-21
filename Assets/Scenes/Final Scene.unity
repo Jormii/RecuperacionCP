@@ -526,7 +526,7 @@ GameObject:
   - component: {fileID: 501494782}
   - component: {fileID: 501494784}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Time
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2609,7 +2609,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitBetweeenSpawns: 1.5
-  maxClientsPresentAtOnce: 5
+  maxClientsPresentAtOnce: 1
   clientPrefabs:
   - {fileID: 7571170974225155296, guid: 781ce4b37542d1a4abf699c30bed8bdb, type: 3}
   - {fileID: 3411751502998498965, guid: cb2817f792fbbce409705bfa3db1151b, type: 3}
