@@ -12,7 +12,7 @@ public abstract class Agent : MonoBehaviour
     protected int currentFloor;
     protected float timeSpentOnThisFloor;
     protected float totalTime;
-    protected bool canInteractWith = true;
+    protected bool canInteractWith;
 
     private Queue<IAction> actions;
     private IAction currentAction;
@@ -29,6 +29,7 @@ public abstract class Agent : MonoBehaviour
         consumedState = false;
         timeSpentOnThisFloor = 0f;
         totalTime = 0f;
+        canInteractWith = true;
     }
 
     protected virtual void Update()
@@ -41,6 +42,18 @@ public abstract class Agent : MonoBehaviour
 
         timeSpentOnThisFloor += Time.deltaTime;
         totalTime += Time.deltaTime;
+    }
+
+    public virtual void Reset(LocationData location)
+    {
+        transform.position = location.POSITION;
+        currentFloor = location.FLOOR;
+        initialFloor = currentFloor;
+        canInteractWith = true;
+        consumedState = false;
+
+        actions = new Queue<IAction>();
+        executingQueue = false;
     }
 
     public void MakeInteractable(bool interactable)
@@ -132,7 +145,7 @@ public abstract class Agent : MonoBehaviour
 
         if (!cancelCurrentAction)
         {
-            AddActionToHeadOfQueue(currentAction);
+            AddActionToQueue(currentAction);
         }
     }
 

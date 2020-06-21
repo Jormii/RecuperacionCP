@@ -19,8 +19,10 @@ public class Employee : Agent
     private Dictionary<int, Dictionary<int, int>> productsToRefill;
     private Dictionary<int, int> productsBeingCarried;
     private Dictionary<int, float> timeSpentPerFloor;
+    private Dictionary<int, float> storesIgnored;
 
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private Store lastStoreSeen;
     private bool hasVisitedStorage;
     private bool interrupted;
@@ -34,10 +36,38 @@ public class Employee : Agent
         productsToRefill = new Dictionary<int, Dictionary<int, int>>();
         productsBeingCarried = new Dictionary<int, int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+        storesIgnored = new Dictionary<int, float>();
 
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         Boss.INSTANCE.AddEmployee(this);
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+
+        UpdateIgnoredStores();
+    }
+
+    private void UpdateIgnoredStores()
+    {
+        Dictionary<int, float> newDictionary = new Dictionary<int, float>();
+        foreach (KeyValuePair<int, float> entry in storesIgnored)
+        {
+            int storeID = entry.Key;
+            float time = entry.Value;
+
+            float newTime = time - Time.deltaTime;
+            if (newTime > 0)
+            {
+                newDictionary.Add(storeID, newTime);
+            }
+        }
+
+        storesIgnored.Clear();
+        storesIgnored = newDictionary;
     }
 
     public bool InChargeOfFloor(int floor)
@@ -65,20 +95,59 @@ public class Employee : Agent
         }
     }
 
-    public void Interrupt()
+    public void Interrupt(Agent agentWhoInterrupted)
     {
+        if (interrupted)
+        {
+            Debug.LogErrorFormat("Employee {0}: Trying to interrupt an employee already interrupted", name);
+        }
+
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} is interrupted by client {1}", name, agentWhoInterrupted.name);
+        }
+
         interrupted = true;
+        MakeInteractable(false);
         if (ExecutingActionQueue)
         {
+            if (debug)
+            {
+                Debug.LogFormat("Employee {0}: Pausing action queue", name);
+            }
+
             PauseActionQueue();
         }
+
+        Invoke("ContinueTasks", 3f);    // TODO: Ugly. To avoid employees getting stuck
+
+        // This is ugly
+        float employeeX = transform.position.x;
+        float otherAgentX = agentWhoInterrupted.transform.position.x;
+        spriteRenderer.flipX = employeeX < otherAgentX;
     }
 
     public void ContinueTasks()
     {
+        if (!interrupted)
+        {
+            return;
+        }
+
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} is no longer interrupted", name);
+        }
+
         interrupted = false;
+        MakeInteractable(true);
         if (ThereAreActionsLeft())
         {
+            if (debug)
+            {
+                Debug.LogFormat("Employee {0}: Resuming action queue", name);
+            }
+
             ExecuteActionQueue();
         }
     }
@@ -96,6 +165,10 @@ public class Employee : Agent
 
         if (productsToRefill.ContainsKey(store.ID))
         {
+            if (debug)
+            {
+                Debug.LogFormat("Employee {0} already noted store {1} for restocking", name, store.name);
+            }
             return;
         }
 
@@ -219,7 +292,7 @@ public class Employee : Agent
             {
                 Store store = stores[j];
                 int storeFloor = store.Floor;
-                if (InChargeOfFloor(storeFloor))
+                if (!InChargeOfFloor(storeFloor))
                 {
                     continue;
                 }
@@ -243,6 +316,8 @@ public class Employee : Agent
         CancelInvoke();
 
         currentState = state;
+        spriteRenderer.enabled = true;
+        MakeInteractable(true);
         OnStateChanged();
     }
 
@@ -295,8 +370,9 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is heading to storage", name);
         }
 
-        LocationData currentLocation = new LocationData(transform.position, currentFloor);
+        LocationData currentLocation = Location;
         LocationData storageLocation = Mall.INSTANCE.GetClosestStorage(currentLocation);
+        StopExecutingActionQueue();
         MoveTo(storageLocation, MoveAction.Destination.Storage);
     }
 
@@ -315,6 +391,7 @@ public class Employee : Agent
         }
 
         LocationData storeLocation = lastStoreSeen.Location;
+        StopExecutingActionQueue();
         MoveToStore(storeLocation, lastStoreSeen.ID);
     }
 
@@ -355,6 +432,8 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is observing {1}'s stock", name, lastStoreSeen.name);
         }
 
+        storesIgnored.Add(lastStoreSeen.ID, 10f);
+
         Stock stock = lastStoreSeen.StoreStock;
         if (stock.NeedsReStocking())
         {
@@ -388,16 +467,15 @@ public class Employee : Agent
                 Debug.LogFormat("Employee {0}: Store {1} needs no restocking", name, lastStoreSeen.name);
             }
 
-            // If was wandering before
-            if (ExecutingActionQueue)
+
+            EmployeeState newState = EmployeeState.WanderingAround;
+            // Has things to restock
+            if (productsToRefill.Count != 0 && !hasVisitedStorage)
             {
-                // Continue wandering
-                currentState = EmployeeState.WanderingAround;
+                newState = EmployeeState.MovingToStorage;
             }
-            else
-            {
-                ChangeState(EmployeeState.WanderingAround);
-            }
+
+            ChangeState(newState);
         }
     }
 
@@ -449,8 +527,7 @@ public class Employee : Agent
 
     private void LeaveStore()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
 
         // Still has products to restock
@@ -500,11 +577,6 @@ public class Employee : Agent
 
     private void WanderingAround()
     {
-        if (debug)
-        {
-            Debug.LogFormat("Employee {0} is wandering around", name);
-        }
-
         if (shiftIsOver)
         {
             ChangeState(EmployeeState.Leaving);
@@ -521,13 +593,19 @@ public class Employee : Agent
         }
 
         LocationData wanderLocation = new LocationData(wanderDestination, floorToGo);
+        StopExecutingActionQueue();
         MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
+
+        if (debug)
+        {
+            Debug.LogFormat("Employee {0} is wandering around. New destination: ({1}, {2})", name, wanderDestination, floorToGo);
+        }
     }
 
     private Vector2 CalculateWanderDestination()
     {
         float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
-        float xPercentage = transform.position.x / mallTotalDistance;
+        float xPercentage = (transform.position.x - Mall.MALL_LEFT_LIMIT) / mallTotalDistance;
 
         int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
 
@@ -619,11 +697,6 @@ public class Employee : Agent
 
     private void OnNoDestinationReached(MoveAction moveAction)
     {
-        Invoke("WaitBeforeProceeding", Random.Range(1f, 1.5f));
-    }
-
-    private void WaitBeforeProceeding()
-    {
         ChangeState(EmployeeState.WanderingAround);
     }
 
@@ -653,18 +726,16 @@ public class Employee : Agent
     {
         hasVisitedStorage = true;
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
+        spriteRenderer.enabled = false;
         MakeInteractable(false);
 
         int storesToRestock = productsToRefill.Count;
-        Invoke("LeaveStorage", (float)storesToRestock + 0.5f);
+        Invoke("LeaveStorage", 1.5f);
     }
 
     private void LeaveStorage()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
         ChangeState(EmployeeState.MovingToStore);
     }
@@ -676,8 +747,7 @@ public class Employee : Agent
         lastStoreSeen = Mall.INSTANCE.GetStoreByID(moveToStoreAction.STORE_ID);
         ChangeState(EmployeeState.ReStocking);
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
+        spriteRenderer.enabled = false;
         MakeInteractable(false);
     }
 
@@ -693,6 +763,12 @@ public class Employee : Agent
 
         // Employee already has noted that this store needs restocking
         if (productsToRefill.ContainsKey(store.ID))
+        {
+            return;
+        }
+
+        // Employee is ignoring store
+        if (storesIgnored.ContainsKey(store.ID))
         {
             return;
         }

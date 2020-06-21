@@ -47,12 +47,12 @@ public class StockData
 
     public void ModifyPrice(int amount)
     {
-        price = Mathf.Min(1, price + amount);
+        price = Mathf.Max(1, price + amount);
     }
 
     public void ModifyMaxStock(int amount)
     {
-        maximumStock = Mathf.Min(1, maximumStock + amount);
+        maximumStock = Mathf.Max(1, maximumStock + amount);
     }
 
     #region Properties

@@ -6,7 +6,9 @@ public class Stock : MonoBehaviour
 {
     public const int MAX_PRODUCTS = 3;
 
+    public bool debug = false;
     public List<StockData> initialStock = new List<StockData>();
+    public List<StockData> inspectorStock = new List<StockData>();
     public float stockTimeout = 5f;
 
     private Store store;
@@ -17,6 +19,12 @@ public class Stock : MonoBehaviour
 
     private void Awake()
     {
+        if (initialStock.Count == 0)
+        {
+            Debug.LogErrorFormat("Error: Store {0} has no products in sale", name);
+            Destroy(gameObject);
+        }
+
         stock = new Dictionary<int, StockData>();
 
         if (initialStock.Count > MAX_PRODUCTS)
@@ -42,6 +50,8 @@ public class Stock : MonoBehaviour
         {
             StartReStockingCountdown();
         }
+
+        UpdateInspectorList();
     }
 
     private void Update()
@@ -73,6 +83,8 @@ public class Stock : MonoBehaviour
         {
             StartReStockingCountdown();
         }
+
+        UpdateInspectorList();
 
         return profit;
     }
@@ -152,6 +164,8 @@ public class Stock : MonoBehaviour
             StopReStockingCountdown();
         }
 
+        UpdateInspectorList();
+
         return overStock;
     }
 
@@ -190,26 +204,25 @@ public class Stock : MonoBehaviour
 
     private void OnCountdownFinished()
     {
-        Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+        if (debug)
+        {
+            Debug.LogWarningFormat("Stock from store {0} has been in need for a long time", name);
+        }
 
         Dictionary<int, int> reStock = GetProductsToRefill();
         Boss.INSTANCE.RequestReStock(store, reStock);
 
         reStockingCountdown = 1.5f * stockTimeout;
 
-        Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+        if (debug)
+        {
+            Debug.LogWarningFormat("New countdown is {0} seconds long", reStockingCountdown);
+        }
     }
 
     #endregion
 
     #region Stock Modification
-
-    public Dictionary<int, int> GetSalesReport()
-    {
-        Dictionary<int, int> salesReport = new Dictionary<int, int>(reStockAsked);
-        reStockAsked.Clear();
-        return salesReport;
-    }
 
     public void ModifyStock(StockChanges changes)
     {
@@ -234,14 +247,34 @@ public class Stock : MonoBehaviour
             stock.Remove(productID);
         }
 
-        foreach (int productID in changes.NEW_PRODUCTS)
+        int newProducts = changes.PRODUCTS_TO_REMOVE.Count;
+        for (int i = 0; i < newProducts; ++i)
         {
-            // TODO
-            // StockData newStock = new StockData();
+            Product randomProduct = ProductsManager.INSTANCE.GetRandomProduct();
+            if (stock.ContainsKey(randomProduct.ID) || changes.PRODUCTS_TO_REMOVE.Contains(randomProduct.ID))
+            {
+                i -= 1;
+            }
+            else
+            {
+                StockData newStockData = new StockData(randomProduct, 5, 5, 5, 0);
+                stock.Add(randomProduct.ID, newStockData);
+            }
         }
+
+        UpdateInspectorList();
     }
 
     #endregion
+
+    private void UpdateInspectorList()
+    {
+        inspectorStock.Clear();
+        foreach (StockData stockData in stock.Values)
+        {
+            inspectorStock.Add(stockData);
+        }
+    }
 
     #region Properties
 

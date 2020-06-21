@@ -16,33 +16,29 @@ public class Client : Agent
         Error
     };
 
-    public const float IGNORE_STORE_TIME = 5f;
+    public const float IGNORE_STORE_TIME = 30f;
 
     [SerializeField] private ClientState currentState = ClientState.Evaluating;
-    private ClientKnowledge knowledge;
-    private ClientResources resources;
+    [SerializeField] private ClientKnowledge knowledge;
+    [SerializeField] private ClientResources resources;
     private Dictionary<int, float> storesIgnored;
     private HashSet<int> employeesAsked;
 
     private Animator animator;
+    private SpriteRenderer spriteRenderer;
     private StoreKnowledge storeInterestedIn;
     private Employee employeeFound;
     private Dictionary<int, float> timeSpentPerFloor;
     private bool hasToLeave = false;
+    private bool interruptedEmployee = false;
 
     protected override void Start()
     {
         base.Start();
 
         animator = GetComponent<Animator>();
-        currentState = ClientState.Evaluating;
+        spriteRenderer = GetComponent<SpriteRenderer>();
         knowledge = new ClientKnowledge();
-        resources = GetComponent<ClientResources>();
-        storesIgnored = new Dictionary<int, float>();
-        employeesAsked = new HashSet<int>();
-        timeSpentPerFloor = new Dictionary<int, float>();
-
-        Mall.INSTANCE.ClientEntersMall(this);
     }
 
     protected override void Update()
@@ -50,6 +46,18 @@ public class Client : Agent
         base.Update();
 
         UpdateIgnoredStores();
+    }
+
+    public override void Reset(LocationData location)
+    {
+        base.Reset(location);
+
+        currentState = ClientState.WanderingAround;
+        resources = new ClientResources();
+        resources.Randomize();
+        storesIgnored = new Dictionary<int, float>();
+        employeesAsked = new HashSet<int>();
+        timeSpentPerFloor = new Dictionary<int, float>();
     }
 
     public void MakeLeave()
@@ -97,6 +105,13 @@ public class Client : Agent
         CancelInvoke();
 
         currentState = state;
+        bool employeeIsStillInterrupted = interruptedEmployee && !employeeFound.CanBeInterrupted();
+        if (employeeIsStillInterrupted && state != ClientState.AskingForInformation && state != ClientState.MovingTowardsEmployee)
+        {
+            employeeFound.ContinueTasks();
+            interruptedEmployee = false;
+        }
+
         OnStateChanged();
     }
 
@@ -142,7 +157,9 @@ public class Client : Agent
     {
         AskForInformation(employeeFound);
         StopExecutingActionQueue();
-        ChangeState(ClientState.Evaluating);
+
+        employeesAsked.Add(employeeFound.GetInstanceID());
+        Invoke("WaitBeforeContinuing", 1.5f);
     }
 
     private void AskForInformation(Employee employee)
@@ -167,8 +184,17 @@ public class Client : Agent
             }
         }
 
-        ChangeState(ClientState.Evaluating);
+        // This is ugly
+        float clientX = transform.position.x;
+        float employeeX = employeeFound.transform.position.x;
+        spriteRenderer.flipX = clientX < employeeX;
+    }
+
+    private void WaitBeforeContinuing()
+    {
         employeeFound.ContinueTasks();
+        interruptedEmployee = false;
+        ChangeState(ClientState.Evaluating);
     }
 
     #endregion
@@ -234,8 +260,7 @@ public class Client : Agent
 
     private void LeaveStore()
     {
-        animator.SetBool("enteringStore", false);
-        animator.SetBool("leavingStore", true);
+        spriteRenderer.enabled = true;
         MakeInteractable(true);
         ChangeState(ClientState.Evaluating);
     }
@@ -382,6 +407,7 @@ public class Client : Agent
         }
 
         LocationData storeLocation = storeInterestedIn.LOCATION;
+        StopExecutingActionQueue();
         MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
     }
 
@@ -391,22 +417,13 @@ public class Client : Agent
 
     private void MovingTowardsEmployee()
     {
-        // In case something interrupted them
-        if (!employeeFound.CanBeInterrupted())
-        {
-            StopExecutingActionQueue();
-            ChangeState(ClientState.WanderingAround);
-            return;
-        }
-
-        employeeFound.Interrupt();
-
         // TODO once sprites are done: Tweak to not end on top of the employee when asking
         Vector2 employeePosition = employeeFound.transform.position;
         Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
         Vector2 destinationPosition = employeePosition - 1f * vector;
         LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
 
+        StopExecutingActionQueue();
         MoveTo(destinationLocation, MoveAction.Destination.Agent);
     }
 
@@ -430,13 +447,14 @@ public class Client : Agent
         }
 
         LocationData wanderLocation = new LocationData(wanderDestination, newFloor);
+        StopExecutingActionQueue();
         MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
     }
 
     private Vector2 CalculateWanderDestination()
     {
         float mallTotalDistance = Mall.MALL_RIGHT_LIMIT - Mall.MALL_LEFT_LIMIT;
-        float xPercentage = transform.position.x / mallTotalDistance;
+        float xPercentage = (transform.position.x - Mall.MALL_LEFT_LIMIT) / mallTotalDistance;
 
         int xDirection = (xPercentage < Random.Range(0f, 1f)) ? 1 : -1;
 
@@ -541,9 +559,7 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
-        animator.SetBool("enteringStore", true);
-        animator.SetBool("leavingStore", false);
-        Mall.INSTANCE.ClientLeavesMall(this);
+        ClientsManager.INSTANCE.ClientLeavesMall(this);
         gameObject.SetActive(false);
     }
 
@@ -602,8 +618,7 @@ public class Client : Agent
         {
             ChangeState(ClientState.CheckingStock);
 
-            animator.SetBool("enteringStore", true);
-            animator.SetBool("leavingStore", false);
+            spriteRenderer.enabled = false;
             MakeInteractable(false);
         }
         else
@@ -652,10 +667,11 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
+            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()) && agent.CanInteractWith)
             {
                 employeeFound = employee;
-                employeesAsked.Add(employee.GetInstanceID());
+                employeeFound.Interrupt(this);
+                interruptedEmployee = true;
                 ChangeState(ClientState.MovingTowardsEmployee);
             }
         }

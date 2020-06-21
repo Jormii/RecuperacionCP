@@ -40,7 +40,7 @@ public class Vision : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (!navigation)
+        if (!navigation || !agent.CanInteractWith)
         {
             return;
         }

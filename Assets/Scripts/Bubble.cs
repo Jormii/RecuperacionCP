@@ -57,7 +57,7 @@ public class Bubble : MonoBehaviour
     {
         HideExistent();
 
-        int maxIndex = Mathf.Min(spritesList.Count, sprites.Length);
+        int maxIndex = Mathf.Min(spritesList.Count, sprites.Length - 1);
         for (int i = 0; i < maxIndex; ++i)
         {
             sprites[i + 1].sprite = spritesList[i];

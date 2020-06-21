@@ -19,7 +19,7 @@ public class Stairs : MonoBehaviour
     private LocationData endLocation;
     private Direction direction;
 
-    void Start()
+    void Awake()
     {
         startLocation = new LocationData(start.position, startingFloor);
         endLocation = new LocationData(end.position, endingFloor);

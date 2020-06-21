@@ -24,7 +24,6 @@ public class Mall
     // Exits, storages and clients
     private Dictionary<int, LocationData> exits;
     private Dictionary<int, LocationData> storages;
-    private HashSet<Client> clientsInMall;
 
     private Mall()
     {
@@ -37,7 +36,6 @@ public class Mall
 
         this.exits = new Dictionary<int, LocationData>();
         this.storages = new Dictionary<int, LocationData>();
-        this.clientsInMall = new HashSet<Client>();
     }
 
     public bool FloorExists(int floor)
@@ -89,6 +87,27 @@ public class Mall
                 List<Store> list = new List<Store>();
                 list.Add(store);
                 storesThatSellProduct.Add(productID, list);
+            }
+        }
+    }
+
+    public void UpdateStore(Store store, StockChanges changes)
+    {
+        int storeID = store.ID;
+        foreach (int productID in changes.PRODUCTS_TO_REMOVE)
+        {
+            storesThatSellProduct[productID].Remove(store);
+        }
+
+        Stock stock = store.StoreStock;
+        List<StockData> productsStock = stock.StockSold;
+        for (int i = 0; i < productsStock.Count; ++i)
+        {
+            int productID = productsStock[i].Product.ID;
+            List<Store> list = storesThatSellProduct[productID];
+            if (list.Contains(store))
+            {
+                list.Remove(store);
             }
         }
     }
@@ -175,9 +194,9 @@ public class Mall
             return;
         }
 
-        LocationData locationData = new LocationData(exit.transform.position, exit.Floor);
+        LocationData locationData = exit.Location;
         exits.Add(exit.ID, locationData);
-        UpdateFloors(exit.Floor);
+        UpdateFloors(locationData.FLOOR);
     }
 
     public LocationData GetClosestExit(LocationData location)
@@ -198,6 +217,17 @@ public class Mall
         return closestExit;
     }
 
+    public List<LocationData> GetAllExits()
+    {
+        List<LocationData> exitsLocations = new List<LocationData>();
+        foreach (LocationData location in exits.Values)
+        {
+            exitsLocations.Add(location);
+        }
+
+        return exitsLocations;
+    }
+
     #endregion
 
     #region Storage Related
@@ -209,9 +239,9 @@ public class Mall
             return;
         }
 
-        LocationData locationData = new LocationData(storage.transform.position, storage.Floor);
+        LocationData locationData = storage.Location;
         storages.Add(storage.ID, locationData);
-        UpdateFloors(storage.Floor);
+        UpdateFloors(locationData.FLOOR);
     }
 
     public LocationData GetClosestStorage(LocationData location)
@@ -230,20 +260,6 @@ public class Mall
         }
 
         return closestStorage;
-    }
-
-    #endregion
-
-    #region Client Related
-
-    public void ClientEntersMall(Client client)
-    {
-        clientsInMall.Add(client);
-    }
-
-    public void ClientLeavesMall(Client client)
-    {
-        clientsInMall.Remove(client);
     }
 
     #endregion

@@ -6,12 +6,10 @@ public class Boss
     public static readonly Boss INSTANCE = new Boss();
 
     private Dictionary<int, Employee> employees;
-    private Dictionary<int, SalesReport> storeSalesPreviousHour;
 
     private Boss()
     {
         this.employees = new Dictionary<int, Employee>();
-        this.storeSalesPreviousHour = new Dictionary<int, SalesReport>();
     }
 
     public void AddEmployee(Employee employee)
@@ -43,7 +41,7 @@ public class Boss
 
         if (employeesAvailable.Count == 0)
         {
-            Debug.LogWarning("No employees available for restocking");
+            Debug.LogWarningFormat("No employees available to restock store {0}", store.name);
             return;
         }
 
@@ -72,76 +70,33 @@ public class Boss
 
     public StockChanges SendSalesReport(SalesReport salesReport)
     {
-        StockChanges changes = new StockChanges(salesReport.STORE_ID);
-
-        // Very first hour. No info about store
-        if (!storeSalesPreviousHour.ContainsKey(salesReport.STORE_ID))
-        {
-            storeSalesPreviousHour.Add(salesReport.STORE_ID, salesReport);
-        }
-        else
-        {
-            changes = EvaluateChanges(salesReport);
-            storeSalesPreviousHour[salesReport.STORE_ID] = salesReport;
-        }
-
-        return changes;
+        return EvaluateChanges(salesReport);
     }
 
     private StockChanges EvaluateChanges(SalesReport salesReport)
     {
         StockChanges changes = new StockChanges(salesReport.STORE_ID);
-        SalesReport previousSalesReport = storeSalesPreviousHour[salesReport.STORE_ID];
+        List<int> twoMostPopularProducts = salesReport.GetTwoMostPopularProducts();
 
-        bool increasedProfit = salesReport.PROFIT > previousSalesReport.PROFIT;
-
-        Dictionary<int, int> sales = salesReport.PRODUCTS_SOLD;
-        Dictionary<int, int> reStock = salesReport.TIMES_RESTOCKED;
-        Dictionary<int, int> previousSales = previousSalesReport.PRODUCTS_SOLD;
-        Dictionary<int, int> previousReStock = previousSalesReport.TIMES_RESTOCKED;
-        foreach (int productID in salesReport.PRODUCTS_SOLD.Keys)
+        foreach (KeyValuePair<int, int> entry in salesReport.PRODUCTS_SOLD)
         {
-            int amountSold = sales[productID];
-            int amountReStocked = reStock[productID];
+            int productID = entry.Key;
+            int amountSold = entry.Value;
 
-            if (!previousSales.ContainsKey(productID))
+            int indexInMostPopular = twoMostPopularProducts.IndexOf(productID);
+            switch (indexInMostPopular)
             {
-                // No info on this product to decide
-                continue;
-            }
-
-            int previousAmountSold = previousSales[productID];
-            int previousAmountReStocked = previousReStock[productID];
-
-            bool moreProductsSold = amountSold > previousAmountSold;
-            bool moreTimesReStocked = amountReStocked > previousAmountReStocked;
-
-            if (moreProductsSold && moreTimesReStocked)
-            {
-                changes.ChangePrice(productID, (increasedProfit) ? 5 : 2);
-                changes.ChangeStock(productID, (increasedProfit) ? 3 : 2);
-            }
-            else if (moreProductsSold)
-            {
-                changes.ChangeStock(productID, (increasedProfit) ? 3 : 2);
-            }
-            else if (moreTimesReStocked)
-            {
-                changes.ChangePrice(productID, (increasedProfit) ? 5 : 2);
-                changes.ChangeStock(productID, (increasedProfit) ? 3 : 2);
-            }
-            else
-            {
-                if (!increasedProfit)
-                {
+                case 0:
+                    changes.ChangePrice(productID, 3);
+                    changes.ChangeStock(productID, 2);
+                    break;
+                case 1:
+                    changes.ChangePrice(productID, 1);
+                    changes.ChangeStock(productID, 2);
+                    break;
+                default:
                     changes.RemoveProduct(productID);
-                    // changes.NewProduct();   // TODO
-                }
-                else
-                {
-                    changes.ChangeStock(productID, -2);
-                    changes.ChangePrice(productID, -5);
-                }
+                    break;
             }
         }
 

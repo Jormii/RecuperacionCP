@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Product : MonoBehaviour
 {
-    public static readonly Dictionary<int, Product> ALL_PRODUCTS = new Dictionary<int, Product>();
+    private static readonly Dictionary<int, Product> ALL_PRODUCTS = new Dictionary<int, Product>();
 
     public readonly int ID = IDProvider.GetID();
     [SerializeField] private string productName = "ProductName";
@@ -11,7 +11,7 @@ public class Product : MonoBehaviour
     private void Awake()
     {
         ALL_PRODUCTS.Add(ID, this);
-        GetComponent<Product>().enabled = false;
+        gameObject.SetActive(false);
     }
 
     public string ProductName
