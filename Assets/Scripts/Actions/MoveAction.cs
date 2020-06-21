@@ -28,6 +28,7 @@ public class MoveAction : IAction
     {
         if (destination != Destination.StairsEnd)
         {
+            // In order to guarantee horizontal movement when not taking the stairs
             Vector2 currentPosition = navigation.transform.position;
             Vector2 destinationPosition = new Vector2(
                 location.POSITION.x,
