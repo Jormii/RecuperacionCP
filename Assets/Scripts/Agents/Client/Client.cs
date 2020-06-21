@@ -447,6 +447,7 @@ public class Client : Agent
         }
 
         LocationData wanderLocation = new LocationData(wanderDestination, newFloor);
+        StopExecutingActionQueue();
         MoveTo(wanderLocation, MoveAction.Destination.NoDestination);
     }
 

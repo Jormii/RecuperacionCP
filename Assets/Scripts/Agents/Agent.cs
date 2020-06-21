@@ -50,6 +50,7 @@ public abstract class Agent : MonoBehaviour
         currentFloor = location.FLOOR;
         initialFloor = currentFloor;
         canInteractWith = true;
+        consumedState = false;
 
         actions = new Queue<IAction>();
         executingQueue = false;
@@ -116,6 +117,19 @@ public abstract class Agent : MonoBehaviour
         currentAction.Execute();
 
         executingQueue = true;
+
+        if (debug)
+        {
+            Debug.LogFormat("{0}: Staring execution of action queue", name);
+            Debug.LogFormat("{0}: New action: {1}", name, currentAction);
+            Debug.LogFormat("{0}: Content of the queue", name);
+            foreach (IAction action in actions)
+            {
+                Debug.Log(action);
+            }
+
+            Debug.LogErrorFormat("{0}, {1}: STOP", name, Time.frameCount);
+        }
     }
 
     public void PauseActionQueue()
@@ -129,6 +143,16 @@ public abstract class Agent : MonoBehaviour
         AddActionToHeadOfQueue(currentAction);
 
         executingQueue = false;
+
+        if (debug)
+        {
+            Debug.LogFormat("{0}: Pausing queue", name);
+            Debug.LogFormat("{0}: Content of the queue", name);
+            foreach (IAction action in actions)
+            {
+                Debug.Log(action);
+            }
+        }
     }
 
     public void StopExecutingActionQueue(bool cancelCurrentAction)
@@ -144,7 +168,7 @@ public abstract class Agent : MonoBehaviour
 
         if (!cancelCurrentAction)
         {
-            AddActionToHeadOfQueue(currentAction);
+            AddActionToQueue(currentAction);
         }
     }
 
@@ -203,12 +227,6 @@ public abstract class Agent : MonoBehaviour
 
     private void MoveTo(LocationData location, MoveAction moveAction)
     {
-        bool _debug = currentFloor != location.FLOOR && this is Employee;
-        // bool _debug = false;
-        if (_debug)
-            Debug.LogErrorFormat("Agent {0} at ({1}, {2}) is moving towards ({3}, {4}). Destination: {5}",
-            name, Location.POSITION, Location.FLOOR, moveAction.Location.POSITION, moveAction.Location.FLOOR, moveAction.GetDestination);
-
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         if (currentLocation.FLOOR != location.FLOOR)
         {
@@ -222,22 +240,11 @@ public abstract class Agent : MonoBehaviour
                 LocationData stairsLocation = closestStairs.StartingLocation;
                 LocationData stairsEndLocation = closestStairs.EndingLocation;
 
-                if (_debug)
-                    Debug.LogErrorFormat("Taking stairs at ({0}, {1}). Stairs end at ({2}, {3})",
-                    stairsLocation.POSITION, stairsLocation.FLOOR, stairsEndLocation.POSITION, stairsEndLocation.FLOOR);
+                IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
+                AddActionToQueue(moveToStairs);
 
-                if (ExecutingActionQueue && currentAction is MoveAction)
-                {
-                    MoveAction action = currentAction as MoveAction;
-                    if (action.GetDestination != MoveAction.Destination.StairsEnd)
-                    {
-                        IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
-                        AddActionToQueue(moveToStairs);
-
-                        IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
-                        AddActionToQueue(goUpStairs);
-                    }
-                }
+                IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
+                AddActionToQueue(goUpStairs);
 
                 auxLocation = stairsEndLocation;
             }

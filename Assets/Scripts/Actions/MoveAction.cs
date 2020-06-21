@@ -47,6 +47,11 @@ public class MoveAction : IAction
         navigation.StopMoving();
     }
 
+    public override string ToString()
+    {
+        return string.Format("MoveAction: ({0}, {1}) : {2}", location.POSITION, location.FLOOR, destination);
+    }
+
     #region Properties
 
     public LocationData Location

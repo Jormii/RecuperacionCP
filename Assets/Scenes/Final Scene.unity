@@ -415,7 +415,7 @@ PrefabInstance:
     - target: {fileID: 4057544572814759795, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: debug
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4057544572814759795, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -430,7 +430,12 @@ PrefabInstance:
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: viewDistance
-      value: 2
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
+        type: 3}
+      propertyPath: visionTick
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c7239ffc00bbdba428776fd8bdfdcc9f, type: 3}
@@ -799,7 +804,12 @@ PrefabInstance:
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: viewDistance
-      value: 2
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
+        type: 3}
+      propertyPath: visionTick
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1194400024054852251, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -1087,7 +1097,12 @@ PrefabInstance:
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: viewDistance
-      value: 2
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
+        type: 3}
+      propertyPath: visionTick
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1194400024054852251, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
