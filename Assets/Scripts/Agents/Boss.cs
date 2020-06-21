@@ -41,7 +41,7 @@ public class Boss
 
         if (employeesAvailable.Count == 0)
         {
-            Debug.LogWarning("No employees available for restocking");
+            Debug.LogWarningFormat("No employees available to restock store {0}", store.name);
             return;
         }
 

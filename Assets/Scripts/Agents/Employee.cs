@@ -292,7 +292,7 @@ public class Employee : Agent
             {
                 Store store = stores[j];
                 int storeFloor = store.Floor;
-                if (InChargeOfFloor(storeFloor))
+                if (!InChargeOfFloor(storeFloor))
                 {
                     continue;
                 }

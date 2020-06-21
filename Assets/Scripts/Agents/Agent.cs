@@ -117,19 +117,6 @@ public abstract class Agent : MonoBehaviour
         currentAction.Execute();
 
         executingQueue = true;
-
-        if (debug)
-        {
-            Debug.LogFormat("{0}: Staring execution of action queue", name);
-            Debug.LogFormat("{0}: New action: {1}", name, currentAction);
-            Debug.LogFormat("{0}: Content of the queue", name);
-            foreach (IAction action in actions)
-            {
-                Debug.Log(action);
-            }
-
-            Debug.LogErrorFormat("{0}, {1}: STOP", name, Time.frameCount);
-        }
     }
 
     public void PauseActionQueue()
@@ -143,16 +130,6 @@ public abstract class Agent : MonoBehaviour
         AddActionToHeadOfQueue(currentAction);
 
         executingQueue = false;
-
-        if (debug)
-        {
-            Debug.LogFormat("{0}: Pausing queue", name);
-            Debug.LogFormat("{0}: Content of the queue", name);
-            foreach (IAction action in actions)
-            {
-                Debug.Log(action);
-            }
-        }
     }
 
     public void StopExecutingActionQueue(bool cancelCurrentAction)

@@ -91,6 +91,27 @@ public class Mall
         }
     }
 
+    public void UpdateStore(Store store, StockChanges changes)
+    {
+        int storeID = store.ID;
+        foreach (int productID in changes.PRODUCTS_TO_REMOVE)
+        {
+            storesThatSellProduct[productID].Remove(store);
+        }
+
+        Stock stock = store.StoreStock;
+        List<StockData> productsStock = stock.StockSold;
+        for (int i = 0; i < productsStock.Count; ++i)
+        {
+            int productID = productsStock[i].Product.ID;
+            List<Store> list = storesThatSellProduct[productID];
+            if (list.Contains(store))
+            {
+                list.Remove(store);
+            }
+        }
+    }
+
     public Store GetStoreByID(int id)
     {
         return allStores[id];
