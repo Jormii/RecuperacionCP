@@ -149,7 +149,10 @@ public class Employee : Agent
         else
         {
             AddRestOfProducts(store.ID, reStock);
-            ChangeState(EmployeeState.MovingToStorage);
+            if (currentState != EmployeeState.MovingToStorage)
+            {
+                ChangeState(EmployeeState.MovingToStorage);
+            }
         }
     }
 
@@ -328,6 +331,7 @@ public class Employee : Agent
 
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         LocationData storageLocation = Mall.INSTANCE.GetClosestStorage(currentLocation);
+        StopExecutingActionQueue(false);
         MoveTo(storageLocation, MoveAction.Destination.Storage);
     }
 
@@ -346,6 +350,7 @@ public class Employee : Agent
         }
 
         LocationData storeLocation = lastStoreSeen.Location;
+        StopExecutingActionQueue(false);
         MoveToStore(storeLocation, lastStoreSeen.ID);
     }
 
@@ -648,11 +653,6 @@ public class Employee : Agent
     }
 
     private void OnNoDestinationReached(MoveAction moveAction)
-    {
-        Invoke("WaitBeforeProceeding", Random.Range(1f, 1.5f));
-    }
-
-    private void WaitBeforeProceeding()
     {
         ChangeState(EmployeeState.WanderingAround);
     }

@@ -548,7 +548,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.019000001, y: 0.71157694}
   m_AnchorMax: {x: 0.42958, y: 0.90880775}
-  m_AnchoredPosition: {x: 18.8, y: 10.4}
+  m_AnchoredPosition: {x: 18.800003, y: 10.399994}
   m_SizeDelta: {x: 49, y: 9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &501494782
@@ -1760,6 +1760,21 @@ PrefabInstance:
       propertyPath: initialStock.Array.data[2].maximumStock
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 5793587784531917532, guid: bf0cb55cc57ae0c439f37614d695835a,
+        type: 3}
+      propertyPath: initialStock.Array.data[0].currentStock
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5793587784531917532, guid: bf0cb55cc57ae0c439f37614d695835a,
+        type: 3}
+      propertyPath: initialStock.Array.data[1].currentStock
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5793587784531917532, guid: bf0cb55cc57ae0c439f37614d695835a,
+        type: 3}
+      propertyPath: initialStock.Array.data[2].currentStock
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 225901995064833805, guid: bf0cb55cc57ae0c439f37614d695835a,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2609,7 +2624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitBetweeenSpawns: 1.5
-  maxClientsPresentAtOnce: 1
+  maxClientsPresentAtOnce: 5
   clientPrefabs:
   - {fileID: 7571170974225155296, guid: 781ce4b37542d1a4abf699c30bed8bdb, type: 3}
   - {fileID: 3411751502998498965, guid: cb2817f792fbbce409705bfa3db1151b, type: 3}

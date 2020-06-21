@@ -105,7 +105,8 @@ public class Client : Agent
         CancelInvoke();
 
         currentState = state;
-        if (interruptedEmployee)
+        bool employeeIsStillInterrupted = interruptedEmployee && !employeeFound.CanBeInterrupted();
+        if (employeeIsStillInterrupted && state != ClientState.AskingForInformation && state != ClientState.MovingTowardsEmployee)
         {
             employeeFound.ContinueTasks();
             interruptedEmployee = false;
@@ -182,6 +183,11 @@ public class Client : Agent
                 knowledge.CreateStoreKnowledge(givenKnowledge);
             }
         }
+
+        // This is ugly
+        float clientX = transform.position.x;
+        float employeeX = employeeFound.transform.position.x;
+        spriteRenderer.flipX = clientX < employeeX;
     }
 
     private void WaitBeforeContinuing()
@@ -401,6 +407,7 @@ public class Client : Agent
         }
 
         LocationData storeLocation = storeInterestedIn.LOCATION;
+        StopExecutingActionQueue();
         MoveToStore(storeLocation, storeInterestedIn.STORE_ID);
     }
 
@@ -416,6 +423,7 @@ public class Client : Agent
         Vector2 destinationPosition = employeePosition - 1f * vector;
         LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
 
+        StopExecutingActionQueue();
         MoveTo(destinationLocation, MoveAction.Destination.Agent);
     }
 
@@ -550,7 +558,6 @@ public class Client : Agent
             Debug.LogWarningFormat("Client {0} has left the mall", name);
         }
 
-        spriteRenderer.enabled = false;
         ClientsManager.INSTANCE.ClientLeavesMall(this);
         gameObject.SetActive(false);
     }

@@ -203,6 +203,12 @@ public abstract class Agent : MonoBehaviour
 
     private void MoveTo(LocationData location, MoveAction moveAction)
     {
+        bool _debug = currentFloor != location.FLOOR && this is Employee;
+        // bool _debug = false;
+        if (_debug)
+            Debug.LogErrorFormat("Agent {0} at ({1}, {2}) is moving towards ({3}, {4}). Destination: {5}",
+            name, Location.POSITION, Location.FLOOR, moveAction.Location.POSITION, moveAction.Location.FLOOR, moveAction.GetDestination);
+
         LocationData currentLocation = new LocationData(transform.position, currentFloor);
         if (currentLocation.FLOOR != location.FLOOR)
         {
@@ -216,11 +222,22 @@ public abstract class Agent : MonoBehaviour
                 LocationData stairsLocation = closestStairs.StartingLocation;
                 LocationData stairsEndLocation = closestStairs.EndingLocation;
 
-                IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
-                AddActionToQueue(moveToStairs);
+                if (_debug)
+                    Debug.LogErrorFormat("Taking stairs at ({0}, {1}). Stairs end at ({2}, {3})",
+                    stairsLocation.POSITION, stairsLocation.FLOOR, stairsEndLocation.POSITION, stairsEndLocation.FLOOR);
 
-                IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
-                AddActionToQueue(goUpStairs);
+                if (ExecutingActionQueue && currentAction is MoveAction)
+                {
+                    MoveAction action = currentAction as MoveAction;
+                    if (action.GetDestination != MoveAction.Destination.StairsEnd)
+                    {
+                        IAction moveToStairs = new MoveAction(navigation, stairsLocation, MoveAction.Destination.Stairs);
+                        AddActionToQueue(moveToStairs);
+
+                        IAction goUpStairs = new MoveAction(navigation, stairsEndLocation, MoveAction.Destination.StairsEnd);
+                        AddActionToQueue(goUpStairs);
+                    }
+                }
 
                 auxLocation = stairsEndLocation;
             }
