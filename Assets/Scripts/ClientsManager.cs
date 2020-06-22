@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class ClientsManager : MonoBehaviour
@@ -14,15 +13,24 @@ public class ClientsManager : MonoBehaviour
     private int clientsPresent;
     private HashSet<Client> clientsInMall;
     private List<Client> clientsCreated;
+    private System.Random rng;
 
     void Start()
     {
+        if (INSTANCE)
+        {
+            Debug.LogError("An instance of Clients Manager already exits. Destroying...");
+            Destroy(gameObject);
+            return;
+        }
+
         INSTANCE = this;
 
         spawnClient = false;
         clientsPresent = 0;
         clientsInMall = new HashSet<Client>();
         clientsCreated = new List<Client>();
+        rng = new System.Random();
 
         Invoke("ResetSpawnClient", waitBetweeenSpawns);
     }
@@ -47,7 +55,6 @@ public class ClientsManager : MonoBehaviour
     {
         List<LocationData> exitsLocations = Mall.INSTANCE.GetAllExits();
         int randomIndex = new System.Random().Next(0, exitsLocations.Count);
-
         LocationData spawnLocation = exitsLocations[randomIndex];
 
         Client client = null;
@@ -59,7 +66,7 @@ public class ClientsManager : MonoBehaviour
         if (random < threshold)
         {
             Debug.Log("Spawning a client that already visited the mall");
-            client = SpawnAlreadyCreatedClient(spawnLocation);
+            client = SpawnAlreadyCreatedClient();
         }
         else
         {
@@ -71,9 +78,9 @@ public class ClientsManager : MonoBehaviour
         clientsInMall.Add(client);
     }
 
-    private Client SpawnAlreadyCreatedClient(LocationData spawnLocation)
+    private Client SpawnAlreadyCreatedClient()
     {
-        int randomIndex = new System.Random().Next(0, clientsCreated.Count);
+        int randomIndex = rng.Next(0, clientsCreated.Count);
         Client client = clientsCreated[randomIndex];
 
         client.gameObject.SetActive(true);
@@ -83,7 +90,7 @@ public class ClientsManager : MonoBehaviour
 
     private Client CreateNewClient(LocationData spawnLocation)
     {
-        int randomIndex = new System.Random().Next(0, clientPrefabs.Count);
+        int randomIndex = rng.Next(0, clientPrefabs.Count);
         Client clientPrefab = clientPrefabs[randomIndex];
         Client newClient = Instantiate(clientPrefab, spawnLocation.POSITION, Quaternion.identity);
 
@@ -99,7 +106,10 @@ public class ClientsManager : MonoBehaviour
     {
         clientsPresent -= 1;
         clientsInMall.Remove(client);
-        clientsCreated.Add(client);
+        if (!clientsCreated.Contains(client))
+        {
+            clientsCreated.Add(client);
+        }
     }
 
     public List<Client> GetAllClientsInMall()

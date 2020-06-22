@@ -4,13 +4,20 @@ public class SpriteManager : MonoBehaviour
 {
     public static SpriteManager INSTANCE;
 
-    [SerializeField] private Sprite questionMarkSprite;
+    [SerializeField] private Sprite storageSprite;
     [SerializeField] private Sprite askingEmployeeSprite;
     [SerializeField] private Sprite leaveSprite;
-    [SerializeField] private Sprite storageSprite;
+    [SerializeField] private Sprite questionMarkSprite;
 
     private void Start()
     {
+        if (INSTANCE)
+        {
+            Debug.LogError("An Sprite Manager instance already exists. Deleting...");
+            Destroy(gameObject);
+            return;
+        }
+
         INSTANCE = this;
     }
 
@@ -24,6 +31,11 @@ public class SpriteManager : MonoBehaviour
         return storageSprite;
     }
 
+    public Sprite GetAskingEmployeeSprite()
+    {
+        return askingEmployeeSprite;
+    }
+
     public Sprite GetLeaveSprite()
     {
         return leaveSprite;
@@ -34,8 +46,4 @@ public class SpriteManager : MonoBehaviour
         return questionMarkSprite;
     }
 
-    public Sprite GetAskingEmployeeSprite()
-    {
-        return askingEmployeeSprite;
-    }
 }

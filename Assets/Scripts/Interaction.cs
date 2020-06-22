@@ -1,9 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Interaction : MonoBehaviour
 {
+    private const float BUBBLE_X_OFFSET = 0.7f;
+    private const float BUBBLE_Y_OFFSET = 0.7f;
+
     public Bubble bubblePrefab;
 
     private Agent activeAgent;
@@ -58,8 +60,8 @@ public class Interaction : MonoBehaviour
         }
 
         Vector3 bubblePosition = new Vector3(
-            activeAgent.transform.position.x + 0.7f,
-            activeAgent.transform.position.y + 0.7f,
+            activeAgent.transform.position.x + BUBBLE_X_OFFSET,
+            activeAgent.transform.position.y + BUBBLE_Y_OFFSET,
             activeAgent.transform.position.z
         );
 
