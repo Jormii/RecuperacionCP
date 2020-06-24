@@ -145,6 +145,11 @@ MonoBehaviour:
   initialFloor: 0
   maxTimeSpentPerFloor: 10
   currentState: 3
+  knowledge:
+    inspectorKnowledge: []
+  resources:
+    inspectorList: []
+    money: 0
 --- !u!114 &6931167072084578668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,7 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a5581f33dc57254da5a6eaa78cb2803, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 2
+  movementSpeed: 2.5
 --- !u!114 &7745840436843184147
 MonoBehaviour:
   m_ObjectHideFlags: 0

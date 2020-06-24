@@ -109,7 +109,7 @@ public class ClientResources
         for (int i = 0; i < MAX_PRODUCTS_IN_SHOPPING_LIST; ++i)
         {
             Product product = products[i];
-            int quantityWanted = rng.Next(1, 6);
+            int quantityWanted = rng.Next(2, 6);
 
             ShoppingList productShoppingList = new ShoppingList(product, quantityWanted);
             shoppingList.Add(product.ID, productShoppingList);

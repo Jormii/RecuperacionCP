@@ -248,6 +248,11 @@ public class Stock : MonoBehaviour
         foreach (int productID in changes.PRODUCTS_TO_REMOVE)
         {
             stock.Remove(productID);
+
+            if (debug)
+            {
+                Debug.LogFormat("Store {0} no longer sells product {1}", name, productID);
+            }
         }
 
         int newProducts = changes.PRODUCTS_TO_REMOVE.Count;
@@ -266,6 +271,11 @@ public class Stock : MonoBehaviour
                 int reStockMargin = Random.Range(0, maximumStock >> 1);
                 StockData newStockData = new StockData(randomProduct, price, initialStock, maximumStock, reStockMargin);
                 stock.Add(randomProduct.ID, newStockData);
+            }
+
+            if (debug)
+            {
+                Debug.LogFormat("Store {0} now sells product {1}", name, randomProduct.ProductName);
             }
         }
 

@@ -65,7 +65,7 @@ public abstract class Agent : MonoBehaviour
         }
         else
         {
-            Invoke("MakeInteractableAfterDelay", 0.5f);
+            Invoke("MakeInteractableAfterDelay", 0.1f);
         }
     }
 

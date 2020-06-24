@@ -425,7 +425,7 @@ PrefabInstance:
     - target: {fileID: 7272988493518509315, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: movementSpeed
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -798,7 +798,7 @@ PrefabInstance:
     - target: {fileID: 7272988493518509315, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: movementSpeed
-      value: 1.5
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -1091,7 +1091,7 @@ PrefabInstance:
     - target: {fileID: 7272988493518509315, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
       propertyPath: movementSpeed
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8753761996123031540, guid: c7239ffc00bbdba428776fd8bdfdcc9f,
         type: 3}
@@ -2638,7 +2638,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitBetweeenSpawns: 1.5
-  maxClientsPresentAtOnce: 5
+  maxClientsPresentAtOnce: 2
   clientPrefabs:
   - {fileID: 7571170974225155296, guid: 781ce4b37542d1a4abf699c30bed8bdb, type: 3}
   - {fileID: 3411751502998498965, guid: cb2817f792fbbce409705bfa3db1151b, type: 3}

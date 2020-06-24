@@ -44,6 +44,8 @@ public class ClientKnowledge
     {
         // Update global knowledge
         StoreKnowledge knowledge = knownStores[store.ID];
+        HashSet<int> productsPreviouslySold = new HashSet<int>(knowledge.KnownStock.Keys);
+
         knowledge.Update(store);
 
         // Update knowledge by product
@@ -53,6 +55,12 @@ public class ClientKnowledge
         {
             StockData productStock = productsSold[i];
             int productID = productStock.Product.ID;
+
+            if (productsPreviouslySold.Contains(productID))
+            {
+                productsPreviouslySold.Remove(productID);
+            }
+
             if (knownStoresByProduct.ContainsKey(productID))
             {
                 List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
@@ -69,6 +77,21 @@ public class ClientKnowledge
             }
         }
 
+        // Remove products no longer sold by that store. This is ugly
+        foreach (int productID in productsPreviouslySold)
+        {
+            List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
+            bool proceed = true;
+            for (int i = 0; i < knowledges.Count && proceed; ++i)
+            {
+                if (store.ID == knowledges[i].STORE_ID)
+                {
+                    knowledges.RemoveAt(i);
+                    proceed = false;
+                }
+            }
+        }
+
         UpdateInspectorKnowledge();
     }
 
@@ -76,12 +99,19 @@ public class ClientKnowledge
     {
         // Update global knowledge
         StoreKnowledge knowledge = knownStores[storeKnowledge.STORE_ID];
+        HashSet<int> productsPreviouslySold = new HashSet<int>(knowledge.KnownStock.Keys);
+
         knowledge.Update(storeKnowledge);
 
         // Update knowledge by product
         Dictionary<int, int> knownStock = storeKnowledge.KnownStock;
         foreach (int productID in knownStock.Keys)
         {
+            if (productsPreviouslySold.Contains(productID))
+            {
+                productsPreviouslySold.Remove(productID);
+            }
+
             if (knownStoresByProduct.ContainsKey(productID))
             {
                 List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
@@ -95,6 +125,21 @@ public class ClientKnowledge
                 List<StoreKnowledge> list = new List<StoreKnowledge>();
                 list.Add(knowledge);
                 knownStoresByProduct.Add(productID, list);
+            }
+        }
+
+        // Remove products no longer sold by that store. This is ugly
+        foreach (int productID in productsPreviouslySold)
+        {
+            List<StoreKnowledge> knowledges = knownStoresByProduct[productID];
+            bool proceed = true;
+            for (int i = 0; i < knowledges.Count && proceed; ++i)
+            {
+                if (storeKnowledge.STORE_ID == knowledges[i].STORE_ID)
+                {
+                    knowledges.RemoveAt(i);
+                    proceed = false;
+                }
             }
         }
 
