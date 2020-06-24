@@ -688,7 +688,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   openHour: 10
   closeHour: 22
-  UIText: {fileID: 0}
 --- !u!1001 &547853767
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2044,11 +2043,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f54f29e19ce5d364da2d231c59d41f39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  questionMarkSprite: {fileID: 21300000, guid: 3efd076bfd43a48458bc3a22a62904b4, type: 3}
+  storageSprite: {fileID: 21300000, guid: f8ad51d0adb1ada41a787893c5dba87c, type: 3}
   askingEmployeeSprite: {fileID: 21300000, guid: 3afc127438e124c4e86c66de2031881e,
     type: 3}
   leaveSprite: {fileID: 21300000, guid: 198838c719f996144baeb5bcd15c769e, type: 3}
-  storageSprite: {fileID: 21300000, guid: f8ad51d0adb1ada41a787893c5dba87c, type: 3}
+  questionMarkSprite: {fileID: 21300000, guid: 3efd076bfd43a48458bc3a22a62904b4, type: 3}
 --- !u!4 &1166503184
 Transform:
   m_ObjectHideFlags: 0

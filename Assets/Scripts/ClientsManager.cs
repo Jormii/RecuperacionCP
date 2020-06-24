@@ -37,7 +37,7 @@ public class ClientsManager : MonoBehaviour
 
     void Update()
     {
-        if (clientsPresent == maxClientsPresentAtOnce || !spawnClient)
+        if (clientsPresent == maxClientsPresentAtOnce || !spawnClient || Mall.INSTANCE.Closed)
         {
             return;
         }

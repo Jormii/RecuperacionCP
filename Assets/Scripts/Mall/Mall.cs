@@ -11,6 +11,7 @@ public class Mall
 
     private int lowestFloor = int.MaxValue;
     private int highestFloor = int.MinValue;
+    private bool closed = false;
 
     // Stores variables
     private Dictionary<int, Store> allStores;
@@ -47,6 +48,16 @@ public class Mall
     {
         lowestFloor = Mathf.Min(lowestFloor, floor);
         highestFloor = Mathf.Max(highestFloor, floor);
+    }
+
+    public void Close()
+    {
+        closed = true;
+
+        foreach (Store store in allStores.Values)
+        {
+            store.Close();
+        }
     }
 
     #region Store Related
@@ -274,6 +285,11 @@ public class Mall
     public int HighestFloor
     {
         get => highestFloor;
+    }
+
+    public bool Closed
+    {
+        get => closed;
     }
 
     #endregion

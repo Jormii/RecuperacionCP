@@ -56,6 +56,11 @@ public class Stock : MonoBehaviour
 
     private void Update()
     {
+        if (!store.IsOpen)
+        {
+            StopReStockingCountdown();
+        }
+
         if (reStockingCountdownRunning)
         {
             UpdateReStockingCountdown();
