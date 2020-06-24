@@ -196,7 +196,7 @@ public abstract class Agent : MonoBehaviour
         MoveTo(location, moveTo);
     }
 
-    public void MoveToStore(LocationData location, int storeID)
+    protected void MoveToStore(LocationData location, int storeID)
     {
         MoveToStoreAction moveToStore = new MoveToStoreAction(navigation, location, storeID);
         MoveTo(location, moveToStore);

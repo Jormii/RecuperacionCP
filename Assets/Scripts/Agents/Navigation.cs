@@ -5,6 +5,12 @@
 [RequireComponent(typeof(SpriteRenderer))]
 public class Navigation : MonoBehaviour
 {
+    public enum Speed
+    {
+        Normal,
+        Slow
+    };
+
     public const float DISTANCE_MARGIN = 0.1f;
 
     [SerializeField] private float movementSpeed = 2f;
@@ -15,6 +21,7 @@ public class Navigation : MonoBehaviour
     private Vector2 destination;
     private Vector2 direction;
     private Navigation thisComponent;
+    private Speed currentSpeedMode;
     private float constantZ;
 
     private void Awake()
@@ -28,8 +35,9 @@ public class Navigation : MonoBehaviour
 
     private void Update()
     {
+        float speed = (currentSpeedMode == Speed.Normal) ? movementSpeed : 0.66f * movementSpeed;
         Vector2 currentPosition = transform.position;
-        Vector2 newPosition2D = currentPosition + Time.deltaTime * movementSpeed * direction;
+        Vector2 newPosition2D = currentPosition + Time.deltaTime * speed * direction;
 
         Vector3 newPos = new Vector3(newPosition2D.x, newPosition2D.y, constantZ);
         transform.position = newPos;
@@ -49,9 +57,10 @@ public class Navigation : MonoBehaviour
         return Mathf.Abs(distanceToDestination) < DISTANCE_MARGIN;
     }
 
-    public void MoveTo(Vector2 position)
+    public void MoveTo(Vector2 position, Speed speedMode)
     {
         thisComponent.enabled = true;
+        currentSpeedMode = speedMode;
         Vector2 currentPosition2D = transform.position;
 
         destination = position;
