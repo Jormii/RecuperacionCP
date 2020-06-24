@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Mall
 {
-    // TODO: Tweak these variables when graphics are in
     public const float MALL_LEFT_LIMIT = -7.8f;
     public const float MALL_RIGHT_LIMIT = 7.8f;
 
@@ -37,11 +36,6 @@ public class Mall
 
         this.exits = new Dictionary<int, LocationData>();
         this.storages = new Dictionary<int, LocationData>();
-    }
-
-    public bool FloorExists(int floor)
-    {
-        return floor >= lowestFloor && floor <= highestFloor;
     }
 
     private void UpdateFloors(int floor)
@@ -115,10 +109,19 @@ public class Mall
         for (int i = 0; i < productsStock.Count; ++i)
         {
             int productID = productsStock[i].Product.ID;
-            List<Store> list = storesThatSellProduct[productID];
-            if (list.Contains(store))
+            if (storesThatSellProduct.ContainsKey(productID))
             {
-                list.Remove(store);
+                List<Store> storesList = storesThatSellProduct[productID];
+                if (!storesList.Contains(store))
+                {
+                    storesList.Add(store);
+                }
+            }
+            else
+            {
+                List<Store> storesList = new List<Store>();
+                storesList.Add(store);
+                storesThatSellProduct.Add(productID, storesList);
             }
         }
     }

@@ -42,13 +42,10 @@ public class ClientsManager : MonoBehaviour
             return;
         }
 
+        Invoke("SpawnClient", Random.Range(0.5f, 1.5f));
+        Invoke("ResetSpawnClient", waitBetweeenSpawns);
         clientsPresent += 1;
-        if (spawnClient)
-        {
-            Invoke("SpawnClient", Random.Range(0.5f, 1.5f));
-            Invoke("ResetSpawnClient", waitBetweeenSpawns);
-            spawnClient = false;
-        }
+        spawnClient = false;
     }
 
     private void SpawnClient()
@@ -82,6 +79,7 @@ public class ClientsManager : MonoBehaviour
     {
         int randomIndex = rng.Next(0, clientsCreated.Count);
         Client client = clientsCreated[randomIndex];
+        clientsCreated.Remove(client);
 
         client.gameObject.SetActive(true);
 
@@ -106,10 +104,7 @@ public class ClientsManager : MonoBehaviour
     {
         clientsPresent -= 1;
         clientsInMall.Remove(client);
-        if (!clientsCreated.Contains(client))
-        {
-            clientsCreated.Add(client);
-        }
+        clientsCreated.Add(client);
     }
 
     public List<Client> GetAllClientsInMall()

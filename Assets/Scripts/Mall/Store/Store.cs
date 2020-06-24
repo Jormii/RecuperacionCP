@@ -51,6 +51,7 @@ public class Store : MonoBehaviour
         StockChanges stockChanges = Boss.INSTANCE.SendSalesReport(salesReport);
 
         stock.ModifyStock(stockChanges);
+        Mall.INSTANCE.UpdateStore(this, stockChanges);
 
         profit = 0;
         productsSoldInLastHour.Clear();
