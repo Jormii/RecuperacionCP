@@ -681,7 +681,7 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()) && agent.CanInteractWith)
+            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
             {
                 employeeFound = employee;
                 employeeFound.Interrupt(this);

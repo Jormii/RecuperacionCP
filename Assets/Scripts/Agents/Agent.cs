@@ -61,7 +61,6 @@ public abstract class Agent : MonoBehaviour
         if (!interactable)
         {
             canInteractWith = false;
-            vision.enabled = false;
         }
         else
         {
@@ -72,7 +71,6 @@ public abstract class Agent : MonoBehaviour
     private void MakeInteractableAfterDelay()
     {
         canInteractWith = true;
-        vision.enabled = true;
     }
 
     #region State Machine Related
