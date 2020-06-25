@@ -109,7 +109,7 @@ public class Employee : Agent
         }
 
         interrupted = true;
-        MakeInteractable(false);
+        CanInteractWith = false;
         if (ExecutingActionQueue)
         {
             if (debug)
@@ -119,8 +119,6 @@ public class Employee : Agent
 
             PauseActionQueue();
         }
-
-        Invoke("ContinueTasks", 3f);    // TODO: Ugly. To avoid employees getting stuck
 
         // This is ugly
         float employeeX = transform.position.x;
@@ -141,7 +139,7 @@ public class Employee : Agent
         }
 
         interrupted = false;
-        MakeInteractable(true);
+        CanInteractWith = true;
         if (ThereAreActionsLeft())
         {
             if (debug)
@@ -156,6 +154,11 @@ public class Employee : Agent
     #endregion
 
     #region ReStocking Order Related
+
+    public bool CanBeSentToReStock(Store store)
+    {
+        return CanBeInterrupted() && InChargeOfFloor(store.Location.FLOOR) && !hasVisitedStorage;
+    }
 
     public void SendToReStock(Store store, Dictionary<int, int> reStock)
     {
@@ -318,7 +321,6 @@ public class Employee : Agent
 
         currentState = state;
         spriteRenderer.enabled = true;
-        MakeInteractable(true);
         OnStateChanged();
     }
 
@@ -529,7 +531,7 @@ public class Employee : Agent
     private void LeaveStore()
     {
         spriteRenderer.enabled = true;
-        MakeInteractable(true);
+        CanInteractWith = true;
 
         // Still has products to restock
         if (productsToRefill.Count != 0)
@@ -703,7 +705,7 @@ public class Employee : Agent
 
     private void OnStairsReached(MoveAction moveAction)
     {
-        MakeInteractable(false);
+        CanInteractWith = false;
 
         IAction nextAction = PeekActionQueue();
         if (nextAction is MoveAction)
@@ -733,7 +735,7 @@ public class Employee : Agent
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
         spriteRenderer.sortingOrder = -newFloor * 10;
-        MakeInteractable(true);
+        CanInteractWith = true;
     }
 
     private void OnStorageReached(MoveAction moveAction)
@@ -741,7 +743,7 @@ public class Employee : Agent
         hasVisitedStorage = true;
 
         spriteRenderer.enabled = false;
-        MakeInteractable(false);
+        CanInteractWith = false;
 
         int storesToRestock = productsToRefill.Count;
         Invoke("LeaveStorage", 1.5f);
@@ -750,7 +752,7 @@ public class Employee : Agent
     private void LeaveStorage()
     {
         spriteRenderer.enabled = true;
-        MakeInteractable(true);
+        CanInteractWith = true;
         ChangeState(EmployeeState.MovingToStore);
     }
 
@@ -762,7 +764,7 @@ public class Employee : Agent
         ChangeState(EmployeeState.ReStocking);
 
         spriteRenderer.enabled = false;
-        MakeInteractable(false);
+        CanInteractWith = false;
     }
 
     #endregion

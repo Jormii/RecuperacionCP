@@ -56,23 +56,6 @@ public abstract class Agent : MonoBehaviour
         executingQueue = false;
     }
 
-    public void MakeInteractable(bool interactable)
-    {
-        if (!interactable)
-        {
-            canInteractWith = false;
-        }
-        else
-        {
-            Invoke("MakeInteractableAfterDelay", 0.1f);
-        }
-    }
-
-    private void MakeInteractableAfterDelay()
-    {
-        canInteractWith = true;
-    }
-
     #region State Machine Related
 
     protected abstract void PerformCurrentState();
@@ -269,6 +252,7 @@ public abstract class Agent : MonoBehaviour
     public bool CanInteractWith
     {
         get => canInteractWith;
+        set => canInteractWith = value;
     }
 
     #endregion
