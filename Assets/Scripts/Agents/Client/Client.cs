@@ -38,6 +38,7 @@ public class Client : Agent
 
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = -initialFloor * 10;
         knowledge = new ClientKnowledge();
     }
 
@@ -580,6 +581,18 @@ public class Client : Agent
             Debug.LogFormat("Client {0} has reached the stairs", name);
         }
 
+        IAction nextAction = PeekActionQueue();
+        if (nextAction is MoveAction)
+        {
+            MoveAction goUpStairsAction = nextAction as MoveAction;
+
+            int originFloor = currentFloor;
+            int destinationFloor = goUpStairsAction.Location.FLOOR;
+
+            int max = Mathf.Max(originFloor, destinationFloor) * 10;
+            spriteRenderer.sortingOrder = -(max - 2);
+        }
+
         MakeInteractable(false);
     }
 
@@ -602,6 +615,7 @@ public class Client : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+        spriteRenderer.sortingOrder = -newFloor * 10;
 
         MakeInteractable(true);
     }

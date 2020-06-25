@@ -40,6 +40,7 @@ public class Employee : Agent
 
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = -initialFloor * 10;
 
         Boss.INSTANCE.AddEmployee(this);
     }
@@ -703,6 +704,18 @@ public class Employee : Agent
     private void OnStairsReached(MoveAction moveAction)
     {
         MakeInteractable(false);
+
+        IAction nextAction = PeekActionQueue();
+        if (nextAction is MoveAction)
+        {
+            MoveAction goUpStairsAction = nextAction as MoveAction;
+
+            int originFloor = currentFloor;
+            int destinationFloor = goUpStairsAction.Location.FLOOR;
+
+            int max = Mathf.Max(originFloor, destinationFloor) * 10;
+            spriteRenderer.sortingOrder = -(max - 2);
+        }
     }
 
     private void OnStairsEndReached(MoveAction moveAction)
@@ -719,6 +732,7 @@ public class Employee : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
+        spriteRenderer.sortingOrder = -newFloor * 10;
         MakeInteractable(true);
     }
 

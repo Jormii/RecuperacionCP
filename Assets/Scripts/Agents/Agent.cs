@@ -93,6 +93,11 @@ public abstract class Agent : MonoBehaviour
         return actions.Count != 0;
     }
 
+    public IAction PeekActionQueue()
+    {
+        return actions.Peek();
+    }
+
     public void AddActionToQueue(IAction action)
     {
         actions.Enqueue(action);
