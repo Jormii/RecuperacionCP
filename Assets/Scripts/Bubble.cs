@@ -30,6 +30,15 @@ public class Bubble : MonoBehaviour
         );
     }
 
+    private void Start()
+    {
+        SpriteRenderer bubbleSpriteRenderer = GetComponent<SpriteRenderer>();
+        for (int i = 0; i < sprites.Length; ++i)
+        {
+            sprites[i].sortingOrder = bubbleSpriteRenderer.sortingOrder + 1;
+        }
+    }
+
     public void Draw(List<Sprite> spritesList)
     {
         if (spritesList.Count == 0)

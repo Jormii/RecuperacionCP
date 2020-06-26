@@ -5,10 +5,11 @@ using TMPro;
 
 public class SimulatedTime : MonoBehaviour
 {
+    public TextMeshProUGUI UIText;
+
     [SerializeField] private int openHour = 10;
     [SerializeField] private int closeHour = 22;
 
-    private TextMeshProUGUI UIText;
     private int openHourMinutes;
     private int closeHourMinutes;
     private float currentTime = 0f;
@@ -16,8 +17,6 @@ public class SimulatedTime : MonoBehaviour
 
     private void Start()
     {
-        UIText = GetComponent<TextMeshProUGUI>();
-
         openHourMinutes = 60 * openHour;
         closeHourMinutes = 60 * closeHour;
 

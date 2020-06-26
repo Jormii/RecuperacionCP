@@ -50,6 +50,7 @@ public class Interaction : MonoBehaviour
         if (!bubbleExisting)
         {
             bubbleInstantiated = Instantiate<Bubble>(bubblePrefab, Vector3.zero, Quaternion.identity);
+            bubbleInstantiated.GetComponent<SpriteRenderer>().sortingOrder = 10;
             bubbleExisting = true;
         }
 

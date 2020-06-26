@@ -64,6 +64,17 @@ public class Client : Agent
     public void MakeLeave()
     {
         hasToLeave = true;
+
+        switch (currentState)
+        {
+            case ClientState.MovingToStore:
+            case ClientState.WanderingAround:
+                StopExecutingActionQueue();
+                ChangeState(ClientState.Leaving);
+                break;
+            default:
+                break;
+        }
     }
 
     #region Ignored Stores Related
