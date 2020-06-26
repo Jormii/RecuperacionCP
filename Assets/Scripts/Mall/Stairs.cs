@@ -14,6 +14,8 @@ public class Stairs : MonoBehaviour
     public Transform start;
     public int endingFloor = 1;
     public Transform end;
+    public SpriteRenderer frontSprite;
+    public SpriteRenderer backSprite;
 
     private LocationData startLocation;
     private LocationData endLocation;
@@ -26,6 +28,14 @@ public class Stairs : MonoBehaviour
         direction = (startingFloor < endingFloor) ? Direction.Up : Direction.Down;
 
         Mall.INSTANCE.AddStairs(this);
+    }
+
+    private void Start()
+    {
+        int max = Mathf.Max(startingFloor, endingFloor) * 10;
+
+        frontSprite.sortingOrder = -(max - 3);
+        backSprite.sortingOrder = -(max - 1);
 
         GetComponent<Stairs>().enabled = false;
     }

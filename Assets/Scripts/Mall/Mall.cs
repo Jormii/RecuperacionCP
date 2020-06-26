@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Mall
 {
-    // TODO: Tweak these variables when graphics are in
     public const float MALL_LEFT_LIMIT = -7.8f;
     public const float MALL_RIGHT_LIMIT = 7.8f;
 
@@ -11,6 +10,7 @@ public class Mall
 
     private int lowestFloor = int.MaxValue;
     private int highestFloor = int.MinValue;
+    private bool closed = false;
 
     // Stores variables
     private Dictionary<int, Store> allStores;
@@ -38,15 +38,20 @@ public class Mall
         this.storages = new Dictionary<int, LocationData>();
     }
 
-    public bool FloorExists(int floor)
-    {
-        return floor >= lowestFloor && floor <= highestFloor;
-    }
-
     private void UpdateFloors(int floor)
     {
         lowestFloor = Mathf.Min(lowestFloor, floor);
         highestFloor = Mathf.Max(highestFloor, floor);
+    }
+
+    public void Close()
+    {
+        closed = true;
+
+        foreach (Store store in allStores.Values)
+        {
+            store.Close();
+        }
     }
 
     #region Store Related
@@ -104,10 +109,19 @@ public class Mall
         for (int i = 0; i < productsStock.Count; ++i)
         {
             int productID = productsStock[i].Product.ID;
-            List<Store> list = storesThatSellProduct[productID];
-            if (list.Contains(store))
+            if (storesThatSellProduct.ContainsKey(productID))
             {
-                list.Remove(store);
+                List<Store> storesList = storesThatSellProduct[productID];
+                if (!storesList.Contains(store))
+                {
+                    storesList.Add(store);
+                }
+            }
+            else
+            {
+                List<Store> storesList = new List<Store>();
+                storesList.Add(store);
+                storesThatSellProduct.Add(productID, storesList);
             }
         }
     }
@@ -274,6 +288,11 @@ public class Mall
     public int HighestFloor
     {
         get => highestFloor;
+    }
+
+    public bool Closed
+    {
+        get => closed;
     }
 
     #endregion

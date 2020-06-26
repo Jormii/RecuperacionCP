@@ -56,25 +56,6 @@ public abstract class Agent : MonoBehaviour
         executingQueue = false;
     }
 
-    public void MakeInteractable(bool interactable)
-    {
-        if (!interactable)
-        {
-            canInteractWith = false;
-            vision.enabled = false;
-        }
-        else
-        {
-            Invoke("MakeInteractableAfterDelay", 0.5f);
-        }
-    }
-
-    private void MakeInteractableAfterDelay()
-    {
-        canInteractWith = true;
-        vision.enabled = true;
-    }
-
     #region State Machine Related
 
     protected abstract void PerformCurrentState();
@@ -91,6 +72,11 @@ public abstract class Agent : MonoBehaviour
     public bool ThereAreActionsLeft()
     {
         return actions.Count != 0;
+    }
+
+    public IAction PeekActionQueue()
+    {
+        return actions.Peek();
     }
 
     public void AddActionToQueue(IAction action)
@@ -196,7 +182,7 @@ public abstract class Agent : MonoBehaviour
         MoveTo(location, moveTo);
     }
 
-    public void MoveToStore(LocationData location, int storeID)
+    protected void MoveToStore(LocationData location, int storeID)
     {
         MoveToStoreAction moveToStore = new MoveToStoreAction(navigation, location, storeID);
         MoveTo(location, moveToStore);
@@ -266,6 +252,7 @@ public abstract class Agent : MonoBehaviour
     public bool CanInteractWith
     {
         get => canInteractWith;
+        set => canInteractWith = value;
     }
 
     #endregion

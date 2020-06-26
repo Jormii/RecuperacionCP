@@ -10,7 +10,7 @@ public class Utils
 
     public static int RandomFromWeights(List<float> weights)
     {
-        // Normalize
+        // Normalize weights first
         float total = 0;
         for (int i = 0; i < weights.Count; ++i)
         {
@@ -23,6 +23,7 @@ public class Utils
             normalizedWeights.Add(weights[i] / total);
         }
 
+        // Get random
         float k = Random.Range(0f, 1f);
         if (k <= normalizedWeights[0])
         {

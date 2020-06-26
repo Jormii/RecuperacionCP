@@ -26,6 +26,12 @@ public class Store : MonoBehaviour
         Vector3 bubblePosition = new Vector3(entrancePosition.position.x + 0.6f, entrancePosition.position.y, entrancePosition.position.z);
         storesBubble = GameObject.Instantiate<Bubble>(bubblePrefab, bubblePosition, Quaternion.identity, transform);
 
+        foreach (StockData stockData in stock.StockSold)
+        {
+            int productID = stockData.Product.ID;
+            productsSoldInLastHour.Add(productID, 0);
+        }
+
         Mall.INSTANCE.AddStore(this);
         UpdateBubble();
     }
@@ -34,15 +40,7 @@ public class Store : MonoBehaviour
     {
         int profitObtained = stock.Sell(productID, amount);
         profit += profitObtained;
-
-        if (productsSoldInLastHour.ContainsKey(productID))
-        {
-            productsSoldInLastHour[productID] += amount;
-        }
-        else
-        {
-            productsSoldInLastHour.Add(productID, amount);
-        }
+        productsSoldInLastHour[productID] += amount;
     }
 
     public void OnNewHour()
@@ -51,9 +49,16 @@ public class Store : MonoBehaviour
         StockChanges stockChanges = Boss.INSTANCE.SendSalesReport(salesReport);
 
         stock.ModifyStock(stockChanges);
+        Mall.INSTANCE.UpdateStore(this, stockChanges);
 
         profit = 0;
         productsSoldInLastHour.Clear();
+        foreach (StockData stockData in stock.StockSold)
+        {
+            int productID = stockData.Product.ID;
+            productsSoldInLastHour.Add(productID, 0);
+        }
+
         UpdateBubble();
     }
 

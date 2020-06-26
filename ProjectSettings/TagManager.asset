@@ -52,10 +52,7 @@ TagManager:
   - name: Other Mall Props
     uniqueID: 1846993139
     locked: 0
-  - name: Staircase
-    uniqueID: 4236738355
-    locked: 0
-  - name: People
+  - name: People and Staircases
     uniqueID: 3027707973
     locked: 0
   - name: Interface

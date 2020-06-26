@@ -38,6 +38,7 @@ public class Client : Agent
 
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = -initialFloor * 10;
         knowledge = new ClientKnowledge();
     }
 
@@ -52,17 +53,29 @@ public class Client : Agent
     {
         base.Reset(location);
 
-        currentState = ClientState.WanderingAround;
         resources = new ClientResources();
         resources.Randomize();
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+
+        ChangeState(ClientState.Evaluating);
     }
 
     public void MakeLeave()
     {
         hasToLeave = true;
+
+        switch (currentState)
+        {
+            case ClientState.MovingToStore:
+            case ClientState.WanderingAround:
+                StopExecutingActionQueue();
+                ChangeState(ClientState.Leaving);
+                break;
+            default:
+                break;
+        }
     }
 
     #region Ignored Stores Related
@@ -261,7 +274,7 @@ public class Client : Agent
     private void LeaveStore()
     {
         spriteRenderer.enabled = true;
-        MakeInteractable(true);
+        CanInteractWith = true;
         ChangeState(ClientState.Evaluating);
     }
 
@@ -417,10 +430,9 @@ public class Client : Agent
 
     private void MovingTowardsEmployee()
     {
-        // TODO once sprites are done: Tweak to not end on top of the employee when asking
         Vector2 employeePosition = employeeFound.transform.position;
         Vector2 vector = new Vector2(employeePosition.x - transform.position.x, 0f).normalized;
-        Vector2 destinationPosition = employeePosition - 1f * vector;
+        Vector2 destinationPosition = employeePosition - 0.75f * vector;
         LocationData destinationLocation = new LocationData(destinationPosition, currentFloor);
 
         StopExecutingActionQueue();
@@ -580,7 +592,19 @@ public class Client : Agent
             Debug.LogFormat("Client {0} has reached the stairs", name);
         }
 
-        MakeInteractable(false);
+        IAction nextAction = PeekActionQueue();
+        if (nextAction is MoveAction)
+        {
+            MoveAction goUpStairsAction = nextAction as MoveAction;
+
+            int originFloor = currentFloor;
+            int destinationFloor = goUpStairsAction.Location.FLOOR;
+
+            int max = Mathf.Max(originFloor, destinationFloor) * 10;
+            spriteRenderer.sortingOrder = -(max - 2);
+        }
+
+        CanInteractWith = false;
     }
 
     private void OnStairsEndReached(MoveAction moveAction)
@@ -602,8 +626,8 @@ public class Client : Agent
         int newFloor = moveAction.Location.FLOOR;
         currentFloor = newFloor;
         timeSpentOnThisFloor = 0f;
-
-        MakeInteractable(true);
+        spriteRenderer.sortingOrder = -newFloor * 10;
+        CanInteractWith = true;
     }
 
     private void OnStoreReached(MoveAction moveAction)
@@ -619,7 +643,7 @@ public class Client : Agent
             ChangeState(ClientState.CheckingStock);
 
             spriteRenderer.enabled = false;
-            MakeInteractable(false);
+            CanInteractWith = false;
         }
         else
         {
@@ -667,7 +691,7 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()) && agent.CanInteractWith)
+            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
             {
                 employeeFound = employee;
                 employeeFound.Interrupt(this);

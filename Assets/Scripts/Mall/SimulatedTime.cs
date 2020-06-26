@@ -5,10 +5,11 @@ using TMPro;
 
 public class SimulatedTime : MonoBehaviour
 {
+    public TextMeshProUGUI UIText;
+
     [SerializeField] private int openHour = 10;
     [SerializeField] private int closeHour = 22;
 
-    [SerializeField] private TextMeshProUGUI UIText;
     private int openHourMinutes;
     private int closeHourMinutes;
     private float currentTime = 0f;
@@ -16,8 +17,6 @@ public class SimulatedTime : MonoBehaviour
 
     private void Start()
     {
-        UIText = GetComponent<TextMeshProUGUI>();
-
         openHourMinutes = 60 * openHour;
         closeHourMinutes = 60 * closeHour;
 
@@ -42,8 +41,9 @@ public class SimulatedTime : MonoBehaviour
             allStores[i].OnNewHour();
         }
 
-        Debug.LogWarning(ParseTime());
-        if (GetTotalMinutes() >= closeHourMinutes)
+        int totalMinutes = GetTotalMinutes();
+        bool isCloseTime = Mathf.Abs(totalMinutes - closeHourMinutes) <= 2;
+        if (isCloseTime)
         {
             OnCloseTimeMet();
         }
@@ -52,19 +52,20 @@ public class SimulatedTime : MonoBehaviour
     private void OnCloseTimeMet()
     {
         timeRunning = false;
-        StopAllCoroutines();
+
+        currentTime = closeHourMinutes - openHourMinutes;
+        CancelInvoke();
 
         MakeClientsLeave();
         SendEmployeesHome();
         CloseMall();
 
-        // TODO: Reopen mall
+        GetComponent<SimulatedTime>().enabled = false;
     }
 
     private void MakeClientsLeave()
     {
         List<Client> allClients = ClientsManager.INSTANCE.GetAllClientsInMall();
-        // TODO: Non efficient
         for (int i = 0; i < allClients.Count; ++i)
         {
             allClients[i].MakeLeave();
@@ -82,11 +83,7 @@ public class SimulatedTime : MonoBehaviour
 
     private void CloseMall()
     {
-        List<Store> allStores = Mall.INSTANCE.GetAllStores();
-        for (int i = 0; i < allStores.Count; ++i)
-        {
-            allStores[i].Close();
-        }
+        Mall.INSTANCE.Close();
     }
 
     private int GetTotalMinutes()

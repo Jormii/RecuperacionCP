@@ -24,7 +24,19 @@ public class Bubble : MonoBehaviour
 
         individualScale = centerTransform.localScale;
         smallScale = upperTransform.localScale;
-        referenceSpriteSize = new Vector2(sprites[0].sprite.rect.width, sprites[0].sprite.rect.height);
+        referenceSpriteSize = new Vector2(
+            sprites[0].sprite.rect.width,
+            sprites[0].sprite.rect.height
+        );
+    }
+
+    private void Start()
+    {
+        SpriteRenderer bubbleSpriteRenderer = GetComponent<SpriteRenderer>();
+        for (int i = 0; i < sprites.Length; ++i)
+        {
+            sprites[i].sortingOrder = bubbleSpriteRenderer.sortingOrder + 1;
+        }
     }
 
     public void Draw(List<Sprite> spritesList)

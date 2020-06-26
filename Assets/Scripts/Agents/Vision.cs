@@ -18,6 +18,11 @@ public class Vision : MonoBehaviour
 
     private void See()
     {
+        if (!agent.CanInteractWith)
+        {
+            return;
+        }
+
         RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, navigation.Direction, viewDistance);
         for (int i = 0; i < hits.Length; ++i)
         {
@@ -45,7 +50,10 @@ public class Vision : MonoBehaviour
             return;
         }
 
-        Gizmos.color = Color.green;
+        int id = Mathf.Abs(GetInstanceID());
+
+        Color color = new Color(id % 251, id % 241, id % 239);
+        Gizmos.color = color;
         Ray ray = new Ray();
         ray.origin = transform.position;
         ray.direction = navigation.Direction;

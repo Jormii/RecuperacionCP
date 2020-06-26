@@ -15,7 +15,6 @@ public class Stock : MonoBehaviour
     private Dictionary<int, StockData> stock;
     private bool reStockingCountdownRunning;
     private float reStockingCountdown;
-    private Dictionary<int, int> reStockAsked;
 
     private void Awake()
     {
@@ -29,7 +28,7 @@ public class Stock : MonoBehaviour
 
         if (initialStock.Count > MAX_PRODUCTS)
         {
-            Debug.LogWarning("The maximum number of products a store can sell is {0}. Discarting excessive products");
+            Debug.LogWarning("The maximum number of products a store can sell is {0}. Discarding excessive products");
         }
 
         int maxIndex = Mathf.Min(initialStock.Count, MAX_PRODUCTS);
@@ -44,7 +43,6 @@ public class Stock : MonoBehaviour
     {
         store = GetComponent<Store>();
         reStockingCountdownRunning = false;
-        reStockAsked = new Dictionary<int, int>();
 
         if (NeedsReStocking())
         {
@@ -56,9 +54,24 @@ public class Stock : MonoBehaviour
 
     private void Update()
     {
+        if (!store.IsOpen)
+        {
+            StopReStockingCountdown();
+            return;
+        }
+
         if (reStockingCountdownRunning)
         {
             UpdateReStockingCountdown();
+        }
+    }
+
+    private void UpdateInspectorList()
+    {
+        inspectorStock.Clear();
+        foreach (StockData stockData in stock.Values)
+        {
+            inspectorStock.Add(stockData);
         }
     }
 
@@ -122,16 +135,6 @@ public class Stock : MonoBehaviour
                 int productID = stockData.Product.ID;
                 int amount = stockData.ReStockNeeded();
                 productsToRefill.Add(productID, amount);
-
-                // Add to reStock asked
-                if (reStockAsked.ContainsKey(productID))
-                {
-                    reStockAsked[productID] += amount;
-                }
-                else
-                {
-                    reStockAsked.Add(productID, amount);
-                }
             }
         }
 
@@ -245,6 +248,11 @@ public class Stock : MonoBehaviour
         foreach (int productID in changes.PRODUCTS_TO_REMOVE)
         {
             stock.Remove(productID);
+
+            if (debug)
+            {
+                Debug.LogFormat("Store {0} no longer sells product {1}", name, productID);
+            }
         }
 
         int newProducts = changes.PRODUCTS_TO_REMOVE.Count;
@@ -257,8 +265,17 @@ public class Stock : MonoBehaviour
             }
             else
             {
-                StockData newStockData = new StockData(randomProduct, 5, 5, 5, 0);
+                int price = Random.Range(5, 10);
+                int maximumStock = Random.Range(5, 8);
+                int initialStock = maximumStock;
+                int reStockMargin = Random.Range(0, maximumStock >> 1);
+                StockData newStockData = new StockData(randomProduct, price, initialStock, maximumStock, reStockMargin);
                 stock.Add(randomProduct.ID, newStockData);
+            }
+
+            if (debug)
+            {
+                Debug.LogFormat("Store {0} now sells product {1}", name, randomProduct.ProductName);
             }
         }
 
@@ -266,15 +283,6 @@ public class Stock : MonoBehaviour
     }
 
     #endregion
-
-    private void UpdateInspectorList()
-    {
-        inspectorStock.Clear();
-        foreach (StockData stockData in stock.Values)
-        {
-            inspectorStock.Add(stockData);
-        }
-    }
 
     #region Properties
 

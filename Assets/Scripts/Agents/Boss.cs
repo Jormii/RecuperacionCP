@@ -33,7 +33,7 @@ public class Boss
         List<Employee> employeesAvailable = new List<Employee>();
         foreach (Employee employee in employees.Values)
         {
-            if (employee.CanBeInterrupted() && employee.InChargeOfFloor(store.Location.FLOOR))
+            if (employee.CanBeSentToReStock(store))
             {
                 employeesAvailable.Add(employee);
             }

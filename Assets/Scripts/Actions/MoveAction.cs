@@ -26,19 +26,21 @@ public class MoveAction : IAction
 
     public virtual void Execute()
     {
+        Navigation.Speed speedMode = (destination != Destination.NoDestination) ? Navigation.Speed.Normal : Navigation.Speed.Slow;
         if (destination != Destination.StairsEnd)
         {
+            // In order to guarantee horizontal movement when not taking the stairs
             Vector2 currentPosition = navigation.transform.position;
             Vector2 destinationPosition = new Vector2(
                 location.POSITION.x,
                 currentPosition.y
             );
 
-            navigation.MoveTo(destinationPosition);
+            navigation.MoveTo(destinationPosition, speedMode);
         }
         else
         {
-            navigation.MoveTo(location.POSITION);
+            navigation.MoveTo(location.POSITION, speedMode);
         }
     }
 
