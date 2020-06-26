@@ -2532,6 +2532,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   waitBetweeenSpawns: 1.5
   maxClientsPresentAtOnce: 5
+  starGameObject: {fileID: 6861222518163449521, guid: 3fc1480b888b3df44a702980a4ff2256,
+    type: 3}
   clientPrefabs:
   - {fileID: 7571170974225155296, guid: 781ce4b37542d1a4abf699c30bed8bdb, type: 3}
   - {fileID: 3411751502998498965, guid: cb2817f792fbbce409705bfa3db1151b, type: 3}

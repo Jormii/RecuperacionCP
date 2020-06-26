@@ -7,12 +7,14 @@ public class ClientsManager : MonoBehaviour
 
     public float waitBetweeenSpawns = 1f;
     public int maxClientsPresentAtOnce = 1;
+    public GameObject starGameObject;
     [SerializeField] private List<Client> clientPrefabs = new List<Client>();
 
     private bool spawnClient;
     private int clientsPresent;
     private HashSet<Client> clientsInMall;
     private List<Client> clientsCreated;
+    private HashSet<Client> clientsWhoHaveTheirStar;
     private System.Random rng;
 
     void Start()
@@ -30,6 +32,7 @@ public class ClientsManager : MonoBehaviour
         clientsPresent = 0;
         clientsInMall = new HashSet<Client>();
         clientsCreated = new List<Client>();
+        clientsWhoHaveTheirStar = new HashSet<Client>();
         rng = new System.Random();
 
         Invoke("ResetSpawnClient", waitBetweeenSpawns);
@@ -82,6 +85,17 @@ public class ClientsManager : MonoBehaviour
         clientsCreated.Remove(client);
 
         client.gameObject.SetActive(true);
+
+        if (!clientsWhoHaveTheirStar.Contains(client))
+        {
+            Vector2 starPosition = new Vector2(
+                client.transform.position.x - 0.35f,
+                client.transform.position.y + 0.5f
+            );
+
+            Instantiate(starGameObject, starPosition, Quaternion.identity, client.transform);
+            clientsWhoHaveTheirStar.Add(client);
+        }
 
         return client;
     }

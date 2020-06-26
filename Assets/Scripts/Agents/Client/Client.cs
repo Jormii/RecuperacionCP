@@ -53,12 +53,13 @@ public class Client : Agent
     {
         base.Reset(location);
 
-        currentState = ClientState.WanderingAround;
         resources = new ClientResources();
         resources.Randomize();
         storesIgnored = new Dictionary<int, float>();
         employeesAsked = new HashSet<int>();
         timeSpentPerFloor = new Dictionary<int, float>();
+
+        ChangeState(ClientState.Evaluating);
     }
 
     public void MakeLeave()
