@@ -7,6 +7,7 @@ public class ProductsManager : MonoBehaviour
 
     public List<Product> products = new List<Product>();
 
+    private Dictionary<int, Product> productsByID = new Dictionary<int, Product>();
     private System.Random rng;
 
     private void Awake()
@@ -16,6 +17,12 @@ public class ProductsManager : MonoBehaviour
             Debug.LogError("An instance of Products Manager already exists. Destroying...");
             Destroy(gameObject);
             return;
+        }
+
+        for (int i = 0; i < products.Count; ++i)
+        {
+            Product product = products[i];
+            productsByID.Add(product.ID, product);
         }
 
         rng = new System.Random();
@@ -42,5 +49,10 @@ public class ProductsManager : MonoBehaviour
         }
 
         return randomProducts;
+    }
+
+    public Sprite GetProductSprite(int productID)
+    {
+        return productsByID[productID].GetComponent<SpriteRenderer>().sprite;
     }
 }

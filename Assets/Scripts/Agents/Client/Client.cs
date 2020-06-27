@@ -723,7 +723,13 @@ public class Client : Agent
                 sprites.Add(SpriteManager.INSTANCE.GetLeaveSprite());
                 break;
             case ClientState.WanderingAround:
-                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                List<int> productsNotBought = resources.GetProductsNotBoughtYet();
+                for (int i = 0; i < productsNotBought.Count; ++i)
+                {
+                    int productID = productsNotBought[i];
+                    Sprite productSprite = ProductsManager.INSTANCE.GetProductSprite(productID);
+                    sprites.Add(productSprite);
+                }
                 break;
             default:
                 break;
