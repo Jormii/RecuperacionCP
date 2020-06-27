@@ -151,6 +151,7 @@ public class Stock : MonoBehaviour
 
             if (!HasProductInStock(productID))
             {
+                overStock.Add(productID, amount);
                 continue;
             }
 
