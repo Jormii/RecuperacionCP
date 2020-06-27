@@ -76,27 +76,21 @@ public class Boss
     private StockChanges EvaluateChanges(SalesReport salesReport)
     {
         StockChanges changes = new StockChanges(salesReport.STORE_ID);
-        List<int> twoMostPopularProducts = salesReport.GetTwoMostPopularProducts();
+        int mostPopularProduct = salesReport.GetMostPopularProduct();
 
         foreach (KeyValuePair<int, int> entry in salesReport.PRODUCTS_SOLD)
         {
             int productID = entry.Key;
             int amountSold = entry.Value;
 
-            int indexInMostPopular = twoMostPopularProducts.IndexOf(productID);
-            switch (indexInMostPopular)
+            if (productID == mostPopularProduct)
             {
-                case 0:
-                    changes.ChangePrice(productID, 3);
-                    changes.ChangeStock(productID, 2);
-                    break;
-                case 1:
-                    changes.ChangePrice(productID, 1);
-                    changes.ChangeStock(productID, 2);
-                    break;
-                default:
-                    changes.RemoveProduct(productID);
-                    break;
+                changes.ChangePrice(productID, 1);
+                changes.ChangeStock(productID, 2);
+            }
+            else
+            {
+                changes.RemoveProduct(productID);
             }
         }
 

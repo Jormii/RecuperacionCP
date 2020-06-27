@@ -14,17 +14,9 @@ public struct SalesReport
         this.PRODUCTS_SOLD = productsSold;
     }
 
-    public List<int> GetTwoMostPopularProducts()
+    public int GetMostPopularProduct()
     {
         List<int> orderedKeys = new List<int>(from entry in PRODUCTS_SOLD orderby entry.Value descending select entry.Key);
-
-        List<int> mostPopular = new List<int>();
-        int maxIndex = System.Math.Min(2, orderedKeys.Count);
-        for (int i = 0; i < maxIndex; ++i)
-        {
-            mostPopular.Add(orderedKeys[i]);
-        }
-
-        return mostPopular;
+        return orderedKeys[0];
     }
 }
