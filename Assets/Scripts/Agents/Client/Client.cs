@@ -16,13 +16,12 @@ public class Client : Agent
         Error
     };
 
-    public const float IGNORE_STORE_TIME = 30f;
-
     [SerializeField] private ClientState currentState = ClientState.Evaluating;
     [SerializeField] private ClientKnowledge knowledge;
     [SerializeField] private ClientResources resources;
+    [SerializeField] private float ignoreStoreTime = 20f;
     private Dictionary<int, float> storesIgnored;
-    private HashSet<int> employeesAsked;
+    private Dictionary<int, float> employeesIgnored;
 
     private Animator animator;
     private SpriteRenderer spriteRenderer;
@@ -47,6 +46,26 @@ public class Client : Agent
         base.Update();
 
         UpdateIgnoredStores();
+        UpdateIgnoredEmployees();
+    }
+
+    private void UpdateIgnoredEmployees()
+    {
+        Dictionary<int, float> newDictionary = new Dictionary<int, float>();
+        foreach (KeyValuePair<int, float> entry in employeesIgnored)
+        {
+            int employeeID = entry.Key;
+            float time = entry.Value;
+
+            float newTime = time - Time.deltaTime;
+            if (newTime > 0)
+            {
+                newDictionary.Add(employeeID, newTime);
+            }
+        }
+
+        employeesIgnored.Clear();
+        employeesIgnored = newDictionary;
     }
 
     public override void Reset(LocationData location)
@@ -56,7 +75,7 @@ public class Client : Agent
         resources = new ClientResources();
         resources.Randomize();
         storesIgnored = new Dictionary<int, float>();
-        employeesAsked = new HashSet<int>();
+        employeesIgnored = new Dictionary<int, float>();
         timeSpentPerFloor = new Dictionary<int, float>();
 
         ChangeState(ClientState.Evaluating);
@@ -87,7 +106,7 @@ public class Client : Agent
             return;
         }
 
-        storesIgnored.Add(storeInterestedIn.STORE_ID, IGNORE_STORE_TIME);
+        storesIgnored.Add(storeInterestedIn.STORE_ID, ignoreStoreTime);
     }
 
     private void UpdateIgnoredStores()
@@ -171,7 +190,7 @@ public class Client : Agent
         AskForInformation(employeeFound);
         StopExecutingActionQueue();
 
-        employeesAsked.Add(employeeFound.GetInstanceID());
+        employeesIgnored.Add(employeeFound.GetInstanceID(), ignoreStoreTime);
         Invoke("WaitBeforeContinuing", 1.5f);
     }
 
@@ -696,7 +715,7 @@ public class Client : Agent
         if (currentState == ClientState.WanderingAround && agent is Employee)
         {
             Employee employee = agent as Employee;
-            if (employee.CanBeInterrupted() && !employeesAsked.Contains(employee.GetInstanceID()))
+            if (employee.CanBeInterrupted() && !employeesIgnored.ContainsKey(employee.GetInstanceID()))
             {
                 employeeFound = employee;
                 employeeFound.Interrupt(this);

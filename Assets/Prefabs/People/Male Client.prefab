@@ -71,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1267259323
-  m_SortingLayer: 4
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 387285900a7af7b4e9d38fe5e3d7b07e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -143,13 +143,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debug: 0
   initialFloor: 0
-  maxTimeSpentPerFloor: 10
+  maxTimeSpentPerFloor: 7
   currentState: 3
   knowledge:
     inspectorKnowledge: []
   resources:
     inspectorList: []
     money: 0
+  ignoreStoreTime: 20
 --- !u!114 &6931167072084578668
 MonoBehaviour:
   m_ObjectHideFlags: 0
