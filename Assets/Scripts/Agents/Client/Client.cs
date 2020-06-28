@@ -257,7 +257,14 @@ public class Client : Agent
         }
 
         Store store = Mall.INSTANCE.GetStoreByID(storeInterestedIn.STORE_ID);
-        knowledge.UpdateKnowledge(store);
+        if (knowledge.KnowsStore(store.ID))
+        {
+            knowledge.UpdateKnowledge(store);
+        }
+        else
+        {
+            knowledge.CreateStoreKnowledge(store);
+        }
 
         if (StoreHasAnyOfWantedProductsInStock())
         {
@@ -662,19 +669,17 @@ public class Client : Agent
             Debug.LogFormat("Client {0} has seen store {1}", name, store.name);
         }
 
-        if (knowledge.KnowsStore(store.ID))
+        if (storesIgnored.ContainsKey(store.ID))
         {
-            knowledge.UpdateKnowledge(store);
             return;
         }
 
-        knowledge.CreateStoreKnowledge(store);
         if (currentState == ClientState.WanderingAround)
         {
             List<int> products = resources.GetProductsInterestedIn(store);
             if (products.Count != 0)
             {
-                storeInterestedIn = knowledge.GetKnowledge(store.ID);
+                storeInterestedIn = new StoreKnowledge(store.ID, store.Location);   // TODO: Ugly
                 StopExecutingActionQueue();
                 ChangeState(ClientState.MovingToStore);
             }
