@@ -507,18 +507,15 @@ public class Employee : Agent
             Debug.LogFormat("Employee {0} is restocking store {1}", name, lastStoreSeen.name);
         }
 
-        Dictionary<int, int> restock = null;
-        // Comes from the storage
-        if (productsToRefill.ContainsKey(lastStoreSeen.ID))
-        {
-            restock = productsToRefill[lastStoreSeen.ID];
-        }
         // Was wandering and saw a store in need of stock
-        else
+        if (!productsToRefill.ContainsKey(lastStoreSeen.ID))
         {
-            restock = productsBeingCarried;
+            Dictionary<int, int> dictCopy = new Dictionary<int, int>(productsBeingCarried);
+            productsBeingCarried.Clear();
+            productsToRefill[lastStoreSeen.ID] = dictCopy;
         }
 
+        Dictionary<int, int> restock = productsToRefill[lastStoreSeen.ID];
         productsToRefill.Remove(lastStoreSeen.ID);
 
         Stock stock = lastStoreSeen.StoreStock;
@@ -824,7 +821,18 @@ public class Employee : Agent
                 }
                 break;
             case EmployeeState.WanderingAround:
-                sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                if (productsBeingCarried.Count == 0)
+                {
+                    sprites.Add(SpriteManager.INSTANCE.GetQuestionMarkSprite());
+                }
+                else
+                {
+                    foreach (int productID in productsBeingCarried.Keys)
+                    {
+                        Sprite sprite = ProductsManager.INSTANCE.GetProductSprite(productID);
+                        sprites.Add(sprite);
+                    }
+                }
                 break;
             default:
                 break;

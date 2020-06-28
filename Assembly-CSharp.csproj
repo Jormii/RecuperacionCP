@@ -65,6 +65,11 @@
      <Compile Include="Assets\Scripts\Agents\Client\StoreKnowledge.cs" />
      <Compile Include="Assets\Scripts\Agents\Employee.cs" />
      <Compile Include="Assets\Scripts\Agents\Navigation.cs" />
+     <Compile Include="Assets\Scripts\Agents\Store\SalesReport.cs" />
+     <Compile Include="Assets\Scripts\Agents\Store\Stock.cs" />
+     <Compile Include="Assets\Scripts\Agents\Store\StockChanges.cs" />
+     <Compile Include="Assets\Scripts\Agents\Store\StockData.cs" />
+     <Compile Include="Assets\Scripts\Agents\Store\Store.cs" />
      <Compile Include="Assets\Scripts\Agents\Vision.cs" />
      <Compile Include="Assets\Scripts\Bubble.cs" />
      <Compile Include="Assets\Scripts\ClientsManager.cs" />
@@ -73,14 +78,9 @@
      <Compile Include="Assets\Scripts\LocationData.cs" />
      <Compile Include="Assets\Scripts\Mall\Exit.cs" />
      <Compile Include="Assets\Scripts\Mall\Mall.cs" />
-     <Compile Include="Assets\Scripts\Mall\SalesReport.cs" />
      <Compile Include="Assets\Scripts\Mall\SimulatedTime.cs" />
      <Compile Include="Assets\Scripts\Mall\Stairs.cs" />
      <Compile Include="Assets\Scripts\Mall\Storage.cs" />
-     <Compile Include="Assets\Scripts\Mall\Store\Stock.cs" />
-     <Compile Include="Assets\Scripts\Mall\Store\StockChanges.cs" />
-     <Compile Include="Assets\Scripts\Mall\Store\StockData.cs" />
-     <Compile Include="Assets\Scripts\Mall\Store\Store.cs" />
      <Compile Include="Assets\Scripts\Product.cs" />
      <Compile Include="Assets\Scripts\ProductsManager.cs" />
      <Compile Include="Assets\Scripts\SpriteManager.cs" />
