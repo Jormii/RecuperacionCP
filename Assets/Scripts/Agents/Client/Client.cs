@@ -39,6 +39,8 @@ public class Client : Agent
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sortingOrder = -initialFloor * 10;
         knowledge = new ClientKnowledge();
+
+        Reset(Location);
     }
 
     protected override void Update()
